@@ -22,7 +22,7 @@ https://yoshimi.sourceforge.io/
 https://surge-synthesizer.github.io/
 2. Open a terminal session, go to the place you downloaded the files and run: node 
 3. Paste the contents of example-session-with-melodies.js inside the terminal session from before
-4. Now you can try pasting the code in example-playing-melodies.js in the terminal session. You will see that now you are able to control the music.
+4. Now you can try pasting the code in example-playing-melodies.js in the terminal session. You will see that now you are able to control the music. The things in the file will also allow you to start and stop music.
 
 --------------------------------------------------------------------------
 Debugging:
