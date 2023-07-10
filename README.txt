@@ -5,7 +5,7 @@
 // -- contributors: Yiler Huang (yiler7777@gmail.com); Renick Bell (renick@gmail.com)
 // -- license: GPL 3.0
 // --------------------------------------------------------------------------
-
+This code allows Konduktiva to work with music synthesizers that use MIDI.
 --------------------------------------------------------------------------
 Installation:
 
