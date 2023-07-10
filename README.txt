@@ -20,7 +20,7 @@ Running the code:
 1. Launch 4 sessions of your prefered music synthesizer that supports having multiple instances running at the same time (each with a different midi inputs). Yoshimi is suggested for Linux and Surge is recomended for MacOS. 
 https://yoshimi.sourceforge.io/
 https://surge-synthesizer.github.io/
-2. Open a terminal session and run: node
+2. Open a terminal session, go to the place you downloaded the files and run: node 
 3. Paste the contents of example-session-with-melodies.js inside the terminal session from before
 4. Now you can try pasting the code in example-playing-melodies.js in the terminal session. You will see that now you are able to control the music.
 
