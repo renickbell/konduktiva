@@ -9,7 +9,7 @@
 --------------------------------------------------------------------------
 Installation:
 
-1. Download all the files here [add a URL].
+1. Download all the files.
 2. Install Nodejs. If npm does not automatically get installed with Nodejs, install npm.
 3. Open the terminal and run this command: node installer.js
 4. After that code has finished running, the installation should be complete.
@@ -17,7 +17,9 @@ Installation:
 --------------------------------------------------------------------------
 Running the code:
 
-1. Launch 4 sessions of your prefered music synthesizer that supports having multiple instances running at the same time (each with a different midi inputs). Yoshimi is suggested for Linux and Surge is recomended for MacOS.
+1. Launch 4 sessions of your prefered music synthesizer that supports having multiple instances running at the same time (each with a different midi inputs). Yoshimi is suggested for Linux and Surge is recomended for MacOS. 
+https://yoshimi.sourceforge.io/
+https://surge-synthesizer.github.io/
 2. Open a terminal session and run: node
 3. Paste the contents of example-session-with-melodies.js inside the terminal session from before
 4. Now you can try pasting the code in example-playing-melodies.js in the terminal session. You will see that now you are able to control the music.
