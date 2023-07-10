@@ -1,8 +1,8 @@
 // --------------------------------------------------------------------------
 // -- README.txt
-// -- initial author: Renick Bell (renick@gmail.com)
+// -- initial author: Steve Wang (stevesg168@gmail.com)
 // -- initial creation date: Wed Jun 28 10:08:48 AM CST 2023
-// -- contributors: Yiler Huang (yiler7777@gmail.com); Steve Wang (stevesg168@gmail.com)
+// -- contributors: Yiler Huang (yiler7777@gmail.com); Renick Bell (renick@gmail.com)
 // -- license: GPL 3.0
 // --------------------------------------------------------------------------
 
