@@ -109,3 +109,15 @@ function generateRandomLSystemConfiguration (pickedAlphabets){
     return {conditions, startingLetters}
 }
 
+function generateLsystemByAssigningNumberToLetter (mode, octaves,length) {
+    let alphabets = Array.from({ length: 26 }, (_, i) => String.fromCharCode(97 + i));
+    let modeAlphabets = safeSplice(alphabets, alphabets.length, mode.length)
+    let modeData = generateRandomLsystemString(length, modeAlphabets)
+    let octavesAlphabets = safeSplice(alphabets, alphabets.length, octaves.length)
+    let octavesData = generateRandomLsystemString(length, octavesAlphabets)
+    return noteData.map((x, i) =>{
+        return {note: x, octave: octavesData[i]}
+    })
+}
+
+let testios = generateLsystemByAssigningNumberToLetter(mode, [4 ,5, 6], 10)
