@@ -120,4 +120,4 @@ function generateLsystemByAssigningNumberToLetter (mode, octaves,length) {
     })
 }
 
-let testios = generateLsystemByAssigningNumberToLetter(mode, [4 ,5, 6], 10)
+// let testios = generateLsystemByAssigningNumberToLetter(mode, [4 ,5, 6], 10)
