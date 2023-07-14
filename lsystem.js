@@ -109,15 +109,25 @@ function generateRandomLSystemConfiguration (pickedAlphabets){
     return {conditions, startingLetters}
 }
 
+//I forgot to write the functinot hat converts the letters to numbers!!!!
+
+function convertLsystemStringToNumbersViaAssignedLetters (chosenAlphabets, lsystem, availableNumbers){
+    let numericLsystem = []
+    for (let i = 0; i < lsystem.length; i++) {
+        numericLsystem.push(availableNumbers[chosenAlphabets.indexOf(lsystem[i])])
+    }
+    return numericLsystem
+}
+
 function generateLsystemByAssigningNumberToLetter (mode, octaves,length) {
     let alphabets = Array.from({ length: 26 }, (_, i) => String.fromCharCode(97 + i));
     let modeAlphabets = safeSplice(alphabets, alphabets.length, mode.length)
-    let modeData = generateRandomLsystemString(length, modeAlphabets)
+    let modeData = convertLsystemStringToNumbersViaAssignedLetters(modeAlphabets, generateRandomLsystemString(length, modeAlphabets), mode)
     let octavesAlphabets = safeSplice(alphabets, alphabets.length, octaves.length)
-    let octavesData = generateRandomLsystemString(length, octavesAlphabets)
-    return noteData.map((x, i) =>{
+    let octavesData = convertLsystemStringToNumbersViaAssignedLetters(octavesAlphabets,  generateRandomLsystemString(length, octavesAlphabets), octaves)
+    return modeData.map((x, i) =>{
         return {note: x, octave: octavesData[i]}
     })
 }
 
-// let testios = generateLsystemByAssigningNumberToLetter(mode, [4 ,5, 6], 10)
+// hi = generateLsystemByAssigningNumberToLetter([0,2,4,7,9,11], [4 ,5, 6], 10)
