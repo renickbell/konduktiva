@@ -37,15 +37,17 @@ function quantizeMelody (melody, mode){
     return melody.map(x => {return quantizedMode.floorLookup(x)})
 }
 
-function changeNoteBy (originalNumber, changeBy){
+function changeNoteBy (originalNumber, changeBy, min, max){
+    let newNum = originalNumber
+        console.log('changeBy', changeBy)
     if (changeBy === 'same'){
         return originalNumber
     }
     else if (changeBy === 'increase'){
-        return originalNumber + randomRange(originalNumber, 127 - originalNumber)
+        return randomRange(originalNumber, max)
     }
     else if (changeBy === 'decrease'){
-        return originalNumber - randomRange(0, originalNumber)
+        return randomRange(min, originalNumber)
     }
 }
 
@@ -74,21 +76,24 @@ function generateChangeMethod (rules){
             changeBy = x
         }
         else {
-            currentMin += rules[x] - 1
+            currentMin += rules[x]
         }
     })
     return changeBy
 }
 
-function randomlyGeneratingMelodiesWithRules (mode, startValue, rules, melodyLength){
+function randomlyGeneratingMelodiesWithRules (mode, startValue, rules, min = 0, max = 127, melodyLength = 15){
     let currentValue = startValue
     let generatedMelody = []
     for (let i = 0; i < melodyLength; i++) {
-        generatedMelody.push(changeNoteBy(currentValue, generateChangeMethod(rules)))
+        let generatedChange = generateChangeMethod(rules)
+        currentValue = changeNoteBy(currentValue, generatedChange , min, max)
+        console.log('currentValue', currentValue)
+        generatedMelody.push(currentValue)
     }
     let modeArray = createModeArray(mode)
     let quantizedModeArray = new QuantizedMap(modeArray[modeArray.length - 1], modeArray, modeArray)
     return generatedMelody.map(x => {return quantizedModeArray.floorLookup(x)})
 }
 
-//randomlyGeneratingMelodiesWithRules(0,2,4,7,9,11, 30, {increase: 30, decrease: 30, same: 40}, 15)
+// randomlyGeneratingMelodiesWithRules([0,2,4,7,9,11], 80, {increase: 30, decrease: 30, same: 40},50, 120, 100)
