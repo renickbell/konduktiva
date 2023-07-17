@@ -15,10 +15,10 @@ function assignPlayerForMusicSynthesizerSession (e, session, playerData, default
         playerData.velocityMapName = defaultName
     }
     if (checkIfSessionPlayerExist(session) === undefined){
-    createSessionPlayer(e, session, playerData.velocityMapName, playerData.noteMapName, playerData.octaveMapName, playerData.rootNoteMapName, playerData.rhythmMapName, playerData.polyphonyMapName, playerData.noteSpanMapName, playerData.noteSpanMapName, playerData.rhythmPatternName, playerData.chordProgressionMapName,  playerData.channel)
+    createSessionPlayer(e, session, playerData.velocityMapName, playerData.noteMapName, playerData.octaveMapName, playerData.rootNoteMapName, playerData.rhythmMapName, playerData.polyphonyMapName, playerData.noteSpanMapName, playerData.noteSpanMapName, playerData.rhythmPatternName, playerData.chordProgressionMapName, playerData.controlChangeMapName,  playerData.channel)
     }
     else{
-        editSessionPlayer(e, session, playerData.velocityMapName, playerData.noteMapName, playerData.octaveMapName, playerData.rootNoteMapName, playerData.rhythmMapName, playerData.polyphonyMapName, playerData.noteSpanMapName, playerData.noteSpanMapName, playerData.rhythmPatternName, playerData.chordProgressionMapName, playerData.channel)
+        editSessionPlayer(e, session, playerData.velocityMapName, playerData.noteMapName, playerData.octaveMapName, playerData.rootNoteMapName, playerData.rhythmMapName, playerData.polyphonyMapName, playerData.noteSpanMapName, playerData.noteSpanMapName, playerData.rhythmPatternName, playerData.chordProgressionMapName, playerData.controlChangeMapName,  playerData.channel)
     }
 }
 
@@ -42,7 +42,7 @@ function checkIfAddChordProgressionMapToPlayer (chordProgressionMapName, e){
 }
 
 //Create Player:
-function createSessionPlayer (e, session, velocityMapName, noteMapName = velocityMapName, octaveMapName = velocityMapName, rootNoteMapName = velocityMapName, rhythmMapName = velocityMapName, polyphonyMapName = velocityMapName, noteSpanMapName = velocityMapName, maskMapName = velocityMapName, rhythmPatternName = velocityMapName, chordProgressionMapName = velocityMapName, channel = 1){
+function createSessionPlayer (e, session, velocityMapName, noteMapName = velocityMapName, octaveMapName = velocityMapName, rootNoteMapName = velocityMapName, rhythmMapName = velocityMapName, polyphonyMapName = velocityMapName, noteSpanMapName = velocityMapName, maskMapName = velocityMapName, rhythmPatternName = velocityMapName, chordProgressionMapName = velocityMapName, controlChangeMapName = velocityMapName, channel = 1){
     let name = 'musicSynthesizerSession' + JSON.stringify(session)
     setupMidiRhythm(e, name, rhythmMapName) 
     let sessionPlayer = e.players['musicSynthesizerSession' + session]
@@ -57,6 +57,7 @@ function createSessionPlayer (e, session, velocityMapName, noteMapName = velocit
     sessionPlayer.channel = channel
     sessionPlayer.polyphonyMap = polyphonyMapName
     sessionPlayer.noteSpanMapName = noteSpanMapName
+    sessionPlayer.controlChangeMap = controlChangeMapName
     let playerName = 'musicSynthesizerSession' + session
     e.rhythmPatterns[rhythmPatternName].add(e, playerName)
     e.outputs.push(new easymidi.Output(easymidi.getOutputs()[session]))
@@ -66,7 +67,7 @@ function createSessionPlayer (e, session, velocityMapName, noteMapName = velocit
 //https://stackoverflow.com/a/43363105/19515980
 
 //Edit Player:
-function editSessionPlayer (e, session, velocityMapName, noteMapName = velocityMapName, octaveMapName = velocityMapName, rootNoteMapName = velocityMapName, rhythmMapName = velocityMapName, polyphonyMapName = velocityMapName, noteSpanMapName = velocityMapName, maskMapName = velocityMapName, rhythmPatternName = velocityMapName, chordProgressionMapName = velocityMapName, channel = 1){
+function editSessionPlayer (e, session, velocityMapName, noteMapName = velocityMapName, octaveMapName = velocityMapName, rootNoteMapName = velocityMapName, rhythmMapName = velocityMapName, polyphonyMapName = velocityMapName, noteSpanMapName = velocityMapName, maskMapName = velocityMapName, rhythmPatternName = velocityMapName, chordProgressionMapName = velocityMapName, controlChangeMapName = velocityMapName, channel = 1){
     console.log('chose to edit')
     let sessionPlayer = e.players['musicSynthesizerSession' + session]
     sessionPlayer.velocityMap = velocityMapName
@@ -79,11 +80,18 @@ function editSessionPlayer (e, session, velocityMapName, noteMapName = velocityM
     sessionPlayer.session = session
     sessionPlayer.channel = channel
     sessionPlayer.noteSpanMapName = noteSpanMapName
+    sessionPlayer.controlChangeMap = controlChangeMapName
     sessionPlayer.polyphonyMap = polyphonyMapName
     let playerName = 'musicSynthesizerSession' + session
     e.rhythmPatterns[rhythmPatternName].add(e, playerName)
     e.outputs[session - 1] = (new easymidi.Output(easymidi.getOutputs()[session]))
     sessionPlayer.chordProgressionMap = checkIfAddChordProgressionMapToPlayer(chordProgressionMapName, e)
+}
+
+function createControlChangeMaps (noteValueData, name, e){
+    if (noteValueData.controlChangeMap !== undefined && noteValueData.controlChangeMapKeys !== undefined){
+        e.controlChangeMaps[name] = new QuantizedMap(noteValueData.controlChangeMapKeys[noteValueData.controlChangeMapKeys.length - 1] + 1, noteValueData.controlChangeMapKeys, noteValueData.controlChangeMap)
+    }
 }
 
 //Create maps and other things from noteValue Data and save these new things in the musical environment:
@@ -94,6 +102,7 @@ function recordConfigurationDataIntoMusicalEnvironment (noteValueData, name, e){
     e.rootNoteMaps[name] = new QuantizedMap(noteValueData.rootNote.length, buildArray(noteValueData.rootNote.length, x => {return x}), noteValueData.rootNote)
     e.velocityMaps[name] = new QuantizedMap(noteValueData.velocity.length, buildArray(noteValueData.velocity.length, x => {return x}), noteValueData.velocity)
     e.maxPolyphonyMaps[name] = new QuantizedMap(noteValueData.polyphonyMap.length, buildArray(noteValueData.polyphonyMap.length, x => {return x}), noteValueData.polyphonyMap, e)
+    createControlChangeMaps(noteValueData, name, e)
 //     createRhythmMap(noteValueData, name)
 //     createMaskMap(noteValueData, name)
     //The problem with your RhythmPattern function is, it starts assigning things to the player it does not write it to the musical environmet
@@ -113,6 +122,7 @@ function addToMusicalEnvironment (e){
     e.rhythmPatterns = {}
     e.noteSpanMaps = {}
     e.pattern = undefined
+    e.controlChangeMaps = {}
     e.chordProgressions = generateChordProgressions()
     e.chordProgressionMaps = {
         'twelveBars-lsystem-scarbrofair': new QuantizedMap(15000, [1000, 5000, 10000], ['twelveBars', 'lsystem', 'scarbrofair'])

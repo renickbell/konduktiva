@@ -225,7 +225,7 @@ function assignChordProgressionToPlayer (playerName, chosenChordProgression){
 
 //Check current if it is time to change chord progressions
 function checkIfChangeChordProgression (e, b, player){
-    console.log('chordProgressionMap', player.chordProgressionMap)
+//     console.log('chordProgressionMap', player.chordProgressionMap)
     if (player.chordProgressionMap === undefined){
         return true
     }

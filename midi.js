@@ -62,6 +62,7 @@ function callMusicSynthesizerRhythm (e, b, session){
     //info.noteValues = handleDissonance(b, info)
     visualizeVolume(info)
     checkIfChangeChordProgression(e, b, player)
+    checkIfSendMidiControlChange(e, b, player)
     let maxNoteSpanLength = e.maxPolyphonyMaps[player.polyphonyMap].wrapLookup(b)
     if (info.noteSpan.length > maxNoteSpanLength){
         for (let i = 0; i < maxNoteSpanLength - info.noteSpan.length; i++) {
@@ -69,7 +70,7 @@ function callMusicSynthesizerRhythm (e, b, session){
         }
     }
     info.noteValues.forEach((x, i) => {
-        console.log('info;', x,octaveFloor.floorLookup(info.octaves[i]))
+        //console.log('info;', x,octaveFloor.floorLookup(info.octaves[i]))
             console.log('note', x + (octaveFloor.floorLookup(info.octaves[i]) * 12))
         sendMidiData(info, player, x + (octaveFloor.floorLookup(info.octaves[i]) * 12))
     })
@@ -128,3 +129,15 @@ function midiToMusicNotes (array){
     })
 }
 
+function checkIfSendMidiControlChange (e, b, player){
+//     console.log(e.controlChangeMaps, player.controlChangeMaps)
+    if (e.controlChangeMaps[player.controlChangeMaps] === undefined){
+        return true
+    }
+    let correctCC = e.controlChangeMaps[player.controlChangeMaps].wrapLookup(b)
+    if (player.currentControlChange !== correctCC){
+        player.currentControlChange = correctCC
+        e.outputs[player.session - 1].send('cc', correctCC)
+        console.log('CC Data sent')
+    }
+}

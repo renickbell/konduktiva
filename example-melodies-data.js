@@ -76,6 +76,13 @@ randomMelodyData = {
 //   octave: buildArray(5, x => {return buildArray(10, b => {return x + 3})}),
 //   octaveMapKeys: buildArray(12, x => {return x * 4}),
 //   octaveMapKeyspan: 20,
+    controlChangeMapKeys: [20, 40, 60, 80],
+    controlChangeMap: buildArray(4, x => {return {
+      channel: 0,
+      controller: 1,
+      value: randomRange(60, 100),
+    }
+    })
 }
 
 //noteData2 = generateRandomMelody('C', 'bluesPentatonicScale', 40, 4, 6)
