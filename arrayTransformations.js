@@ -20,6 +20,21 @@ function adjustArrayLength(number, array) {
   }
 }
 
+//Set a size of the array and the array will be expanded or shrunk to fix that size. To expand it will just loop the array:
+function resizeArray(number, array) {
+  var arrayLength = array.length;
+  if (arrayLength >= number) {
+    return array.slice(0, number);
+  }
+  var repetitions = Math.ceil(number / arrayLength);
+  var expandedArrayLength = repetitions * arrayLength;
+  var expandedArray = new Array(expandedArrayLength);
+  for (var i = 0; i < expandedArrayLength; i++) {
+    expandedArray[i] = array[i % arrayLength];
+  }
+  return expandedArray.slice(0, number);
+}
+
 function safeSplice(inputArray, amountToRemove,indexToRemove,replaceWith) {
   let array1 = inputArray.slice(0, indexToRemove )
 if (replaceWith!=undefined){
@@ -30,7 +45,15 @@ array1.push(replaceWith)}
 
 function removeItem(arr, item){
      return arr.filter(f => f !== item)
-    }
+}
+
+function removeMultipleItems (arr, itemsToRemove){
+    let sortedArray = arr
+    itemsToRemove.forEach(x => {
+        sortedArray = removeItem(sortedArray, x)
+    })
+    return sortedArray
+}
 
 function scaleToRange (inputArray, inputMin, inputMax, outputMin, outputMax) {
     // add a check to make sure that inputMin and inputMax are not exceeded by values in inputArray?
@@ -82,15 +105,28 @@ function takeTo (targetLength, inputArray) {
 }
 
 function loopTo (targetLength, inputArray) {
-    let inputSum = sum(inputArray)    ;
+    let inputSum = sum(inputArray);
     let loopN = Math.ceil(targetLength/inputSum);
     let pre = R.flatten(buildArray(loopN, x => inputArray))
     return takeTo(targetLength,pre)
 }
 
-function zip (a,b) {return a.map((x, i) => { return [x, b[i]]; })}
+//Non ramda version:
+// function zip (a,b) {return a.map((x, i) => { return [x, b[i]]; })}
 
-function buildZip (a,b) {return a.map((x,i) => x.concat(b[i]))}
+//randa version:
+function zip (a,b) {return R.zip(a,b)}
+
+// a is an array of arrays; this function concats b onto each of the arrays in a. b could be either an item or an array.
+// arr1 = [[1,1,1],[2,2,2],[3,3,3]] 
+// arr2 = [[4,4,4],[5,5,5],[6,6,6]] 
+// buildZip(arr1,arr2)
+// non ramda version:
+// function buildZip (a,b) {return a.map((x,i) => x.concat(b[i]))}
+//ramda version:
+function buildZip(a, b) {
+  return R.zipWith(R.concat, a, b);
+}
 
 function shuffle(array) {
   var currentIndex = array.length,  randomIndex;
@@ -113,4 +149,3 @@ function gatherBySubstring (inputArray, substringArray) {
 function flipBooleans (arr) {
     return arr.map (a => !a)
 }
-
