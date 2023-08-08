@@ -22,7 +22,7 @@
     npm -v
     ```
     3. You can close the terminals your have opened prior to this step.
-3. Open the terminal, navigate to using-konduktiva-with-midi. This effect can be achieved by using the ``` cd [directory name command] ``` command or navigator to that direcotry with the file manager and right click to open a terminal session there. We will call this terminal session t1. Then, run this command:
+3. Open the terminal, navigate to using-konduktiva-with-midi. This effect can be achieved by using the ``` cd [directory name] ``` command or navigator to that direcotry with the file manager and right click to open a terminal session there. We will call this terminal session t1. Then, run this command:
     ```
     node installer.js
     ```
