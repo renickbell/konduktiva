@@ -8,7 +8,10 @@
 
 ### Installation:
 
-1. Download all the zip provided [here](https://drive.google.com/drive/folders/1UsGemuvPzGAOLXVoVXIG1QkcxNk0GreX?usp=drive_link) and unzip it. You will get a directory called using-konduktiva-with-midi-1
+1. Install the files by dowloading the files on this page as a zip or use git to download the files by typing this command in the terminal:
+    ```
+    git clone https://github.com/mrname5/Using-Konduktiva-With-MIDI.git
+    ```
 2. Install [Nodejs](https://nodejs.org/en). If [npm](https://www.npmjs.com/package/npm) does not automatically get installed with Nodejs, [install npm](https://github.com/npm/cli).
     1. Check if nodejs is installed by running this command in the terminal: 
     ```
