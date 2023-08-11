@@ -77,7 +77,7 @@ function createNoteSpanValues (noteValueData, name){
     e.noteSpanMaps[name] = new QuantizedMap(noteValueData.noteSpan.length, noteValueData.noteSpan, noteValueData.noteSpanValues)
     }
     else{
-    e.noteSpanMaps[name] = new QuantizedMap(noteValueData.noteSpan.length, buildArray(noteValueData.noteSpan.length, x => {return x}), noteValueData.noteSpan)
+    e.noteSpanMaps[name] = new QuantizedMap(noteValueData.noteSpan.length, A.buildArray(noteValueData.noteSpan.length, x => {return x}), noteValueData.noteSpan)
     }
 }
 
@@ -86,7 +86,7 @@ function createNoteRelatedMaps (noteValueData, name, e){
     createNoteSpanValues(noteValueData, name)
     console.log(name, e)
     if (noteValueData.noteValuesKeys === undefined){
-        noteValueData.noteValuesKeys = buildArray(noteValueData.noteValues.length, x => {return x})
+        noteValueData.noteValuesKeys = A.buildArray(noteValueData.noteValues.length, x => {return x})
     }
     e.noteMaps[name] = new QuantizedMap(noteValueData.noteValues.length, noteValueData.noteValuesKeys, noteValueData.noteValues)
 }
@@ -94,7 +94,7 @@ function createNoteRelatedMaps (noteValueData, name, e){
 //Create octave related things:
 function createOctaveMaps (noteValueData, name, e){
     if (noteValueData.octaveMapKeys === undefined){
-        e.octaveMaps[name] = new QuantizedMap(noteValueData.octave.length, buildArray(noteValueData.octave.length, x => {return x}), noteValueData.octave)
+        e.octaveMaps[name] = new QuantizedMap(noteValueData.octave.length, A.buildArray(noteValueData.octave.length, x => {return x}), noteValueData.octave)
     }
     else {
         e.octaveMaps[name] = new QuantizedMap(noteValueData.octaveMapKeyspan, noteValueData.octaveMapKeys, noteValueData.octave)
@@ -130,9 +130,9 @@ function createOctaveMaps (noteValueData, name, e){
 function generateChordProgressions (){
     let twelveBarsProgression = generateRandomMelody('C', 'bluesScale', 18, 6, 10)
     return {
-        twelveBars: new QuantizedMap(18, buildArray(12, x => {return 4}), twelveBarsProgression.map(x => {x.velocity = 100; return {data: [x], bool: true}})),
+        twelveBars: new QuantizedMap(18, A.buildArray(12, x => {return 4}), twelveBarsProgression.map(x => {x.velocity = 100; return {data: [x], bool: true}})),
         lsystem: generateRandomLsystemChordProgression(),
-        scarboroughFair: new QuantizedMap(48, buildArray(12, x => {return 4}), generateScarboroughFairValues())
+        scarboroughFair: new QuantizedMap(48, A.buildArray(12, x => {return 4}), generateScarboroughFairValues())
     }
 }
 
@@ -187,11 +187,11 @@ function conditionalNoteConfigurations (chosenProgression, configurationObj){
         configurationObj.noteSpanValues = retreiveDataFromChosenProgressionValuesData('noteSpanValues', chosenProgression)
     }
     if (chosenProgression.values[0].data[0].keySpan === undefined){
-        configurationObj.rhythmMapValues = buildArray(chosenProgression.keys.length, x => {
+        configurationObj.rhythmMapValues = A.buildArray(chosenProgression.keys.length, x => {
             return 1})
     }
     else {
-        onfigurationObj.rhythmMapValues = retreiveDataFromChosenProgressionValuesData('keySpan', chosenProgression)
+        configurationObj.rhythmMapValues = retreiveDataFromChosenProgressionValuesData('keySpan', chosenProgression)
     }
     return configurationObj
 }
@@ -235,7 +235,7 @@ function checkIfChangeChordProgression (e, b, player){
         return true
     }
     else {
-        let defaultName = findMostFrequentItem(Object.values(player))
+        let defaultName = A.findMostFrequentItem(Object.values(player))
         console.log('step1')
     recordConfigurationDataIntoMusicalEnvironment(assignChordProgressionToPlayer(defaultName, correctCurrentChordProgression), defaultName, e)
         console.log('step2')
