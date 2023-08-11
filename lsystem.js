@@ -20,10 +20,10 @@ function generateRandomLsystemChordProgression (){
     let octaveData = countLetterChanges(generateRandomLsystemString(20))
     let notesData = generateLsystemNoteData()
     let noteSpanData = generateLsystemNoteData()
-    boolsData = resizeArray(notesData.length, boolsData)
-    noteSpanData = resizeArray(notesData.length, noteSpanData)
-    octaveData = resizeArray(notesData.length, octaveData).map(x => {return x * 2})
-    velocityData = resizeArray(notesData.length, velocityData).map(x => {return x * (x * 10)})
+    boolsData = A.resizeArray(notesData.length, boolsData)
+    noteSpanData = A.resizeArray(notesData.length, noteSpanData)
+    octaveData = A.resizeArray(notesData.length, octaveData).map(x => {return x * 2})
+    velocityData = A.resizeArray(notesData.length, velocityData).map(x => {return x * (x * 10)})
     return new QuantizedMap(notesData.length, noteSpanData, notesData.map((x, i) => {return {data: [{note: x, octave: octaveData[i], velocity: velocityData[i]}], bool: boolsData[i]}})) 
 }
 
@@ -121,9 +121,9 @@ function convertLsystemStringToNumbersViaAssignedLetters (chosenAlphabets, lsyst
 
 function generateLsystemByAssigningNumberToLetter (mode, octaves,length) {
     let alphabets = Array.from({ length: 26 }, (_, i) => String.fromCharCode(97 + i));
-    let modeAlphabets = safeSplice(alphabets, alphabets.length, mode.length)
+    let modeAlphabets = A.safeSplice(alphabets, alphabets.length, mode.length)
     let modeData = convertLsystemStringToNumbersViaAssignedLetters(modeAlphabets, generateRandomLsystemString(length, modeAlphabets), mode)
-    let octavesAlphabets = safeSplice(alphabets, alphabets.length, octaves.length)
+    let octavesAlphabets = A.safeSplice(alphabets, alphabets.length, octaves.length)
     let octavesData = convertLsystemStringToNumbersViaAssignedLetters(octavesAlphabets,  generateRandomLsystemString(length, octavesAlphabets), octaves)
     return modeData.map((x, i) =>{
         return {note: x, octave: octavesData[i]}
