@@ -20,12 +20,12 @@ function createMaskMap (noteValueData, name){
     e.maskMaps[name] = new QuantizedMap(noteValueData.total)
     let currentMaskMap = e.maskMaps[name]
     if (noteValueData.maskMapKeys === undefined){
-        currentMaskMap.keys = buildArray(currentMaskMap.keyspan + 1, x => {return x})
+        currentMaskMap.keys = A.buildArray(currentMaskMap.keyspan + 1, x => {return x})
     }
     else {
         currentMaskMap.keys = noteValueData.maskMapKeys
     }
-    currentMaskMap.values = resizeArray(currentMaskMap.keyspan, noteValueData.bools)
+    currentMaskMap.values = A.resizeArray(currentMaskMap.keyspan, noteValueData.bools)
 //     currentMaskMap.values = flipBooleans(resizeArray(currentMaskMap.keyspan, noteValueData.bools))
 }
 
