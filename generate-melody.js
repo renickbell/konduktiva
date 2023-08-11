@@ -23,8 +23,8 @@ function generateRandomMelody (rootNote, mode, melodyLength, octaveMin = 1, octa
     let modeMap = new QuantizedMap(12, modes[mode], modes[mode])
     let randomMelody;
     let randomOctaves;
-        randomMelody  = buildArray (melodyLength, x => randomRangeInt (melodyMin, melodyMax))
-        randomOctaves  = buildArray (melodyLength, x => randomRangeInt (octaveMin, octaveMax))
+        randomMelody  = A.buildArray (melodyLength, x => randomRangeInt (melodyMin, melodyMax))
+        randomOctaves  = A.buildArray (melodyLength, x => randomRangeInt (octaveMin, octaveMax))
     return randomMelody.map((x, i) => {
         return {note: modeMap.nearestLookup(x % 12), octave: randomOctaves[i], rootNote: rootNote}
     })
