@@ -79,8 +79,8 @@ randomMelodyData = {
     controlChangeMapKeys: [20, 40, 60, 80],
     controlChangeMap: buildArray(4, x => {return {
       channel: 0,
-      controller: 1,
-      value: randomRange(60, 100),
+      controller: 25,
+      value: randomRange(0, 159),
     }
     })
 }

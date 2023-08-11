@@ -14,11 +14,12 @@
     ```
     node -v
     ```
-    2. Check if nodejs is installed by running this command in the terminal: 
+    2. Check if npm is installed by running this command in the terminal: 
     ```
     npm -v
     ```
-3. Open the terminal, navigate to using-konduktiva-with-midi. We will call this terminal session t1. Then, run this command:
+    3. You can close the terminals your have opened prior to this step.
+3. Open the terminal, navigate to using-konduktiva-with-midi. This effect can be achieved by using the ``` cd [directory name command] ``` command or navigator to that direcotry with the file manager and right click to open a terminal session there. We will call this terminal session t1. Then, run this command:
     ```
     node installer.js
     ```
@@ -26,15 +27,16 @@
 
 ### Running the code:
 
-1. Launch 4 sessions/instances of your prefered music synthesizer that supports having multiple instances running at the same time (each with a different midi inputs). Yoshimi is suggested for [Linux](https://yoshimi.sourceforge.io/) and [Surge](https://surge-synthesizer.github.io/) is recomended for MacOS. 
-2. Open a new terminal session (t2), navigate to using-konduktiva-with-midi and run this command:
+1. Launch 4 sessions/instances of your preferred music synthesizer that supports having multiple instances running at the same time (each with a different midi inputs). Yoshimi is suggested for [Linux](https://yoshimi.sourceforge.io/) and [Surge](https://surge-synthesizer.github.io/) is recomended for MacOS. 
+2. Go back to t1 and type this command in it:
+
     ```
     node 
     ```
-3. Paste the contents of example-session-with-melodies.js inside t2.
-4. Now you can try pasting the code in example-playing-melodies.js into t2. You will see that now you are able to control the music. The things in the file will also allow you to start and stop music.
+3. Paste the contents of example-session-with-melodies.js inside t1.
+4. Now you can try pasting the code in example-playing-melodies.js into t1. You will see that now you are able to control the music. Instructions on how to do so are below.
 
-### Specfics On How to Control Music:
+### Specifics On How to Control Music:
 
 #### To make all the sessions/instances of the music synthesizer play do this:
 
@@ -67,3 +69,11 @@ MIDI configuration. Configure your system so that easymidi can detect midi outpu
 
 That is OS specific.
 
+
+### OS:
+
+#### MacOs:
+
+##### Launching surge:
+
+When installing Surge music synthesizer, you get Surge XT and Surge ET Effects. Open this application called [Hosting AU](http://ju-x.com/hostingau.html) and choose surge as  the instrument in the application. Surge will be launched automatically by Hosting AU

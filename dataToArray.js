@@ -6,32 +6,29 @@
 // -- license: GPL 3.0
 // --------------------------------------------------------------------------
 
-function buildArray (n, fillFunction) {
-  let outputArray = [];
-  for (let i = 0; i < n; i++) {
-    outputArray.push(fillFunction(i))
-  }
-  return outputArray
+function buildArray(n, fillFunction) {
+    return Array.from({ length: n }, (_, i) => fillFunction(i));
 }
 
 // modify so that it doesn't have crash potential
-function linearArray (start, step, end) {
-    let output = [start];
-    for (let i = 1; (start + (i*step)) <= end; i++) {
-        output.push(start + (i*step))
-    }
-    return output
+function linearArray(start, step, numberOfSteps) {
+    let output = this.buildArray(numberOfSteps, (i) => start + i * step);
+    return output;
 }
 
-function integerArray (start,end) {
-    return linearArray(start, 1, end)
+function integerArray(start, end) {
+    return this.linearArray(start, 1, end);
 }
 
-function geometricArray (start, step, end) {
-    let output = [start];
-    for (let i = 1; (start * (i*step)) <= end; i++) {
-        output.push(start * (i*step))
-    }
-    return output
+function geometricArray(start, step, numberOfSteps) {
+    let output = this.buildArray(numberOfSteps, (i) => i * step);
+    output[0] = start;
+    return output;
 }
 
+module.exports = {
+    buildArray,
+    linearArray,
+    integerArray,
+    geometricArray,
+};

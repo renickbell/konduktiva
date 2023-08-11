@@ -6,6 +6,9 @@
 // -- license: GPL 3.0
 // --------------------------------------------------------------------------
 
+.load ./arrayTransformations.js
+.load ./dataToArray.js
+.load ./infoFromArray.js
 .load ./konduktiva-revised-2.js
 .load ./testingKonduktiva-revised.js
 .load ./konduktiva-superdirt-revised.js
@@ -34,3 +37,4 @@ e.actions.midiSequencedRhythm = musicSynthesizerCaller
 
 //chord progression map is the new name for the timeline thing
 
+//arrayTransformations.js dataToArray.js infoFromArray.js konduktiva-revised-2.js testingKonduktiva-revised.js konduktiva-superdirt-revised.js defaultSuperDirtPlayers-revised.js utilities-array.js utilities-string.js utilities-music.js utilities-general.js lsystem.js chords.js example-chord-progression-scarborough-fair.js rhythm.js websocket.js harmony.js configure-konduktiva.js generate-melody.js midi.js example-websocket-session.js example-melodies-data.js

@@ -36,5 +36,5 @@ function shuffleString(str) {
 
 //Loops a string by a certain amount of times:
 function repeatString (times, string){
-    return buildArray(times, x => {return string}).join('')
+    return A.buildArray(times, x => {return string}).join('')
 }

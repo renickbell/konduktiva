@@ -123,3 +123,28 @@ By: Charlie Roberts, Jesse Allison, Daniel Holmes, Benjamin Taylor, Matthew Wrig
 Citation: Roberts, C., Allison, J., Holmes, D., Taylor, B., Wright, M., & Kuchera-Morin, J. (2016). Educational design of live coding environments for the browser. Journal of Music, Technology & Education, 9(1), 95-116.
 Link: https://drive.google.com/drive/folders/1MnWC00vHoGzXhW4Sk6fkvPmsHP1wcU0h
 
+Their experience using gibber to educate people about Javascript, music, and other programming concepts like object oriented programming.
+
+--------------------------------------------------------------------------
+Article 8:
+
+Title: Designing Constraints: Composing and Performing with Digital Musical Systems
+By: Thor Magnusson
+Citation: Magnusson, T. (2010). Designing Constraints: Composing and Performing with Digital Musical Systems. Computer Music Journal, 34(4), 62–73. https://doi.org/10.1162/COMJ_a_00026
+Link: https://www.researchgate.net/profile/Thor-Magnusson/publication/220386644_Designing_Constraints_Composing_and_Performing_with_Digital_Musical_Systems/links/5893498645851563f828e2fe/Designing-Constraints-Composing-and-Performing-with-Digital-Musical-Systems.pdf
+
+--------------------------------------------------------------------------
+Article 9:
+
+Title: Patterns of User Experience in Performance Programming
+By: Alan F. Blackwell
+Citation: Blackwell, A. F. (n.d.). Patterns of User Experience in Performance Programming.
+Link: https://iclc.toplap.org/2015/meta/66_Patterns_of_User_Experience_in_Perfor.pdf
+
+--------------------------------------------------------------------------
+Article 10:
+
+Title: The Programming Language as a Musical Instrument
+By: Alan Blackwell and Nick Collins
+Citaion: Blackwell, A., & Collins, N. (2005). The Programming Language as a Musical Instrument.
+Link: https://www.ppig.org/files/2005-PPIG-17th-blackwell.pdf

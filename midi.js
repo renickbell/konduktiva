@@ -131,10 +131,12 @@ function midiToMusicNotes (array){
 
 function checkIfSendMidiControlChange (e, b, player){
 //     console.log(e.controlChangeMaps, player.controlChangeMaps)
-    if (e.controlChangeMaps[player.controlChangeMaps] === undefined){
+    if (e.controlChangeMaps[player.controlChangeMap] === undefined){
+        console.log('CC unknown')
         return true
     }
-    let correctCC = e.controlChangeMaps[player.controlChangeMaps].wrapLookup(b)
+    let correctCC = e.controlChangeMaps[player.controlChangeMap].wrapLookup(b)
+    console.log('correctCC', correctCC)
     if (player.currentControlChange !== correctCC){
         player.currentControlChange = correctCC
         e.outputs[player.session - 1].send('cc', correctCC)
