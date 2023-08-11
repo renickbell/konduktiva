@@ -112,7 +112,7 @@ function removeClient (clientToRemove){
 function wipeClientData (clientToRemove){
     console.log("\x1b[31m", 'Removing Client', clientToRemove.index, 'data')
     console.log('clientToRemove.index', clientToRemove.index)
-    clients = safeSplice(clients, 1, clientToRemove.index)
+    clients = A.safeSplice(clients, 1, clientToRemove.index)
     for (let i = 0; i < clients.length - clientToRemove.index; i++) {
         clients[clientToRemove.index + i].index = clientToRemove.index + i
     }
