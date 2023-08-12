@@ -37,7 +37,7 @@ randomMelodyData = {
     109, 107,  97, 112,
     116,  91,  96, 113
   ],
-  noteSpan: buildArray(12, x => {return x}),
+  noteSpan: A.buildArray(12, x => {return x}),
   rhythmMap: [0,5, 1, 2.5, 2.75, 4, 5, 6, 8, 8.3, 8.6, 9, 10, 10.5, 10.8],
   bools: [true, true, true, true, true, true, true, true, true, true], 
   noteValues: chordProgressionScarboroughFair.map(x => {
@@ -61,23 +61,23 @@ randomMelodyData = {
   }),
   polyphonyMap: [3 ,2 ,3, 2, 3, 2 ,2 ,3, 2, 3, 2 ,2],
   total: 16,
-  polyphonyMap: buildArray(16, x => {return 50}),
-  rhythmMap: buildArray(16, x => {return x * 4}),
+  polyphonyMap: A.buildArray(16, x => {return 50}),
+  rhythmMap: A.buildArray(16, x => {return x * 4}),
    noteSpanKeyspan: 64,
-  noteSpanValues: buildArray(16, x => {return (x)}),
-  noteSpan: buildArray(16, x => {return x * 4}),
+  noteSpanValues: A.buildArray(16, x => {return (x)}),
+  noteSpan: A.buildArray(16, x => {return x * 4}),
   rootNote: noteData.map(x => {
       return x.note
   }),
    total: 64,
-  polyphonyMap: buildArray(16, x => {return 50}),
-  //rhythmMap: buildArray(40, x => {return randomRange(0.5, 1.5, 2)}),
-  rhythmMap: buildArray(16, x => {return x * 4}),
-//   octave: buildArray(5, x => {return buildArray(10, b => {return x + 3})}),
-//   octaveMapKeys: buildArray(12, x => {return x * 4}),
+  polyphonyMap: A.buildArray(16, x => {return 50}),
+  //rhythmMap: A.buildArray(40, x => {return randomRange(0.5, 1.5, 2)}),
+  rhythmMap: A.buildArray(16, x => {return x * 4}),
+//   octave: A.buildArray(5, x => {return A.buildArray(10, b => {return x + 3})}),
+//   octaveMapKeys: A.buildArray(12, x => {return x * 4}),
 //   octaveMapKeyspan: 20,
     controlChangeMapKeys: [20, 40, 60, 80],
-    controlChangeMap: buildArray(4, x => {return {
+    controlChangeMap: A.buildArray(4, x => {return {
       channel: 0,
       controller: 25,
       value: randomRange(0, 159),
@@ -88,11 +88,11 @@ randomMelodyData = {
 //noteData2 = generateRandomMelody('C', 'bluesPentatonicScale', 40, 4, 6)
 noteData2 = chordProgressionScarboroughFair
 randomMelody1 = {
-  velocity: buildArray(40, x => {return randomRange(30, 50)}),
+  velocity: A.buildArray(40, x => {return randomRange(30, 50)}),
    noteSpanKeyspan: 64,
-  noteSpanValues: buildArray(12, x => {return (x)}),
-  noteSpan: buildArray(12, x => {return x * 4}),
-  bools: buildArray(48, x => {return true}), 
+  noteSpanValues: A.buildArray(12, x => {return (x)}),
+  noteSpan: A.buildArray(12, x => {return x * 4}),
+  bools: A.buildArray(48, x => {return true}), 
   octave: chordProgressionScarboroughFair.map(x => {
       return 0
   }),
@@ -100,20 +100,20 @@ randomMelody1 = {
       return x[0].note
   }),
   total: 16,
-  polyphonyMap: buildArray(16, x => {return 50}),
-  rhythmMap: buildArray(16, x => {return x * 4}),
+  polyphonyMap: A.buildArray(16, x => {return 50}),
+  rhythmMap: A.buildArray(16, x => {return x * 4}),
    noteSpanKeyspan: 64,
-  noteSpanValues: buildArray(16, x => {return (x)}),
-  noteSpan: buildArray(16, x => {return x * 4}),
+  noteSpanValues: A.buildArray(16, x => {return (x)}),
+  noteSpan: A.buildArray(16, x => {return x * 4}),
   rootNote: noteData.map(x => {
       return x.note
   }),
    total: 64,
-  polyphonyMap: buildArray(16, x => {return 50}),
-  //rhythmMap: buildArray(40, x => {return randomRange(0.5, 1.5, 2)}),
-  rhythmMap: buildArray(16, x => {return x * 4}),
-//   octave: buildArray(5, x => {return buildArray(10, b => {return x + 3})}),
-//   octaveMapKeys: buildArray(12, x => {return x * 4}),
+  polyphonyMap: A.buildArray(16, x => {return 50}),
+  //rhythmMap: A.buildArray(40, x => {return randomRange(0.5, 1.5, 2)}),
+  rhythmMap: A.buildArray(16, x => {return x * 4}),
+//   octave: A.buildArray(5, x => {return A.buildArray(10, b => {return x + 3})}),
+//   octaveMapKeys: A.buildArray(12, x => {return x * 4}),
 //   octaveMapKeyspan: 20,
   noteValues: chordProgressionScarboroughFair.map(x => {
       return [x[0].note + (12 * 3)]  }),
@@ -122,12 +122,12 @@ randomMelody1 = {
 noteData3 = chordProgressionScarboroughFair
 
 randomMelody2 = {
-  //velocity: [...buildArray(39, x => {return 0}), ...buildArray(8, x => { return 40 + (x * 10)})],
-    velocity: [...buildArray(39, x => {return 0}), ...buildArray(8, x => { return 120})],
-  noteSpan: buildArray(47, x => {return 1 }),
-  rhythmMap: [...buildArray(40, x => {return x}), ...[40, 41, 42, 43, 44 ,45, 46, 47, 48, 49]],
-  bools: [...buildArray(39, x => {return true}), ...buildArray(8, x => {return true})], 
-  //noteValues: [...buildArray(35, x => {return [60]}), ...noteData3.map(x => {
+  //velocity: [...A.buildArray(39, x => {return 0}), ...A.buildArray(8, x => { return 40 + (x * 10)})],
+    velocity: [...A.buildArray(39, x => {return 0}), ...A.buildArray(8, x => { return 120})],
+  noteSpan: A.buildArray(47, x => {return 1 }),
+  rhythmMap: [...A.buildArray(40, x => {return x}), ...[40, 41, 42, 43, 44 ,45, 46, 47, 48, 49]],
+  bools: [...A.buildArray(39, x => {return true}), ...A.buildArray(8, x => {return true})], 
+  //noteValues: [...A.buildArray(35, x => {return [60]}), ...noteData3.map(x => {
   //    return [x.note + ((x.octave + 1) * 12)]
  // })],
   octave: chordProgressionScarboroughFair.map(x => {
@@ -141,18 +141,18 @@ randomMelody2 = {
       })
   }),
   total: 16,
-  polyphonyMap: buildArray(16, x => {return 50}),
-  rhythmMap: buildArray(16, x => {return x * 4}),
+  polyphonyMap: A.buildArray(16, x => {return 50}),
+  rhythmMap: A.buildArray(16, x => {return x * 4}),
    noteSpanKeyspan: 64,
-  noteSpanValues: buildArray(16, x => {return (x)}),
-  noteSpan: buildArray(16, x => {return x * 4}),
+  noteSpanValues: A.buildArray(16, x => {return (x)}),
+  noteSpan: A.buildArray(16, x => {return x * 4}),
   rootNote: noteData.map(x => {
       return x.note
   }),
    total: 64,
-  polyphonyMap: buildArray(16, x => {return 50}),
-  //rhythmMap: buildArray(40, x => {return randomRange(0.5, 1.5, 2)}),
-  rhythmMap: buildArray(16, x => {return x * 4}),
+  polyphonyMap: A.buildArray(16, x => {return 50}),
+  //rhythmMap: A.buildArray(40, x => {return randomRange(0.5, 1.5, 2)}),
+  rhythmMap: A.buildArray(16, x => {return x * 4}),
   noteValues: chordProgressionScarboroughFair.map(x => {
       return x.map(n => {
           return n.note + ((n.octave + 1) * 12)
@@ -168,10 +168,10 @@ melodyData = {
     116,  91,  96, 113
   ],
    noteSpanKeyspan: 64,
-  noteSpanValues: buildArray(12, x => {return (x)}),
-  noteSpan: buildArray(12, x => {return x * 4}),
-  bools: buildArray(48, x => {return true}), 
-  //noteValuesKeys: buildArray(12, x => {return (x * 4)}),
+  noteSpanValues: A.buildArray(12, x => {return (x)}),
+  noteSpan: A.buildArray(12, x => {return x * 4}),
+  bools: A.buildArray(48, x => {return true}), 
+  //noteValuesKeys: A.buildArray(12, x => {return (x * 4)}),
   octave: chordProgressionScarboroughFair.map(x => {
       return x.map(n => {
           return 0
@@ -183,18 +183,18 @@ melodyData = {
       })
   }),
   total: 16,
-  polyphonyMap: buildArray(16, x => {return 50}),
-  rhythmMap: buildArray(16, x => {return x * 4}),
+  polyphonyMap: A.buildArray(16, x => {return 50}),
+  rhythmMap: A.buildArray(16, x => {return x * 4}),
    noteSpanKeyspan: 64,
-  noteSpanValues: buildArray(16, x => {return (x)}),
-  noteSpan: buildArray(16, x => {return x * 4}),
+  noteSpanValues: A.buildArray(16, x => {return (x)}),
+  noteSpan: A.buildArray(16, x => {return x * 4}),
   rootNote: noteData.map(x => {
       return x.note
   }),
    total: 64,
-  polyphonyMap: buildArray(16, x => {return 50}),
-  //rhythmMap: buildArray(40, x => {return randomRange(0.5, 1.5, 2)}),
-  rhythmMap: buildArray(16, x => {return x * 4}),
+  polyphonyMap: A.buildArray(16, x => {return 50}),
+  //rhythmMap: A.buildArray(40, x => {return randomRange(0.5, 1.5, 2)}),
+  rhythmMap: A.buildArray(16, x => {return x * 4}),
   noteValues: chordProgressionScarboroughFair.map(x => {
       return x.map(n => {
           return n.note
@@ -233,8 +233,8 @@ lsystemNoteData = generateChords(0, 4, "7", "major")
 lsystemData = {
   velocity: velocityData,
    noteSpanKeyspan: 64,
-  noteSpanValues: buildArray(12, x => {return (x)}),
-  noteSpan: buildArray(12, x => {return x * 4}),
+  noteSpanValues: A.buildArray(12, x => {return (x)}),
+  noteSpan: A.buildArray(12, x => {return x * 4}),
   bools: boolsData, 
   //noteValues: generateLsystemMelody('C', 'bluesPentatonicScale', generationData, 16, 8, 10).map(x => {
     /*
@@ -263,11 +263,11 @@ lsystemData = {
       })
   }),
   total: 16,
-  polyphonyMap: buildArray(12, x => {return 50}),
-  //rhythmMap: buildArray(40, x => {return randomRange(0.5, 1.5, 2)}),
-  rhythmMap: buildArray(12, x => {return x * 4}),
-//   octave: buildArray(5, x => {return buildArray(10, b => {return x + 3})}),
-//   octaveMapKeys: buildArray(12, x => {return x * 4}),
+  polyphonyMap: A.buildArray(12, x => {return 50}),
+  //rhythmMap: A.buildArray(40, x => {return randomRange(0.5, 1.5, 2)}),
+  rhythmMap: A.buildArray(12, x => {return x * 4}),
+//   octave: A.buildArray(5, x => {return A.buildArray(10, b => {return x + 3})}),
+//   octaveMapKeys: A.buildArray(12, x => {return x * 4}),
 //   octaveMapKeyspan: 20,
   noteValues: chordProgressionScarboroughFair.map((x, i) => {
       total += generationData[i]
@@ -281,7 +281,7 @@ updateMidiOutputList(e)
 //e.changeTempo(250)
 recordConfigurationDataIntoMusicalEnvironment(lsystemData, 'p1', e)
 //assignPlayerForMusicSynthesizerSession(1, 'p1')
-//melodyData.noteSpan = buildArray(melodyData.noteValues.length, x => {return x})
+//melodyData.noteSpan = A.buildArray(melodyData.noteValues.length, x => {return x})
 
 //recordConfigurationDataIntoMusicalEnvironment(randomMelodyData, 'p1')
 recordConfigurationDataIntoMusicalEnvironment(randomMelody2, 'p4', e)
