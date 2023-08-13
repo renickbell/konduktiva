@@ -63,8 +63,8 @@ function generateChords(root, octave, voicing, majorOrMinor) {
 
 //Create noteSpan values for noteValueData
 function createNoteSpans (noteValueData, e){
-    noteValueData.noteSpan = adjustArrayLength(noteValueData.noteValues.length, noteValueData.noteSpan)
-//     noteValueData.bools = adjustArrayLength(noteValueData.noteValues.length, noteValueData.bools)
+    noteValueData.noteSpan = A.resizeArray(noteValueData.noteValues.length, noteValueData.noteSpan)
+//     noteValueData.bools = A.resizeArray(noteValueData.noteValues.length, noteValueData.bools)
 }
 
 //Creating notespan values from noteValueData:

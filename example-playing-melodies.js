@@ -19,6 +19,7 @@ e.stopAll()
 
 e.stop('musicSynthesizerSession2')
 
+e.currentBeat()
 
 //use an L-system to create a melod:
     //keys in L system represent scale degree or operations in scale degree
@@ -28,7 +29,7 @@ e.stop('musicSynthesizerSession2')
 //Solution: handleDissonance function checks for disonace and flags it and blocks it. Changes it to 0. Prevents disonance from playing.
 //Status: complete.
 
-//Longer melody that sounds like it is leading to something.
+//Longer melody that sounds like is leading to something.
 //Solution: Make one part of the melody louder and quicker.
 //Status: complete
 

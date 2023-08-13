@@ -51,14 +51,14 @@ e.players.atmo.action = "superDirt";
 e.players.atmo.densityGraph = 'sparse';
 
 {
-e.players.kick.cut = pick([0,1,1,2]) 
-e.players.snare.cut = pick([3,4]) 
-e.players.perc.cut = pick([5,6]) 
-e.players.hat.cut = pick([7]) 
-e.players.sub.cut = pick([8,8,8]) 
-e.players.stab1.cut = pick([9,9,10]) 
-e.players.stab2.cut = pick([9,9,10]) 
-e.players.atmo.cut = pick([11,11,12]) 
+e.players.kick.cut = A.pick([0,1,1,2]) 
+e.players.snare.cut = A.pick([3,4]) 
+e.players.perc.cut = A.pick([5,6]) 
+e.players.hat.cut = A.pick([7]) 
+e.players.sub.cut = A.pick([8,8,8]) 
+e.players.stab1.cut = A.pick([9,9,10]) 
+e.players.stab2.cut = A.pick([9,9,10]) 
+e.players.atmo.cut = A.pick([11,11,12]) 
 e.players.atmo.cut = 11 
     }
 

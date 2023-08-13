@@ -6,14 +6,14 @@
 // -- license: GPL 3.0
 // --------------------------------------------------------------------------
 
-.load ./arrayTransformations.js
-.load ./dataToArray.js
-.load ./infoFromArray.js
+// .load ./arrayTransformations.js
+// .load ./dataToArray.js
+// .load ./infoFromArray.js
 .load ./konduktiva-revised-2.js
 .load ./testingKonduktiva-revised.js
 .load ./konduktiva-superdirt-revised.js
 .load ./defaultSuperDirtPlayers-revised.js
-.load ./utilities-array.js
+// .load ./utilities-array.js
 .load ./utilities-string.js
 .load ./utilities-music.js
 .load ./utilities-general.js

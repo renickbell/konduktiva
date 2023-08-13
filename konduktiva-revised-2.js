@@ -7,13 +7,17 @@
 const R = await import('ramda')
 const performance = await import('perf_hooks');
 performance = performance.performance
-const TaskTimer = await import('tasktimer');
+let TaskTimerDefault = await import('tasktimer');
+const {TaskTimer} = TaskTimerDefault.default
+// const {TaskTimer} = require('tasktimer')
 //const easymidi = require('easymidi');
 const fs = await import('fs')
 const path = await import('path')
-const osc = await import("osc");
+let oscDefault = await import("osc");
+const osc = oscDefault.default
 const v8 = await import('v8');
-const A = await import('array-toolkit')
+// const A = await import('array-toolkit')
+const A = await import('./github-array-toolkit-package/array-toolkit/array-toolkit.mjs')
 
 // year month day (yyMMdd)
 function ymd () {
@@ -535,7 +539,8 @@ class MusicalEnvironment {
         if (this.players[player].status == "stopped") 
             {console.log("Player " + this.players[player].name + " is not playing!")}
         else {
-            this.scheduledPlayers = removeItem(this.scheduledPlayers,player)
+//             this.scheduledPlayers = A.removeItem(this.scheduledPlayers,player)
+            this.scheduledPlayers = A.removeAllInstance(this.scheduledPlayers,player)
             this.players[player].status = "stopped";
             this.players[player].startTime = undefined;
             this.players[player].lastScheduledTime = 0;

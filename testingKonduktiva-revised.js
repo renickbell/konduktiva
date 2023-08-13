@@ -270,9 +270,9 @@ e.actions.superDirt = (p,b) => {if ((mask(p, e.maskMaps[e.players[p].maskMap] ,(
             //let unmaskedOnsets = onsetsAfterLastScheduled.filter(t => 
 
 e.rhythmMaps.straight = new QuantizedMap(1,[1],[new QuantizedMap(4,[0,1,2,3],[1,1,1,1])])
-let straightEights = buildArray(7,i => 0.5)
-let straight16ths = buildArray(15,i => 0.25)
+let straightEights = A.buildArray(7,i => 0.5)
+let straight16ths = A.buildArray(15,i => 0.25)
 straightEights
 straight16ths
-e.rhythmMaps.straight2 = new QuantizedMap(1,[1],[new QuantizedMap(4,[0].concat(runningSum(0,straightEights)),[0.5].concat(straightEights))])
-e.rhythmMaps.straight3 = new QuantizedMap(1,[1],[new QuantizedMap(4,[0].concat(runningSum(0,straight16ths)),[0.25].concat(straight16ths))])
+e.rhythmMaps.straight2 = new QuantizedMap(1,[1],[new QuantizedMap(4,[0].concat(A.runningSum(0,straightEights)),[0.5].concat(straightEights))])
+e.rhythmMaps.straight3 = new QuantizedMap(1,[1],[new QuantizedMap(4,[0].concat(A.runningSum(0,straight16ths)),[0.25].concat(straight16ths))])
