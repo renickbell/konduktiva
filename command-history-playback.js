@@ -1,6 +1,7 @@
 // --------------------------------------------------------------------------
 // -- command-history-playback.js
 // --------------------------------------------------------------------------
+// Works as long as all dependencies are there.
 fs = require('fs')
 path = require('path');
 
@@ -64,7 +65,7 @@ class CommandHistoryPlayer {
     runNextAction () {
         if (this.state === 'playing'){
             let currentCommandInfo = this.playbackFile.userInputs[this.actionIndex]
-            //console.log('running action', currentCommandInfo)
+            console.log('running action', currentCommandInfo)
             if (currentCommandInfo.input.includes('historyStream')){
                 this.evaluateCommand(this.playbackFile)
             }
@@ -76,11 +77,11 @@ class CommandHistoryPlayer {
             this.scheduleNextAction()
         }
     }
-    reformatFunctions (command){
-        let functionStart = command.indexOf(command.slice(0, 9))
-        let functionNameEnd = command.indexOf('(')
-        return 'global.' + command.slice(functionStart + 9, functionNameEnd) + '= function ' + command.slice(functionNameEnd)
-    }
+//     reformatFunctions (command){
+//         let functionStart = command.indexOf(command.slice(0, 9))
+//         let functionNameEnd = command.indexOf('(')
+//         return 'global.' + command.slice(functionStart + 9, functionNameEnd) + '= function ' + command.slice(functionNameEnd)
+//     }
     reformDefiningVariables(command) {
       const definingKeywords = ['const', 'let', 'var'];
       const keyword = definingKeywords.find((keyword) => command.startsWith(keyword));
@@ -93,24 +94,30 @@ class CommandHistoryPlayer {
         if (command.slice(0, 6).includes('.load')){
             return false
         }
-        else if (command.slice(0,9).includes('function ')){
-            console.log('reformating function')
-            this.combineWithCurrentCommand = this.reformatFunctions(command)
-            return false
-        }
+         else if (command.slice(0,9).includes('function ')){
+             console.log('reformating function')
+             this.combineWithCurrentCommand = command + '\n'
+             return false
+         }
         else if (this.combineWithCurrentCommand === ''){
             console.log('reformating defining statement')
             this.combineWithCurrentCommand = this.reformDefiningVariables(command)
         }
+        else{
+            this.combineWithCurrentCommand += command + '\n';
+        }
         try {
-          console.log('evaluating:', command, this.combineWithCurrentCommand);
-          eval(JSON.stringify(this.combineWithCurrentCommand));
-          console.log('evaluated:', this.combineWithCurrentCommand)
-          this.combineWithCurrentCommand = '';
+//           console.log('evaluating:', command, this.combineWithCurrentCommand);
+//           eval(JSON.stringify(this.combineWithCurrentCommand));
+//           I got this method of using eval from: https://stackoverflow.com/a/23699187/19515980
+          (1, eval)(this.combineWithCurrentCommand)
+//           console.log('evaluated:', this.combineWithCurrentCommand)
+//           this.combineWithCurrentCommand = '';
+                console.log('command worked')
         } catch (error) {
           if (error instanceof SyntaxError) {
             // Incomplete command
-            this.combineWithCurrentCommand += command + ';';
+           console.log('command incomplete', this.combineWithCurrentCommand)
           } else {
             console.log(error);
           }
@@ -118,9 +125,10 @@ class CommandHistoryPlayer {
     }
 }
 
-let historyPlayer1 = new CommandHistoryPlayer('./11June-repl-history--.txt')
+let historyPlayer1 = new CommandHistoryPlayer('./10June-repl-history-2-.txt')
 //console.log('running action', currentCommandInfo)
 
+historyPlayer1 = new CommandHistoryPlayer('./14Aug-repl-history-1-.txt')
 historyPlayer1.play()
 
 //historyPlayer1.stop()

@@ -58,22 +58,22 @@ rl.on('line', (input) => {
 });
 let lastLineSave = repl.repl.history[0]
 
-console.log('hi testing saving commmand line history<F12>')
-
-console.log('defining function')
-
-function testingIfFunctionsWork (arg){
-    console.log('hi', arg)
-    console.log('Function testing sucess')
-    return arg
-}
-
-testingIfFunctionsWork()
-
-testingIfFunctionsWork ('hi')
-
-testingIfFunctionsWork ('bye')
-
-let testDefineVariable = testingIfFunctionsWork ('var')
-
-let b = 'bBBB'
+// console.log('hi testing saving commmand line history<F12>')
+// 
+// console.log('defining function')
+// 
+// function testingIfFunctionsWork (arg){
+//     console.log('hi', arg)
+//     console.log('Function testing sucess')
+//     return arg
+// }
+// 
+// testingIfFunctionsWork()
+// 
+// testingIfFunctionsWork ('hi')
+// 
+// testingIfFunctionsWork ('bye')
+// 
+// let testDefineVariable = testingIfFunctionsWork ('var')
+// 
+// let b = 'bBBB'
