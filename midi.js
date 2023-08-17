@@ -71,7 +71,8 @@ function callMusicSynthesizerRhythm (e, b, session){
     }
     info.noteValues.forEach((x, i) => {
         //console.log('info;', x,octaveFloor.floorLookup(info.octaves[i]))
-            console.log('note', x + (octaveFloor.floorLookup(info.octaves[i]) * 12))
+//             console.log('note', x + (octaveFloor.floorLookup(info.octaves[i]) * 12))
+        console.log(session + ': ' )
         sendMidiData(info, player, x + (octaveFloor.floorLookup(info.octaves[i]) * 12))
     })
     return true
@@ -82,7 +83,9 @@ function getNoteInfoToSend (player, b, session){
     return {
         noteSpan: e.rhythmMaps[player.rhythmMap].values[0].wrapLookup(b),
         velocity: convertVelocityToMidiValues(e.velocityMaps[player.velocityMap].wrapLookup(b)),
-        noteValues:  e.noteMaps[player.noteMap].wrapLookup(e.noteSpanMaps[player.noteSpanMapName].wrapLookup(b)),
+//         noteValues:  e.noteMaps[player.noteMap].wrapLookup(e.noteSpanMaps[player.noteSpanMapName].wrapLookup(b)),
+        noteValues:  e.rootNoteMaps[player.rootNoteMap].wrapLookup(e.noteSpanMaps[player.noteSpanMapName].wrapLookup(b)),
+//         noteValues: (e.octaveMaps[player.noteMap].wrapLookup(e.noteSpanMaps[player.noteSpanMapName].wrapLookup(b)) * 12) + e.rootNoteMaps[player.noteMap].wrapLookup(e.noteSpanMaps[player.noteSpanMapName].wrapLookup(b)),
         octaves: e.octaveMaps[player.octaveMap].wrapLookup(b),
     }
 }

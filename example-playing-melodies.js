@@ -20,7 +20,6 @@ e.stopAll()
 e.stop('musicSynthesizerSession2')
 
 e.currentBeat()
-
 //use an L-system to create a melod:
     //keys in L system represent scale degree or operations in scale degree
 

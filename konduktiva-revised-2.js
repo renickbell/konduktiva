@@ -16,8 +16,8 @@ const path = await import('path')
 let oscDefault = await import("osc");
 const osc = oscDefault.default
 const v8 = await import('v8');
-// const A = await import('array-toolkit')
-const A = await import('./github-array-toolkit-package/array-toolkit/array-toolkit.mjs')
+const A = await import('array-toolkit')
+// const A = await import('./github-array-toolkit-package/array-toolkit/array-toolkit.mjs')
 
 // year month day (yyMMdd)
 function ymd () {

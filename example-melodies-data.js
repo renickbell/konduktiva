@@ -50,15 +50,7 @@ randomMelodyData = {
           return n.octave
       })
   }),
-  rootNote: chordProgressionScarboroughFair.map(x => {
-      return x.map(n => {
-          return n.octave
-      })
-  }),
   total: 16,
-  rootNote: noteData.map(x => {
-      return x.note
-  }),
   polyphonyMap: [3 ,2 ,3, 2, 3, 2 ,2 ,3, 2, 3, 2 ,2],
   total: 16,
   polyphonyMap: A.buildArray(16, x => {return 50}),
@@ -67,7 +59,9 @@ randomMelodyData = {
   noteSpanValues: A.buildArray(16, x => {return (x)}),
   noteSpan: A.buildArray(16, x => {return x * 4}),
   rootNote: noteData.map(x => {
-      return x.note
+      return x.map(n => {
+          return n.note
+      })
   }),
    total: 64,
   polyphonyMap: A.buildArray(16, x => {return 50}),
@@ -95,9 +89,6 @@ randomMelody1 = {
   bools: A.buildArray(48, x => {return true}), 
   octave: chordProgressionScarboroughFair.map(x => {
       return 0
-  }),
-  rootNote: chordProgressionScarboroughFair.map(x => {
-      return x[0].note
   }),
   total: 16,
   polyphonyMap: A.buildArray(16, x => {return 50}),
@@ -147,7 +138,9 @@ randomMelody2 = {
   noteSpanValues: A.buildArray(16, x => {return (x)}),
   noteSpan: A.buildArray(16, x => {return x * 4}),
   rootNote: noteData.map(x => {
-      return x.note
+      return x.map(n => {
+          return n.note
+      })
   }),
    total: 64,
   polyphonyMap: A.buildArray(16, x => {return 50}),
@@ -189,7 +182,9 @@ melodyData = {
   noteSpanValues: A.buildArray(16, x => {return (x)}),
   noteSpan: A.buildArray(16, x => {return x * 4}),
   rootNote: noteData.map(x => {
-      return x.note
+      return x.map(n => {
+          return n.note
+      })
   }),
    total: 64,
   polyphonyMap: A.buildArray(16, x => {return 50}),
