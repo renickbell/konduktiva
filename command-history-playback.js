@@ -90,8 +90,22 @@ class CommandHistoryPlayer {
       }
       return command;
     }
-    evaluateCommand (command){
-        if (command.slice(0, 6).includes('.load')){
+    reformatDefiningClasses (command){
+        let endOfName = command.indexOf('{') - 1
+        let className = command.slice(5, endOfName)
+        return className + '=' + command + '\n'
+    }
+    changeCommandToAsyncEval (command){
+        return '(async () => {' + command + '})()'
+        //Using async with eval from: https://stackoverflow.com/a/56187201/19515980
+    }
+    reformatImportingDependencies (command){
+        let libraryName = command.slice(command.indexOf('(') + 1, command.indexOf(')'))
+        let variableName = command.slice(0, command.indexOf('='))
+        return '(() => { \n import(' + libraryName + ').then(module => {' + variableName + '= module.default || module})})()'
+    }
+    preEvaluateChecks (command){
+        if (command.slice(0, 6).includes('.load') || command.slice(0, 2) === '//'){
             return false
         }
          else if (command.slice(0,9).includes('function ')){
@@ -99,6 +113,10 @@ class CommandHistoryPlayer {
              this.combineWithCurrentCommand = command + '\n'
              return false
          }
+        else if (this.combineWithCurrentCommand.slice(0, 6) === 'class '){
+            this.combineWithCurrentCommand = this.reformatDefiningClasses(command)
+            return false
+        }
         else if (this.combineWithCurrentCommand === ''){
             console.log('reformating defining statement')
             this.combineWithCurrentCommand = this.reformDefiningVariables(command)
@@ -106,13 +124,26 @@ class CommandHistoryPlayer {
         else{
             this.combineWithCurrentCommand += command + '\n';
         }
+        if (this.combineWithCurrentCommand.includes('await import')){
+            this.combineWithCurrentCommand = this.reformatImportingDependencies(this.combineWithCurrentCommand)
+        }
+      else if (this.combineWithCurrentCommand.includes('await')){
+          this.combineWithCurrentCommand = this.changeCommandToAsyncEval(this.combineWithCurrentCommand)
+      }
+    }
+    evaluateCommand (command){
+        let checkStatus = this.preEvaluateChecks(command)
+        if (checkStatus === false){
+            return false
+        }
+        console.log('gonna try:', this.combineWithCurrentCommand)
         try {
 //           console.log('evaluating:', command, this.combineWithCurrentCommand);
 //           eval(JSON.stringify(this.combineWithCurrentCommand));
 //           I got this method of using eval from: https://stackoverflow.com/a/23699187/19515980
-          (1, eval)(this.combineWithCurrentCommand)
+              (true, eval)(this.combineWithCurrentCommand)
 //           console.log('evaluated:', this.combineWithCurrentCommand)
-//           this.combineWithCurrentCommand = '';
+        this.combineWithCurrentCommand = '';
                 console.log('command worked')
         } catch (error) {
           if (error instanceof SyntaxError) {
@@ -125,39 +156,49 @@ class CommandHistoryPlayer {
     }
 }
 
-let historyPlayer1 = new CommandHistoryPlayer('./10June-repl-history-2-.txt')
+// let historyPlayer1 = new CommandHistoryPlayer('./10June-repl-history-2-.txt')
 //console.log('running action', currentCommandInfo)
 
-historyPlayer1 = new CommandHistoryPlayer('./14Aug-repl-history-1-.txt')
+historyPlayer1 = new CommandHistoryPlayer('./16Aug-repl-history-4-.txt')
 historyPlayer1.play()
+
+historyPlayer1.arop()
+
+historyPlayer1.repeat()
 
 //historyPlayer1.stop()
 
-let testFunc = 'function testingIfFunctionsWork(arg) { console.log("hi", arg); console.log("Function testing success"); return arg; }';
+// let testFunc = 'function testingIfFunctionsWork(arg) { console.log("hi", arg); console.log("Function testing success"); return arg; }';
+// 
+// const repl = require('repl');
+// const replServer = repl.start({ prompt: '> ' });
+// 
+// const fs = require('fs');
+// const path = require('path');
+// const { Writable } = require('stream');
+// 
+// const outputFile = path.join(process.cwd(), 'output.txt');
+// const outputStream = fs.createWriteStream(outputFile);
+// 
+// const originalEval = replServer.eval;
+// 
+// replServer.eval = function (cmd, context, filename, callback) {
+//   const writableCallback = new Writable({
+//     write(chunk, encoding, callback) {
+//       // Write the output to the file or perform other handling
+//       outputStream.write(chunk);
+//       callback();
+//     },
+//   });
+//   originalEval.call(replServer, cmd, context, filename, writableCallback);
+// };
+// 
+// // Now the evaluated code output will be redirected to the file
+// replServer.eval(`console.log('hi')`);
+// 
 
-const repl = require('repl');
-const replServer = repl.start({ prompt: '> ' });
-
-const fs = require('fs');
-const path = require('path');
-const { Writable } = require('stream');
-
-const outputFile = path.join(process.cwd(), 'output.txt');
-const outputStream = fs.createWriteStream(outputFile);
-
-const originalEval = replServer.eval;
-
-replServer.eval = function (cmd, context, filename, callback) {
-  const writableCallback = new Writable({
-    write(chunk, encoding, callback) {
-      // Write the output to the file or perform other handling
-      outputStream.write(chunk);
-      callback();
-    },
-  });
-  originalEval.call(replServer, cmd, context, filename, writableCallback);
-};
-
-// Now the evaluated code output will be redirected to the file
-replServer.eval(`console.log('hi')`);
-
+function asynImportEvalTest (libraryToImport, variableName){
+    let toEval = 'async () => {' + variableName + '= await import("' + libraryToImport + '")}()'
+    console.log('hi', JSON.stringify(toEval))
+    (1, eval)(toEval)
+}
