@@ -48,6 +48,17 @@ function setupMidiRhythm (env, sequenceName, rhythmPatternName = 'default') {
 //Action function:
 function musicSynthesizerCaller (p,b) {if ((mask(p, e.maskMaps[e.players[p].maskMap] ,(e.currentBeat()),1)) != true) {callMusicSynthesizerRhythm(e, b, p);}}
 
+function filterMode (note, e, b, player){
+    let mode = e.modeMaps[player.modeMap]
+    if (mode === undefined){
+        return note
+    }
+    else{
+        console.log('filtering mode map for', player.modeMap)
+        return mode.wrapLookup(note)
+    }
+}
+
 //Gather and sort information and prepare to send through midi:
 function callMusicSynthesizerRhythm (e, b, session){
     let player = e.players[session]
@@ -69,10 +80,13 @@ function callMusicSynthesizerRhythm (e, b, session){
             info.noteSpan = safeSplice(info.noteSpan, 1, randomRange(0, info.noteSpan.length - 1))
         }
     }
+    info.noteValues = info.noteValues.map(x => {
+        return filterMode(x, e, b, player)
+    })
     info.noteValues.forEach((x, i) => {
         //console.log('info;', x,octaveFloor.floorLookup(info.octaves[i]))
 //             console.log('note', x + (octaveFloor.floorLookup(info.octaves[i]) * 12))
-        console.log(session + ': ' )
+        console.log(session + ': ' ,x + (octaveFloor.floorLookup(info.octaves[i]) * 12))
         sendMidiData(info, player, x + (octaveFloor.floorLookup(info.octaves[i]) * 12))
     })
     return true

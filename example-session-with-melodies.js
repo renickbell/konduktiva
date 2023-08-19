@@ -5,7 +5,7 @@
 // -- contributors: Yiler Huang (yiler7777@gmail.com); Steve Wang (stevesg168@gmail.com)
 // -- license: GPL 3.0
 // --------------------------------------------------------------------------
-
+//In theory mode map should be working.
 // .load ./arrayTransformations.js
 // .load ./dataToArray.js
 // .load ./infoFromArray.js

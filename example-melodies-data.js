@@ -231,6 +231,8 @@ lsystemData = {
   noteSpanValues: A.buildArray(12, x => {return (x)}),
   noteSpan: A.buildArray(12, x => {return x * 4}),
   bools: boolsData, 
+  modeMap: [0, 2],
+  modeMapKeyspan: 2,
   //noteValues: generateLsystemMelody('C', 'bluesPentatonicScale', generationData, 16, 8, 10).map(x => {
     /*
   noteValues: generateLsystemMelody('C', 'minorBluesPentatonicScale', generationData, 10, 8, 10).map(x => {
