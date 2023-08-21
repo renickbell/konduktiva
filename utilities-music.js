@@ -7,20 +7,26 @@
 // --------------------------------------------------------------------------
 
 //Next step, play chrods with new system
-let easymidi = require('easymidi');
+let easymidi = await import('easymidi')
 
 let notes = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
 
 const {
-        Chord,
-        Interval,
-        Note,
-        Scale,
-        Key,
-        Midi
+    Chord,
+    Interval,
+    Note,
+    Scale,
+    Key,
+    Progression,
+    Midi
 } = require("tonal")
 
-//Converts bars(music) to beats(music)
+/**
+  * Converts bars(music) to beats(music)
+  * @param {numbers} beatsPerBar - Sets the beats per bar which the conversion uses.
+  * @param {array} inputBars - Barsr to convert
+  * @example console.log(barsToBeats(4, [0, 1, 2, 3])) //[ 0, 4, 8, 12 ]
+*/
 function barsToBeats(beatsPerBar, inputBars) {
     return inputBars.map(e => e *= beatsPerBar)
 }
