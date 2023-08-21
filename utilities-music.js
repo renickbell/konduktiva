@@ -30,3 +30,15 @@ const {
 function barsToBeats(beatsPerBar, inputBars) {
     return inputBars.map(e => e *= beatsPerBar)
 }
+
+function melodyFromChordProgression (noteValues, iois){
+    let notesToPlay = iois[1] - iois[0]
+    notesToPlay += notesToPlay / 2
+    return {notes: noteValues.map(x => {
+        let chosenNotes = []
+        for (let i = 0; i < notesToPlay; i++) {
+            chosenNotes.push(A.pick(x))
+        }
+        return chosenNotes
+    }).flat(), iois: A.buildArray(iois.length, x => x * notesToPlay)}
+}

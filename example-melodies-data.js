@@ -368,6 +368,24 @@ circleOfFifthChords = {
   noteValues: chords, 
 }
 
+let circleOfFifthMelodyGeneration = melodyFromChordProgression(circleOfFifthChords.noteValues, circleOfFifthChords.rhythmMap)
+let circleOfFifthMelodySplitNotes = separateOctaveAndRoot(circleOfFifthMelodyGeneration.notes)
+circleOfFifthMelody = {
+  velocity: A.buildArray(30, x => 90),
+   noteSpanKeyspan: 18,
+  noteSpanValues: A.buildArray(24, x => x),
+  noteSpan: A.buildArray(24, x => 6 * x),
+  bools: boolsData,
+  modeMap: A.buildArray(18, x=> x),
+  modeMapKeyspan: 18,
+  octave: circleOfFifthMelodySplitNotes.octaveNotes.map(x => {return [x]}),
+  rootNote: circleOfFifthMelodySplitNotes.rootNotes.map(x => {return [x]}),
+  total: 18,
+  polyphonyMap: A.buildArray(18, x => {return 50}),
+  rhythmMap: circleOfFifthMelodyGeneration.iois,
+  noteValues: circleOfFifthMelodyGeneration.notes, 
+}
+
 
 updateMidiOutputList(e)
 //e.changeTempo(250)
@@ -377,7 +395,9 @@ recordConfigurationDataIntoMusicalEnvironment(lsystemData, 'p1', e)
 
 //recordConfigurationDataIntoMusicalEnvironment(randomMelodyData, 'p1')
 recordConfigurationDataIntoMusicalEnvironment(circleOfFifthChords, 'p4', e)
-recordConfigurationDataIntoMusicalEnvironment(randomMelodyData, 'p3', e)
+// recordConfigurationDataIntoMusicalEnvironment(randomMelodyData, 'p3', e)
+recordConfigurationDataIntoMusicalEnvironment(circleOfFifthMelody, 'p3', e)
+
 
 assignPlayerForMusicSynthesizerSession(e, 1, {rhythmMapName: 'straight', chordProgressionMapName: 'twelveBars-lsystem-scarbrofair'}, 'p1')
 assignPlayerForMusicSynthesizerSession(e, 3, {rhythmMapName: 'straight'}, 'p3')
