@@ -59,6 +59,20 @@ function filterMode (note, e, b, player){
     }
 }
 
+function filterPolyphany (e, b, player, info){
+    let playerPolyphany = e.maxPolyphonyMaps[player.polyphonyMap]
+    if (playerPolyphany === undefined){
+        return info
+    }
+    let maxNoteSpanLength = playerPolyphany.wrapLookup(b)
+    if (info.noteSpan.length > maxNoteSpanLength){
+        for (let i = 0; i < maxNoteSpanLength - info.noteSpan.length; i++) {
+            info.noteSpan = A.safeSplice(info.noteSpan, 1, randomRange(0, info.noteSpan.length - 1))
+        }
+    }
+    return info
+}
+
 //Gather and sort information and prepare to send through midi:
 function callMusicSynthesizerRhythm (e, b, session){
     let player = e.players[session]
@@ -74,12 +88,7 @@ function callMusicSynthesizerRhythm (e, b, session){
     visualizeVolume(info)
     checkIfChangeChordProgression(e, b, player)
     checkIfSendMidiControlChange(e, b, player)
-    let maxNoteSpanLength = e.maxPolyphonyMaps[player.polyphonyMap].wrapLookup(b)
-    if (info.noteSpan.length > maxNoteSpanLength){
-        for (let i = 0; i < maxNoteSpanLength - info.noteSpan.length; i++) {
-            info.noteSpan = safeSplice(info.noteSpan, 1, randomRange(0, info.noteSpan.length - 1))
-        }
-    }
+    info = filterPolyphany(e, b, player, info)
     info.noteValues = info.noteValues.map(x => {
         return filterMode(x, e, b, player)
     })

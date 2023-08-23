@@ -7,9 +7,9 @@
 // --------------------------------------------------------------------------
 
 //Fill in the variables inside the player:
-function assignPlayerForMusicSynthesizerSession (e, session, playerData, defaultName){
-    if (typeof playerData === 'string'){
-        playerData = {velocityMapName: playerData}
+function assignPlayerForMusicSynthesizerSession (e, session, defaultName, playerData){
+    if (playerData === undefined){
+        playerData = {velocityMapName: defaultName}
     }
     else if (defaultName !== undefined && playerData.velocityMapName === undefined){
         playerData.velocityMapName = defaultName
@@ -125,7 +125,9 @@ function recordConfigurationDataIntoMusicalEnvironment (noteValueData, name, e){
     createOctaveMaps(noteValueData, name, e)
     e.rootNoteMaps[name] = new QuantizedMap(noteValueData.rootNote.length, A.buildArray(noteValueData.rootNote.length, x => {return x}), noteValueData.rootNote)
     e.velocityMaps[name] = new QuantizedMap(noteValueData.velocity.length, A.buildArray(noteValueData.velocity.length, x => {return x}), noteValueData.velocity)
-    e.maxPolyphonyMaps[name] = new QuantizedMap(noteValueData.polyphonyMap.length, A.buildArray(noteValueData.polyphonyMap.length, x => {return x}), noteValueData.polyphonyMap, e)
+    if (noteValueData.polyphonyMap !== undefined){
+        e.maxPolyphonyMaps[name] = new QuantizedMap(noteValueData.polyphonyMap.length, A.buildArray(noteValueData.polyphonyMap.length, x => {return x}), noteValueData.polyphonyMap, e)
+    }
     createControlChangeMaps(noteValueData, name, e)
     createModeMaps(noteValueData, name, e)
 //     createRhythmMap(noteValueData, name)
