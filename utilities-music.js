@@ -36,7 +36,7 @@ function melodyFromChordProgression (noteValues, iois){
     notesToPlay += notesToPlay / 2
     return {notes: noteValues.map(x => {
         let chosenNotes = []
-        for (let i = 0; i < notesToPlay; i++) {
+        for (let i = 0; i < x.length; i++) {
             chosenNotes.push(A.pick(x))
         }
         return chosenNotes

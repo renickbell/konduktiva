@@ -363,29 +363,46 @@ circleOfFifthChords = {
       return x.rootNotes
   }),
   total: 12,
-  polyphonyMap: A.buildArray(12, x => {return 50}),
+//   polyphonyMap: A.buildArray(12, x => {return 50}),
   rhythmMap: [0, 4, 8, 12],
   noteValues: chords, 
 }
 
-let circleOfFifthMelodyGeneration = melodyFromChordProgression(circleOfFifthChords.noteValues, circleOfFifthChords.rhythmMap)
-let circleOfFifthMelodySplitNotes = separateOctaveAndRoot(circleOfFifthMelodyGeneration.notes)
+
+circleOfFifthMelodyGeneration = melodyFromChordProgression(circleOfFifthChords.noteValues, circleOfFifthChords.rhythmMap)
+circleOfFifthMelodySplitNotes = separateOctaveAndRoot(circleOfFifthMelodyGeneration.notes)
 circleOfFifthMelody = {
-  velocity: A.buildArray(30, x => 90),
-   noteSpanKeyspan: 18,
-  noteSpanValues: A.buildArray(24, x => x),
-  noteSpan: A.buildArray(24, x => 6 * x),
-  bools: boolsData,
-  modeMap: A.buildArray(18, x=> x),
-  modeMapKeyspan: 18,
-  octave: circleOfFifthMelodySplitNotes.octaveNotes.map(x => {return [x]}),
-  rootNote: circleOfFifthMelodySplitNotes.rootNotes.map(x => {return [x]}),
-  total: 18,
-  polyphonyMap: A.buildArray(18, x => {return 50}),
-  rhythmMap: circleOfFifthMelodyGeneration.iois,
-  noteValues: circleOfFifthMelodyGeneration.notes, 
+    velocity: A.buildArray(30, x => 90),
+    noteSpanKeyspan: 18,
+    noteSpanValues: A.buildArray(24, x => x/2),
+    noteSpan: A.buildArray(24, x => x * 0.25),
+    bools: boolsData,
+    modeMapKeyspan: 18,
+    octave: circleOfFifthMelodySplitNotes.octaveNotes.map(x => {return [x]}),
+    rootNote: circleOfFifthMelodySplitNotes.rootNotes.map(x => {return [x]}),
+    total: 18,
+//     polyphonyMap: A.buildArray(18, x => {return 50}),
+    rhythmMap:  A.buildArray(12, x => x/2),
+    noteValues: circleOfFifthMelodyGeneration.notes, 
 }
 
+// let circleOfFifthMelodyGeneration = melodyFromChordProgression(circleOfFifthChords.noteValues, circleOfFifthChords.rhythmMap)
+// let circleOfFifthMelodySplitNotes = separateOctaveAndRoot(circleOfFifthMelodyGeneration.notes)
+// circleOfFifthMelody = {
+//   velocity: A.buildArray(30, x => 90),
+//    noteSpanKeyspan: 12,
+//     noteSpanValues: A.buildArray(24, x => x),
+//     noteSpan: A.buildArray(24, x => 6 * x),
+//   bools: boolsData,
+//   modeMap: A.buildArray(12, x=> x),
+//   modeMapKeyspan: 12,
+//   octave: circleOfFifthMelodySplitNotes.octaveNotes.map(x => {return [x]}),
+//   rootNote: circleOfFifthMelodySplitNotes.rootNotes.map(x => {return [x]}),
+//   total: 12,
+//   polyphonyMap: A.buildArray(12, x => {return 50}),
+//   rhythmMap: A.buildArray(12, x => x),
+//   noteValues: circleOfFifthMelodyGeneration.notes, 
+// }
 
 updateMidiOutputList(e)
 //e.changeTempo(250)
@@ -399,12 +416,14 @@ recordConfigurationDataIntoMusicalEnvironment(circleOfFifthChords, 'p4', e)
 recordConfigurationDataIntoMusicalEnvironment(circleOfFifthMelody, 'p3', e)
 
 
-assignPlayerForMusicSynthesizerSession(e, 1, {rhythmMapName: 'straight', chordProgressionMapName: 'twelveBars-lsystem-scarbrofair'}, 'p1')
-assignPlayerForMusicSynthesizerSession(e, 3, {rhythmMapName: 'straight'}, 'p3')
-assignPlayerForMusicSynthesizerSession(e, 4, {rhythmMapName: 'straight'}, 'p4')
+// assignPlayerForMusicSynthesizerSession(e, 1, {rhythmMapName: 'straight', chordProgressionMapName: 'twelveBars-lsystem-scarbrofair'}, 'p1')
+// assignPlayerForMusicSynthesizerSession(e, 3, {rhythmMapName: 'straight'}, 'p3')
+assignPlayerForMusicSynthesizerSession(e, 1, 'p1', {rhythmMapName: 'straight', chordProgressionMapName: 'twelveBars-lsystem-scarbrofair'})
+assignPlayerForMusicSynthesizerSession(e, 3, 'p3', {rhythmMapName: 'straight'})
+assignPlayerForMusicSynthesizerSession(e, 4, 'p4')
 //assignPlayerForMusicSynthesizerSession(2, 'p2')
 recordConfigurationDataIntoMusicalEnvironment(melodyData, 'p2', e)
 //assignPlayerForMusicSynthesizerSession(2,'p2')
-assignPlayerForMusicSynthesizerSession(e, 2, {rhythmMapName: 'straight'}, 'p3')
+assignPlayerForMusicSynthesizerSession(e, 2, 'p3')
 //console.time('p1')
 
