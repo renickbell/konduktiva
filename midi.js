@@ -66,12 +66,38 @@ function filterPolyphany (e, b, player, info){
     }
     let maxNoteSpanLength = playerPolyphany.wrapLookup(b)
     if (info.noteSpan.length > maxNoteSpanLength){
-        for (let i = 0; i < maxNoteSpanLength - info.noteSpan.length; i++) {
+//         for (let i = 0; i < maxNoteSpanLength - info.noteSpan.length; i++) {
+        Array.from({length: maxNoteSpanLength - info.noteSpan.length}, () => {
             info.noteSpan = A.safeSplice(info.noteSpan, 1, randomRange(0, info.noteSpan.length - 1))
-        }
+        })
     }
     return info
 }
+
+function convertRomanNumeralsToMidi (info){
+    let stringOctaves = info.octaves
+    if (typeof info.octaves[0] === 'string'){
+        info.octaves = info.octaves.map(x => {
+            return Note.midi(x)
+        })
+    }
+    else {
+        stringOctaves = info.octaves.map(x => {
+            return Note.fromMidi(x)
+        })
+    }
+    if (typeof info.noteValues[0] !== 'string' && typeof info.noteValues[1] !== 'string'){
+        return info
+    }
+    console.log(info.octaves)
+//     info.noteValues = info.noteValues.map((x, i) => {
+//         console.log(stringOctaves[i], x)
+//         return Progression.fromRomanNumerals(stringOctaves[i], x)
+//     })
+    info.noteValues = Progression.fromRomanNumerals(stringOctaves[0], info.noteValues)
+    return info
+}
+//Roman numeral conversions to midi with tonal helped by chatgpt
 
 //Gather and sort information and prepare to send through midi:
 function callMusicSynthesizerRhythm (e, b, session){
@@ -85,6 +111,7 @@ function callMusicSynthesizerRhythm (e, b, session){
     console.log('music notes', midiToMusicNotes(info.noteValues))
     */
     //info.noteValues = handleDissonance(b, info)
+    info = convertRomanNumeralsToMidi(info)
     visualizeVolume(info)
     checkIfChangeChordProgression(e, b, player)
     checkIfSendMidiControlChange(e, b, player)

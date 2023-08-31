@@ -17,7 +17,7 @@ e.play('musicSynthesizerSession2')
 // messageAllClients({action: 'animationExample'})
 e.stopAll()
 
-e.stop('musicSynthesizerSession1')
+e.stop('musicSynthesizerSession3')
 
 e.currentBeat()
 //use an L-system to create a melod:

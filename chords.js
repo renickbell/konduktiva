@@ -14,7 +14,8 @@ function setChordsKey(root, octave, template) {
         template = Object.keys(ChordTemplates)[randomRange(0, Object.keys(ChordTemplates).length - 1)]
     }
     let outputChord = [];
-    for (let i = 0; i < 12; i++) {
+//     for (let i = 0; i < 12; i++) {
+    Array.from({length: 12}).forEach((x, i) =>{
         if (i == 4 || i == 5) {
             outputChord.push(new Chord({
                 root: root + 5,
@@ -34,7 +35,7 @@ function setChordsKey(root, octave, template) {
                 template: ChordTemplates[template]
             }))
         }
-    }
+    })
     return outputChord
 }
 
@@ -42,7 +43,8 @@ function setChordsKey(root, octave, template) {
 function generateChords(root, octave, voicing, majorOrMinor) {
     let keyScale = Scale.get(notes[root] + " " + majorOrMinor)
     let letterChords = [];
-    for (let i = 0; i < 12; i++) {
+//     for (let i = 0; i < 12; i++) {
+    Array.from({length: 12}).forEach((x, i) =>{
         if (i == 4 || i == 5) {
             letterChords.push(Chord.get(keyScale.notes[3] + voicing).notes.map(e => e + "" + octave))
         } else if (i == 8 || i == 9) {
@@ -50,7 +52,7 @@ function generateChords(root, octave, voicing, majorOrMinor) {
         } else {
             letterChords.push(Chord.get(keyScale.notes[0] + voicing).notes.map(e => e + "" + octave))
         }
-    }
+    })
     let midiChords = letterChords.map(x => {
         return getMidiKeys(x)
     })
@@ -70,21 +72,21 @@ function generateChordsV2 (root, octave, progression) {
 
 //Create noteSpan values for noteValueData
 function createNoteSpans (noteValueData, e){
-    noteValueData.noteSpan = A.resizeArray(noteValueData.noteValues.length, noteValueData.noteSpan)
+    noteValueData.noteSpans = A.resizeArray(noteValueData.noteValues.length, noteValueData.noteSpans)
 //     noteValueData.bools = A.resizeArray(noteValueData.noteValues.length, noteValueData.bools)
 }
 
 //Creating notespan values from noteValueData:
 function createNoteSpanValues (noteValueData, name){
     if (noteValueData.noteSpanValues !== undefined && noteValueData.noteSpanKeyspan !== undefined){
-    e.noteSpanMaps[name] = new QuantizedMap(noteValueData.noteSpanKeyspan, noteValueData.noteSpan, noteValueData.noteSpanValues)
+    e.noteSpanMaps[name] = new QuantizedMap(noteValueData.noteSpanKeyspan, noteValueData.noteSpans, noteValueData.noteSpanValues)
     }
     else if (noteValueData.noteSpanValues !== undefined && noteValueData.noteSpanKeyspan === undefined){
         console.log('noteSpanValues defined')
-    e.noteSpanMaps[name] = new QuantizedMap(noteValueData.noteSpan.length, noteValueData.noteSpan, noteValueData.noteSpanValues)
+    e.noteSpanMaps[name] = new QuantizedMap(noteValueData.noteSpans.length, noteValueData.noteSpans, noteValueData.noteSpanValues)
     }
     else{
-    e.noteSpanMaps[name] = new QuantizedMap(noteValueData.noteSpan.length, A.buildArray(noteValueData.noteSpan.length, x => {return x}), noteValueData.noteSpan)
+    e.noteSpanMaps[name] = new QuantizedMap(noteValueData.noteSpans.length, A.buildArray(noteValueData.noteSpans.length, x => {return x}), noteValueData.noteSpans)
     }
 }
 
@@ -178,14 +180,14 @@ function retreiveDataFromChosenProgressionValuesData (dataToRetreive, chosenProg
 function conditionalNoteConfigurations (chosenProgression, configurationObj){
     if (chosenProgression.values[0].data[0].noteSpan === undefined){
         let beatCounter = 0
-        configurationObj.noteSpan = []
+        configurationObj.noteSpans = []
         chosenProgression.keys.forEach(x => {
-            configurationObj.noteSpan.push(beatCounter)
+            configurationObj.noteSpans.push(beatCounter)
             beatCounter += x
         })
     }
     else {
-        configurationObj.noteSpan = retreiveDataFromChosenProgressionValuesData('noteSpan', chosenProgression)
+        configurationObj.noteSpans = retreiveDataFromChosenProgressionValuesData('noteSpan', chosenProgression)
     }
     if (chosenProgression.values[0].data[0].noteSpanValues === undefined){
         configurationObj.noteSpanValues = chosenProgression.keys
@@ -203,40 +205,64 @@ function conditionalNoteConfigurations (chosenProgression, configurationObj){
     return configurationObj
 }
 
-//Generate configuration obj from chord progression:
-function assignChordProgressionToPlayer (playerName, chosenChordProgression){
+// //Generate configuration obj from chord progression:
+// function assignChordProgressionToPlayer (playerName, chosenChordProgression){
+//     let chosenProgression = e.chordProgressions[chosenChordProgression]
+//     let configurationObj = necessaryConfigurations(chosenProgression)
+//     configurationObj = conditionalNoteConfigurations (chosenProgression, configurationObj)
+//     if (chosenProgression.values[0].data[0].velocity === undefined){
+//         configurationObj.velocity = [100, 100]
+//     }
+//     else {
+//         configurationObj.velocity = chosenProgression.values.map(x => {
+//             if (x.data[0].velocity <= 127){
+//                 return x.data[0].velocity
+//             }
+//             else {
+//                 return 127
+//             }
+//         })
+//     }
+//     if (chosenProgression.values[0].data[0].polyphony === undefined){
+//         configurationObj.polyphonyMap = [10000000000000000000000, 10000000000000000000000]
+//     }
+//     else {
+//         configurationObj.polyphonyMap = retreiveDataFromChosenProgressionValuesData('polyphony', chosenProgression)
+//     }
+//     return configurationObj
+// }
+
+function assignChordProgressionToPlayer (chosenChordProgression){
     let chosenProgression = e.chordProgressions[chosenChordProgression]
-    let configurationObj = necessaryConfigurations(chosenProgression)
-    configurationObj = conditionalNoteConfigurations (chosenProgression, configurationObj)
-    if (chosenProgression.values[0].data[0].velocity === undefined){
-        configurationObj.velocity = [100, 100]
-    }
-    else {
-        configurationObj.velocity = chosenProgression.values.map(x => {
-            if (x.data[0].velocity <= 127){
-                return x.data[0].velocity
-            }
-            else {
-                return 127
-            }
-        })
-    }
-    if (chosenProgression.values[0].data[0].polyphony === undefined){
-        configurationObj.polyphonyMap = [10000000000000000000000, 10000000000000000000000]
-    }
-    else {
-        configurationObj.polyphonyMap = retreiveDataFromChosenProgressionValuesData('polyphony', chosenProgression)
-    }
+    let configurationObj = sortIntoConfigurationObj(chosenProgression)
+    configurationObj = inputOtherNecessaryConfigurationVariables(configurationObj)
     return configurationObj
+}
+
+function sortIntoConfigurationObj (chosenProgression){
+    let configurationObj = {}
+    configurationObj.octaves = chosenProgression.values.map(x => {return x.octaves})
+    configurationObj.rootNote = chosenProgression.values.map(x => {return x.note})
+    configurationObj.rhythmMap = chosenProgression.keys
+    configurationObj.total = chosenProgression.keyspan
+    configurationObj.notespan = chosenProgression.keys
+    return configurationObj
+}
+
+function inputOtherNecessaryConfigurationVariables (chosenProgression){
+    configurationObj.velocity = [100]
+    configurationObj.bools = [true, true]
+    configurationObj.polyphanyMap = [50, 50]
+    configurationObj.modeMap = [0, 1, 2, 3, 4 ,5 , 6, 7, 8, 9, 10, 11, 12]
 }
 
 //Check current if it is time to change chord progressions
 function checkIfChangeChordProgression (e, b, player){
-//     console.log('chordProgressionMap', player.chordProgressionMap)
-    if (player.chordProgressionMap === undefined){
+//     console.log('song', player.song)
+    if (player.song === undefined){
         return true
     }
-    let correctCurrentChordProgression = e.chordProgressionMaps[player.chordProgressionMap].wrapLookup(b)
+    let correctCurrentChordProgression = e.songs[player.song].wrapLookup(b)
     console.log('correct', correctCurrentChordProgression)
     if (player.currentChordProgression === correctCurrentChordProgression){
         return true
@@ -244,7 +270,7 @@ function checkIfChangeChordProgression (e, b, player){
     else {
         let defaultName = A.findMostFrequentItem(Object.values(player))
         console.log('step1')
-    recordConfigurationDataIntoMusicalEnvironment(assignChordProgressionToPlayer(defaultName, correctCurrentChordProgression), defaultName, e)
+    recordConfigurationDataIntoMusicalEnvironment(assignChordProgressionToPlayer(correctCurrentChordProgression), defaultName, e)
         console.log('step2')
         assignPlayerForMusicSynthesizerSession(e, 3, {rhythmMapName: 'straight'}, defaultName)
         console.log('step3')
@@ -281,3 +307,54 @@ function separateOctaveAndRoot(midiNotes) {
     rootNotes
   };
 }
+
+function reformatIoisToRelative (iois){
+    if (A.isArrayAscending(iois) === false){
+        return iois
+    }
+    return iois.map((x, i) =>{
+        if (iois[i + 1] !== undefined){
+            return iois[i + 1] - x
+        }
+    }).slice(0, iois.length - 1)
+}
+
+function convertMusicalLettersToMidi (letterArray){
+    if (typeof letterArray[0] !== 'string'){
+        return letterArray
+    }
+    return letterArray.map(x => {
+        return Note.midi(x)
+    })
+}
+//Helped by chatgpt
+
+function makeChordProgression (name, total, iois, notes, octaves){
+    if (iois === undefined){
+        let splitNotes = separateOctaveAndRoot(iois.map(x => {
+            return x[1]
+        }))
+        notes = splitNotes.rootNotes
+        octaves = splitNotes.octaveNotes
+        iois = iois.map(x => {
+            return x[0]
+        })
+    }
+    if (iois.length > notes.length){
+        notes = A.resizeArray(iois.length, notes)
+    }
+    else if (iois.length < notes.length){
+        iois = A.resizeArray(notes.length, iois)
+    }
+    if (octaves.length !== notes.length){
+        octaves = A.resizeArray(notes.length, octaves)
+    }
+    if (typeof notes[0] === 'object'){
+    e.chordProgressions[name] = new QuantizedMap(total, reformatIoisToRelative(iois), notes.map((x, i) => { return x.map((d, n) => {return {note: d, octave: octaves[i][n]}})}))
+    }
+    else {
+    e.chordProgressions[name] = new QuantizedMap(total, reformatIoisToRelative(iois), notes.map((x, i) => { return {note: x, octave: octaves[i]}}))
+    }
+}
+
+// makeChordProgression('yo', 10, [4, 8, 12, 16, 20], [10, 10, 10, 10, 20], [5, 5, 5])

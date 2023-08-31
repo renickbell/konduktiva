@@ -74,21 +74,34 @@ function messageSpecifiedClient (message, target){
     }
 }
 
+// function findTargetClientByName (name){
+//     for (let i = 0; i < clients.length; i++) {
+//         if (clients[i].name == name){
+//             return clients[i]
+//         }
+//     }
+// }
 function findTargetClientByName (name){
-    for (let i = 0; i < clients.length; i++) {
-        if (clients[i].name == name){
-            return clients[i]
+    let foundClient;
+    clients.every(x => {
+        if (x.name == name){
+            foundClient = x
+            return false
         }
-    }
+        return true
+    })
+    return foundClient
 }
+//inspiration for using every: https://masteringjs.io/tutorials/fundamentals/foreach-break
 
 async function addNewClients (){
     let newClientArray = [...wss.clients.values()]
     let originalTime = new Date().getTime()
     clients.push(newClientArray[newClientArray.length - 1])
-    for (let i = 0; i < 4; i++) {
+//     for (let i = 0; i < 4; i++) {
+    Array.from({length: 4}, () => {
         messageSpecifiedClient({action: 'getResponseTime'}, clients.length - 1)
-    }
+    })
     clients[clients.length - 1].index = clients.length - 1
     await new Promise((resolve,reject) => {
        setInterval(() => {
@@ -113,9 +126,10 @@ function wipeClientData (clientToRemove){
     console.log("\x1b[31m", 'Removing Client', clientToRemove.index, 'data')
     console.log('clientToRemove.index', clientToRemove.index)
     clients = A.safeSplice(clients, 1, clientToRemove.index)
-    for (let i = 0; i < clients.length - clientToRemove.index; i++) {
+//     for (let i = 0; i < clients.length - clientToRemove.index; i++) {
+    Array.from({length: clients.length - clientToRemove.index}).forEach((x, i) =>{
         clients[clientToRemove.index + i].index = clientToRemove.index + i
-    }
+    })
     return true
 }
 

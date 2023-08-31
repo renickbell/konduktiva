@@ -5,7 +5,8 @@
 // -- contributors: Yiler Huang (yiler7777@gmail.com); Steve Wang (stevesg168@gmail.com)
 // -- license: GPL 3.0
 // --------------------------------------------------------------------------
-//In theory mode map should be working.
+//Changed chordProgression map to song and makeChordProgressionMap works
+//Only parse roman numerals in the getmidi and send mid place action function.
 // .load ./arrayTransformations.js
 // .load ./dataToArray.js
 // .load ./infoFromArray.js

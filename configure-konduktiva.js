@@ -15,10 +15,10 @@ function assignPlayerForMusicSynthesizerSession (e, session, defaultName, player
         playerData.velocityMapName = defaultName
     }
     if (checkIfSessionPlayerExist(session) === undefined){
-    createSessionPlayer(e, session, playerData.velocityMapName, playerData.noteMapName, playerData.octaveMapName, playerData.rootNoteMapName, playerData.rhythmMapName, playerData.polyphonyMapName, playerData.noteSpanMapName, playerData.noteSpanMapName, playerData.rhythmPatternName, playerData.chordProgressionMapName, playerData.controlChangeMapName, playerData.noteMapName, playerData.channel)
+    createSessionPlayer(e, session, playerData.velocityMapName, playerData.noteMapName, playerData.octaveMapName, playerData.rootNoteMapName, playerData.rhythmMapName, playerData.polyphonyMapName, playerData.noteSpanMapName, playerData.maskMapName, playerData.rhythmPatternName, playerData.chordProgressionMapName, playerData.controlChangeMapName, playerData.noteMapName, playerData.channel)
     }
     else{
-        editSessionPlayer(e, session, playerData.velocityMapName, playerData.noteMapName, playerData.octaveMapName, playerData.rootNoteMapName, playerData.rhythmMapName, playerData.polyphonyMapName, playerData.noteSpanMapName, playerData.noteSpanMapName, playerData.rhythmPatternName, playerData.chordProgressionMapName, playerData.controlChangeMapName, playerData.noteMapName, playerData.channel)
+        editSessionPlayer(e, session, playerData.velocityMapName, playerData.noteMapName, playerData.octaveMapName, playerData.rootNoteMapName, playerData.rhythmMapName, playerData.polyphonyMapName, playerData.noteSpanMapName, playerData.maskMapName, playerData.rhythmPatternName, playerData.chordProgressionMapName, playerData.controlChangeMapName, playerData.noteMapName, playerData.channel)
     }
 }
 
@@ -133,7 +133,7 @@ function recordConfigurationDataIntoMusicalEnvironment (noteValueData, name, e){
 //     createRhythmMap(noteValueData, name)
 //     createMaskMap(noteValueData, name)
     //The problem with your RhythmPattern function is, it starts assigning things to the player it does not write it to the musical environmet
-    e.rhythmPatterns[name] = new RhythmPattern (name, noteValueData.total, noteValueData.noteSpan, noteValueData.bools)
+    e.rhythmPatterns[name] = new RhythmPattern (name, noteValueData.total, noteValueData.noteSpans, noteValueData.bools)
     return name
 }
 
@@ -151,7 +151,7 @@ function addToMusicalEnvironment (e){
     e.pattern = undefined
     e.controlChangeMaps = {}
     e.chordProgressions = generateChordProgressions()
-    e.chordProgressionMaps = {
+    e.song = {
         'twelveBars-lsystem-scarbrofair': new QuantizedMap(15000, [1000, 5000, 10000], ['twelveBars', 'lsystem', 'scarbrofair'])
     }
     e.modeMaps = {}

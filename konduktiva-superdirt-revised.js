@@ -46,14 +46,14 @@ let samples4 = buildSampleArray (superDirtSamplesPath)
 function samplePattern (allSamples, patternLength, substringArray, poolSize, stepLengthPool) {
     let prePool = gatherBySubstring (allSamples.sampleList, substringArray).map(x => allSamples.sampleData.find(y => y.name === x));
     // let pool = pickN(poolSize, gatherBySubstring (allSamples, substringArray));
-    let pool = pickN(poolSize, prePool);
+    let pool = A.pickN(poolSize, prePool);
     let stepLengths = [];
     while (sum(stepLengths) < patternLength) {
         stepLengths.push(pick(stepLengthPool))
     };
     let selectedSampleDirs = stepLengths.map(x => pick(pool));
     let selectedSamples = selectedSampleDirs.map((x) => {return {name: x.name, index: randomRangeInt(0,x.number - 1)}});
-    let absolutes = deltaToAbsolute(takeTo(patternLength,stepLengths));
+    let absolutes = deltaToAbsolute(A.takeTo(patternLength,stepLengths));
     return new QuantizedMap(absolutes[0],absolutes[1],selectedSamples)
 }
 

@@ -2,6 +2,7 @@
 // -- command-history-playback.js
 // --------------------------------------------------------------------------
 // Works as long as all dependencies are there.
+// I got the eval method I use from: https://stackoverflow.com/a/23699187/19515980
 fs = require('fs')
 path = require('path');
 
@@ -37,10 +38,16 @@ class CommandHistoryPlayer {
         this.actionIndex = 0
         this.lastTime = this.playbackFile.startTime
         this.combineWithCurrentCommand = ''
+        this.waitFor = undefined
     }
     play (){
+        if (this.checkForWaitFor() === false){
+            return false
+        }
         this.state = 'playing'
         this.scheduleNextAction()
+        this.waitFor = undefined
+        this.waitingFor = undefined
     }
     stop (){
         this.state = 'stopped'
@@ -50,6 +57,20 @@ class CommandHistoryPlayer {
         this.lastTime = this.playbackFile.startTime
         this.combineWithCurrentCommand = ''
         this.play()
+    }
+    checkForWaitFor (){
+        if (this.waitFor === undefined){
+            return true
+        }
+        else if (typeof (1, eval)(this.waitFor) === 'object'){
+            return true
+        }
+        else {
+            console.log('Please import this library by running this command before continueing playback')
+            console.log('\x1b[0m', this.waitingFor)
+            console.log('You will be unable to continue playback before running this line of code. To overide this behaviour run [nameOfPlaybackClass].waitFor = undefined')
+            return false
+        }
     }
     scheduleNextAction (){
         if (this.state === 'playing' && this.actionIndex < this.playbackFile.userInputs.length){
@@ -94,15 +115,62 @@ class CommandHistoryPlayer {
         let endOfName = command.indexOf('{') - 1
         let className = command.slice(5, endOfName)
         return className + '=' + command + '\n'
+        //Idea of reformatting classes from: https://stackoverflow.com/a/39299283
     }
     changeCommandToAsyncEval (command){
         return '(async () => {' + command + '})()'
         //Using async with eval from: https://stackoverflow.com/a/56187201/19515980
     }
-    reformatImportingDependencies (command){
+    promptUserToManuallyImportLibrary (command, variableName){
+        this.stop()
+        console.log('The history save imports this library at this time. The state of this code is currently unable to automatically import it. You will have to manually run this line of code in this nodejs session')
+        console.log('\x1b[1m', command)
+        console.log('You will be unable to continue playback before running this line of code. To overide this behaviour run [nameOfPlaybackClass].waitFor = undefined')
+        this.waitFor = variableName
+        this.waitingFor = command
+    }
+    checkForEndVariableName (command, variableName){
+        let nextCommand = this.playbackFile.userInputs[this.actionIndex + 1].input
+        console.log('Checking for end variable', variableName, nextCommand)
+        console.log(nextCommand.includes(variableName + '.default'))
+        if (nextCommand.includes(variableName + '.default') === true){
+            console.log('found end variable')
+            let reformatedCommand = this.reformDefiningVariables(nextCommand)
+            return nextCommand.slice(0, command.indexOf('='))
+        }
+    }
+    tryImportingDependencies (command){
         let libraryName = command.slice(command.indexOf('(') + 1, command.indexOf(')'))
         let variableName = command.slice(0, command.indexOf('='))
-        return '(() => { \n import(' + libraryName + ').then(module => {' + variableName + '= module.default || module})})()'
+        console.log('importing modules')
+        let endVariableName = this.checkForEndVariableName(command, variableName)
+        try{
+            if ((1, eval)(variableName) !== undefined){
+                return true
+            }
+        }catch{}
+        try{
+            if (endVariableName === undefined){
+                console.log('trying require to import library: ', '(' + variableName + ' = require(' + libraryName + '))')
+                (1, eval)('(' + variableName + ' = require(' + libraryName + '))')
+                console.log('succeded with importing with require')
+            }
+            else {
+                console.log('trying require to import library: ', '(' + endVariableName + ' = require(' + libraryName + '))')
+                (1, eval)('(' + endVariableName + ' = require(' + libraryName + '))')
+                console.log('succeded with importing with require')
+                this.playbackFile.userInputs.splice(this.actionIndex + 1, 1)
+            }
+
+        }
+        catch{
+            try{
+                (1, eval)('(() => {import(' + libraryName + ').then(module => {' + variableName + '= module.default || module})})()')
+            }
+            catch{
+                this.promptUserToManuallyImportLibrary(command, variableName)
+            }
+        }
     }
     preEvaluateChecks (command){
         if (command.slice(0, 6).includes('.load') || command.slice(0, 2) === '//'){
@@ -114,7 +182,7 @@ class CommandHistoryPlayer {
              return false
          }
         else if (this.combineWithCurrentCommand.slice(0, 6) === 'class '){
-            this.combineWithCurrentCommand = this.reformatDefiningClasses(command)
+            this.combineWithCurrentCommand = this.eformatDefiningClasses(command)
             return false
         }
         else if (this.combineWithCurrentCommand === ''){
@@ -124,8 +192,12 @@ class CommandHistoryPlayer {
         else{
             this.combineWithCurrentCommand += command + '\n';
         }
-        if (this.combineWithCurrentCommand.includes('await import')){
-            this.combineWithCurrentCommand = this.reformatImportingDependencies(this.combineWithCurrentCommand)
+        console.log('combineWithCurrentCommand', this.combineWithCurrentCommand, typeof this.combineWithCurrentCommand)
+        console.log('testing if importing modules: ', this.combineWithCurrentCommand.includes('await import'), this.combineWithCurrentCommand)
+        if (this.combineWithCurrentCommand.includes('await import') === true){
+            this.tryImportingDependencies(this.combineWithCurrentCommand)
+            this.combineWithCurrentCommand = ''
+            return false
         }
       else if (this.combineWithCurrentCommand.includes('await')){
           this.combineWithCurrentCommand = this.changeCommandToAsyncEval(this.combineWithCurrentCommand)
@@ -133,6 +205,7 @@ class CommandHistoryPlayer {
     }
     evaluateCommand (command){
         let checkStatus = this.preEvaluateChecks(command)
+        console.log('check status', checkStatus)
         if (checkStatus === false){
             return false
         }
@@ -159,7 +232,8 @@ class CommandHistoryPlayer {
 // let historyPlayer1 = new CommandHistoryPlayer('./10June-repl-history-2-.txt')
 //console.log('running action', currentCommandInfo)
 
-historyPlayer1 = new CommandHistoryPlayer('./16Aug-repl-history-4-.txt')
+// historyPlayer1 = new CommandHistoryPlayer('./15Aug-repl-history-9-.txt')
+historyPlayer1 = new CommandHistoryPlayer('./16Aug-repl-history-3-.txt')
 historyPlayer1.play()
 
 historyPlayer1.arop()
@@ -197,8 +271,6 @@ historyPlayer1.repeat()
 // replServer.eval(`console.log('hi')`);
 // 
 
-function asynImportEvalTest (libraryToImport, variableName){
-    let toEval = 'async () => {' + variableName + '= await import("' + libraryToImport + '")}()'
-    console.log('hi', JSON.stringify(toEval))
-    (1, eval)(toEval)
+function asyncImportEvalTest (libraryName, variableName){
+    (1, eval)('(' + variableName + ' = require(' + JSON.stringify(libraryName) + '))')
 }

@@ -37,7 +37,7 @@ randomMelodyData = {
     109, 107,  97, 112,
     116,  91,  96, 113
   ],
-  noteSpan: A.buildArray(12, x => {return x}),
+  noteSpans: A.buildArray(12, x => {return x}),
   rhythmMap: [0,5, 1, 2.5, 2.75, 4, 5, 6, 8, 8.3, 8.6, 9, 10, 10.5, 10.8],
   bools: [true, true, true, true, true, true, true, true, true, true], 
   noteValues: chordProgressionScarboroughFair.map(x => {
@@ -57,7 +57,7 @@ randomMelodyData = {
   rhythmMap: A.buildArray(16, x => {return x * 4}),
    noteSpanKeyspan: 64,
   noteSpanValues: A.buildArray(16, x => {return (x)}),
-  noteSpan: A.buildArray(16, x => {return x * 4}),
+  noteSpans: A.buildArray(16, x => {return x * 4}),
   rootNote: noteData.map(x => {
       return x.map(n => {
           return n.note
@@ -85,7 +85,7 @@ randomMelody1 = {
   velocity: A.buildArray(40, x => {return randomRange(30, 50)}),
    noteSpanKeyspan: 64,
   noteSpanValues: A.buildArray(12, x => {return (x)}),
-  noteSpan: A.buildArray(12, x => {return x * 4}),
+  noteSpans: A.buildArray(12, x => {return x * 4}),
   bools: A.buildArray(48, x => {return true}), 
   octave: chordProgressionScarboroughFair.map(x => {
       return 0
@@ -95,7 +95,7 @@ randomMelody1 = {
   rhythmMap: A.buildArray(16, x => {return x * 4}),
    noteSpanKeyspan: 64,
   noteSpanValues: A.buildArray(16, x => {return (x)}),
-  noteSpan: A.buildArray(16, x => {return x * 4}),
+  noteSpans: A.buildArray(16, x => {return x * 4}),
   rootNote: noteData.map(x => {
       return x.note
   }),
@@ -115,7 +115,7 @@ noteData3 = chordProgressionScarboroughFair
 randomMelody2 = {
   //velocity: [...A.buildArray(39, x => {return 0}), ...A.buildArray(8, x => { return 40 + (x * 10)})],
     velocity: [...A.buildArray(39, x => {return 0}), ...A.buildArray(8, x => { return 120})],
-  noteSpan: A.buildArray(47, x => {return 1 }),
+  noteSpans: A.buildArray(47, x => {return 1 }),
   rhythmMap: [...A.buildArray(40, x => {return x}), ...[40, 41, 42, 43, 44 ,45, 46, 47, 48, 49]],
   bools: [...A.buildArray(39, x => {return true}), ...A.buildArray(8, x => {return true})], 
   //noteValues: [...A.buildArray(35, x => {return [60]}), ...noteData3.map(x => {
@@ -136,7 +136,7 @@ randomMelody2 = {
   rhythmMap: A.buildArray(16, x => {return x * 4}),
    noteSpanKeyspan: 64,
   noteSpanValues: A.buildArray(16, x => {return (x)}),
-  noteSpan: A.buildArray(16, x => {return x * 4}),
+  noteSpans: A.buildArray(16, x => {return x * 4}),
   rootNote: noteData.map(x => {
       return x.map(n => {
           return n.note
@@ -162,7 +162,7 @@ melodyData = {
   ],
    noteSpanKeyspan: 64,
   noteSpanValues: A.buildArray(12, x => {return (x)}),
-  noteSpan: A.buildArray(12, x => {return x * 4}),
+  noteSpans: A.buildArray(12, x => {return x * 4}),
   bools: A.buildArray(48, x => {return true}), 
   //noteValuesKeys: A.buildArray(12, x => {return (x * 4)}),
   octave: chordProgressionScarboroughFair.map(x => {
@@ -180,7 +180,7 @@ melodyData = {
   rhythmMap: A.buildArray(16, x => {return x * 4}),
    noteSpanKeyspan: 64,
   noteSpanValues: A.buildArray(16, x => {return (x)}),
-  noteSpan: A.buildArray(16, x => {return x * 4}),
+  noteSpans: A.buildArray(16, x => {return x * 4}),
   rootNote: noteData.map(x => {
       return x.map(n => {
           return n.note
@@ -229,7 +229,7 @@ lsystemData = {
   velocity: velocityData,
    noteSpanKeyspan: 64,
   noteSpanValues: A.buildArray(12, x => {return (x)}),
-  noteSpan: A.buildArray(12, x => {return x * 4}),
+  noteSpans: A.buildArray(12, x => {return x * 4}),
   bools: boolsData, 
   modeMap: [0, 2],
   modeMapKeyspan: 2,
@@ -293,11 +293,12 @@ function createCircleOfFifths(startingNote) {
     let currentNote = startingNote;
     const circle = [currentNote];
     // Loop through 11 times to complete the circle of fifths
-    for (let i = 0; i < 11; i++) {
+//     for (let i = 0; i < 11; i++) {
+    Array.from({length: 11}, () => {
         // Get the next note in the circle (up a perfect fifth)
         currentNote = Note.transpose(currentNote, "P5");
         circle.push(currentNote);
-    }
+    })
     // Print the circle of fifths
     console.log(circle);
     return circle;
@@ -309,7 +310,8 @@ function generateChordProgression(chordLengths, key, counterClockwiseChance) {
     let circleOfFifth = createCircleOfFifths(key);
     let currentNoteIndex = 0;
     //console.log(chordLengths.length)
-    for (let i = 0; i < chordLengths.length; i++) {
+//     for (let i = 0; i < chordLengths.length; i++) {
+    Array.from({length: chordLengths.length}, () => {
         if (currentNoteIndex < 0) {
             currentNoteIndex += 11
         } else if (currentNoteIndex >= 12) {
@@ -321,7 +323,7 @@ function generateChordProgression(chordLengths, key, counterClockwiseChance) {
         } else {
             currentNoteIndex += 1;
         }
-    }
+    })
     let romanNumeralProgression = Progression.toRomanNumerals(key, progression);
     return romanNumeralProgression
 }
@@ -352,7 +354,8 @@ circleOfFifthChords = {
   velocity: A.buildArray(30, x => 90),
    noteSpanKeyspan: 16,
   noteSpanValues: [0, 1, 2, 3],
-  noteSpan: [0, 4, 8, 12],
+//   noteSpans: [0, 4, 8, 12],
+  noteSpans: [4, 4, 4, 4],
   bools: boolsData,
   modeMap: A.buildArray(12, x=> x),
   modeMapKeyspan: 12,
@@ -375,11 +378,13 @@ circleOfFifthMelody = {
     velocity: A.buildArray(30, x => 90),
     noteSpanKeyspan: 18,
     noteSpanValues: A.buildArray(24, x => x/2),
-    noteSpan: A.buildArray(24, x => x * 0.25),
+//     noteSpans: A.buildArray(24, x => x * 0.25),
+    noteSpans: A.buildArray(24, x => 0.25),
     bools: boolsData,
     modeMapKeyspan: 18,
     octave: circleOfFifthMelodySplitNotes.octaveNotes.map(x => {return [x]}),
-    rootNote: circleOfFifthMelodySplitNotes.rootNotes.map(x => {return [x]}),
+//     rootNote: circleOfFifthMelodySplitNotes.rootNotes.map(x => {return [x]}),
+    rootNote: ["IIm9", "IIm9", "V", "V", "IIIm7", "IIIm7", "VIm","VIm"].map(x => {return [x]}),
     total: 18,
 //     polyphonyMap: A.buildArray(18, x => {return 50}),
     rhythmMap:  A.buildArray(12, x => x/2),
@@ -392,7 +397,7 @@ circleOfFifthMelody = {
 //   velocity: A.buildArray(30, x => 90),
 //    noteSpanKeyspan: 12,
 //     noteSpanValues: A.buildArray(24, x => x),
-//     noteSpan: A.buildArray(24, x => 6 * x),
+//     noteSpans: A.buildArray(24, x => 6 * x),
 //   bools: boolsData,
 //   modeMap: A.buildArray(12, x=> x),
 //   modeMapKeyspan: 12,

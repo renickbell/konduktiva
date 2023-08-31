@@ -7,11 +7,12 @@
 // --------------------------------------------------------------------------
 
 function generativeParseString (inputString,rules,generations) {
-   for (let i = 0; i < generations; i++) {
+    return Array.from({length: generations}, () => {
        inputString=parseString(inputString,rules)
-   }
-    return inputString
+        return inputString
+   })[generations - 1]
 }
+//Chatgpt helped with removing for loop
 
 //Gnerated the QuantizedMap for the lsystem chord progression:
 function generateRandomLsystemChordProgression (){
@@ -56,25 +57,23 @@ function generateLsystemBoolsData (){
 function generateLsystemNoteData (){
     let noteData = countLetterChanges(generateRandomLsystemString(20))
     let addedNotesData = []
-    for (let i = 0; i < noteData.length / 10; i++) {
+    let tenLengthArray = Array.from({length: 10})
+    Array.from({length: Math.floor(noteData.length / 10)}).forEach((x, i) =>{
         let total = 0
-        for (let n = 0; n < 10; n++) {
+        tenLengthArray.forEach((x, n) =>{
             total += noteData[(i * 10) + n]
-        }
+        })
         addedNotesData.push(total)
-    }
+    })
     return addedNotesData
 }
 
 //generates alphabets for the lsystem chord progression:
 function generateLsystemAlphabets (){
-    let alphabetAmount = randomRange(2, 10)
     let alphabets = Array.from({ length: 26 }, (_, i) => String.fromCharCode(97 + i));
-    let chosenAlphabets = []
-    for (let i = 0; i < alphabetAmount; i++) {
-        chosenAlphabets.push(alphabets[randomRange(0, alphabets.length - 1)])
-    }
-    return chosenAlphabets
+    return Array.from({length: randomRange(2, 10)}, () => {
+        return A.pick(alphabets)
+    })
 }
 
 //generates conditions for the lsystem chord progression:
@@ -88,7 +87,6 @@ function generateCondition (chosenAlphabets, min, max){
 
 //Generate random configurations for the lsystem chord progression:
 function generateRandomLSystemConfiguration (pickedAlphabets){
-    let amountOfConditions = randomRange(1, 5)
     let chosenAlphabets;
     if (pickedAlphabets === undefined){
         chosenAlphabets = generateLsystemAlphabets()
@@ -101,22 +99,18 @@ function generateRandomLSystemConfiguration (pickedAlphabets){
     }).join('')
     let conditions = {}
     conditions[chosenAlphabets[0]] = generateCondition(chosenAlphabets, 0, 5) + chosenAlphabets[0]
-    for (let i = 0; i < amountOfConditions - 1; i++) {
+    Array.from({length: randomRange(1, 5)}, () => {
         let rule = generateCondition(chosenAlphabets, 1, 3)
         conditions[rule] = generateCondition(chosenAlphabets, 0, 5)
-    }
+    })
     startingLetters = shuffleString(startingLetters)
     return {conditions, startingLetters}
 }
 
-//I forgot to write the functinot hat converts the letters to numbers!!!!
-
 function convertLsystemStringToNumbersViaAssignedLetters (chosenAlphabets, lsystem, availableNumbers){
-    let numericLsystem = []
-    for (let i = 0; i < lsystem.length; i++) {
-        numericLsystem.push(availableNumbers[chosenAlphabets.indexOf(lsystem[i])])
-    }
-    return numericLsystem
+    return lsystem.split('').map((x, i) =>{
+        return availableNumbers[chosenAlphabets.indexOf(x)]
+    })
 }
 
 function generateLsystemByAssigningNumberToLetter (mode, octaves,length) {
