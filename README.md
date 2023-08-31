@@ -1,42 +1,58 @@
 # Using-Konduktiva-With-MIDI
 ## initial author: Steve Wang (stevesg168@gmail.com)
-##  initial creation date: Wed Jun 28 10:08:48 AM CST 2023 
+##  initial creation date: Wed Jun 28 10:08:48 AM CST 2023
 ## contributors: Yiler Huang (yiler7777@gmail.com); Renick Bell (renick@gmail.com)
 ## license: GPL 3.0
 
 ## This code allows Konduktiva to work with music synthesizers that use MIDI.
 
+This document works as both a documentation and a tutorial about how to use the code and how to install the code. These sections follow in this order:
+1. The first part covers the [installation process](#installation). 
+2. Next, it covers the basics of just [playing some sounds](#running-the-code).
+3. Next, a part about (controlling music)[#controlling-musc], then how to put those [configurations into the musical environment](#record-configuration-objects-to-musical-environment) and about [assigning players for music synthesizer sessions](#assigning-player-for-music-synthesizer-session)
+4. Finally, there is a section that might [help if installation or playing music does not work](#debugging) and some [configuration specifics about different operating systems](#os).
+
 ### Installation:
 
-1. Download all the zip provided [here](https://drive.google.com/drive/folders/1UsGemuvPzGAOLXVoVXIG1QkcxNk0GreX?usp=drive_link) and unzip it. You will get a directory called using-konduktiva-with-midi-1
+1. Install the files by downloading the files on this page as a zip or use git to download the files by typing this command in the terminal:
+    ```
+    git clone https://github.com/mrname5/Using-Konduktiva-With-MIDI.git
+    ```
 2. Install [Nodejs](https://nodejs.org/en). If [npm](https://www.npmjs.com/package/npm) does not automatically get installed with Nodejs, [install npm](https://github.com/npm/cli).
-    1. Check if nodejs is installed by running this command in the terminal: 
+
+    2.1. Check if nodejs is installed by running this command in the terminal:
     ```
     node -v
     ```
-    2. Check if npm is installed by running this command in the terminal: 
+    2.2. Check if npm is installed by running this command in the terminal:
     ```
     npm -v
     ```
-    3. You can close the terminals your have opened prior to this step.
-3. Open the terminal, navigate to using-konduktiva-with-midi. This effect can be achieved by using the ``` cd [directory name command] ``` command or navigator to that direcotry with the file manager and right click to open a terminal session there. We will call this terminal session t1. Then, run this command:
+
+    2.3. You can close the terminals you have opened prior to this step.
+
+3. Open the terminal, move to the directory called using-konduktiva-with-midi. This effect can be achieved by using the ``` cd [directory name command] ``` command or navigate to that directory with the file manager and right click to open a terminal session there. We will call this terminal session t1. Then, run this command:
     ```
     node installer.js
     ```
+
 4. After that code has finished running, the installation should be complete.
 
 ### Running the code:
 
-1. Launch 4 sessions/instances of your preferred music synthesizer that supports having multiple instances running at the same time (each with a different midi inputs). Yoshimi is suggested for [Linux](https://yoshimi.sourceforge.io/) and [Surge](https://surge-synthesizer.github.io/) is recomended for MacOS. 
+1. Launch 4 sessions/instances of your preferred music synthesizer that supports having multiple instances running at the same time (each with a different midi inputs). Yoshimi is suggested for [Linux](https://yoshimi.sourceforge.io/) and [Surge](https://surge-synthesizer.github.io/) is recommended for MacOS.
+
 2. Go back to t1 and type this command in it:
 
     ```
-    node 
+    node
     ```
-3. Paste the contents of example-session-with-melodies.js inside t1.
-4. Now you can try pasting the code in example-playing-melodies.js into t1. You will see that now you are able to control the music. Instructions on how to do so are below.
 
-### Specifics On How to Control Music:
+3. Paste the contents of example-session-with-melodies.js inside t1.
+
+4. Now you can try pasting the code in example-playing-melodies.js(A file where all the other necessary files are loaded) into t1. You will see that now you are able to control the music. Instructions on how to do so are below.
+
+### Playing and Pausing music:
 
 #### To make all the sessions/instances of the music synthesizer play do this:
 
@@ -53,6 +69,166 @@
 
 ----
 
+### OS:
+
+#### MacOs:
+
+##### Launching surge:
+
+When installing Surge music synthesizer, you get Surge XT and Surge ET Effects. Open this application called [Hosting AU](http://ju-x.com/hostingau.html) and choose surge as the instrument in the application. Surge will be launched automatically by Hosting AU
+
+### Controlling Music (Configuration Objects):
+
+To control what a player plays, a configuration object will have to be created. This object will control everything from what to play, when to play and what to filter out.
+
+Here the different properties of the configuration object will be listed:
+#### Example of a valid configuration object:
+
+```
+let newChords2 = chords.map(e => separateOctaveAndRoot(e))
+
+circleOfFifthChords = {
+  velocity: A.buildArray(30, x => 90), //Made an array length 30 full of the number 90
+   noteSpanKeyspan: 16, //Set they keyspan of the noteSpanMap to 16
+  noteSpanValues: [0, 1, 2, 3], //Set the values of the noteSpanMap to this array
+    noteSpan: [0, 4, 8, 12], //Set they keys of the noteSpanMap to this array, which is absolute beat values relative to the start of the array
+  bools: boolsData, //Sets the value of the maskMap
+  modeMap: A.buildArray(12, x=> x), //Sets the value of the modeMap and the keys of the modeMap are calculated from this.
+  modeMapKeyspan: 12, //Sets the keyspan of the modeMap.
+  octave: newChords2.map(x => {
+  	return x.octaveNotes
+  }), //Sets the values of the octave map.
+  rootNote: newChords2.map(x => {
+  	return x.rootNotes
+  }), //Sets the values of the rootNote map.
+  total: 12, //Sets the keyspan of the sub QuantizedMap in the value variable of the main rhythmMap QuantizedMap.
+//   polyphonyMap: A.buildArray(12, x => {return 50}), //Leaving it undefined to deactivate this specific feature.
+  rhythmMap: [0, 4, 8, 12], //Sets the values of the rhythmMap.
+}
+
+//More explanations of each variable below.
+```
+
+#### Some things to know:
+
+##### Titles
+
+The titles of each variable in this documentation are aimed at giving as much information as possible. For example, the first title "bools: boolean[]". "bools" is the variable name and "boolean[]" tells you that the variable bools is supposed to be an array full of booleans.
+
+##### Optional
+
+Those without "(optional)" in the title means that without filling in that variable the configuration object will not be valid or work as expected.
+
+##### Quantized Map
+###### Keyspan: number
+Keyspan is the total
+###### Keys: number[]
+An array of numbers in ascending order.
+###### values: number[]
+###### To make a new Quantized Map
+```
+new QuantizedMap(keyspan, keys, values)
+```
+###### nearestLookup: Method
+Takes a number as an input and will look for a number in the keys array that is closest to it compared to the others. It will then take the index of that number and return the value array using that index.
+###### floorLookup: Method
+The floorLookup method does something similar to nearestLookup but when it looks for the closest it always looks for a number smaller than it.
+###### wrapLookup: Method
+The wrapLookup method is also similar to the nearestLookup method but when the number provided is greater than the keyspan, it does not return the last item in the values array instead it loops back around.
+
+#### Variables:
+
+##### bools: boolean[]
+
+An array filled with true or false values. If it is false on that beat the sound will not play.
+
+##### modeMap: number[] (optional)
+
+Not filling it in just deactivates this specific feature.
+
+Before a note is played it will go through a filterMode function. The function will check if it needs to filter the notes by checking if the modeMap for that player exists. If it does it will proceed to check if the root note matches one of the root notes in the mode. If it does, it is allowed to be played. If it does not, it is switched out for the note that is in the mode that is closest to it.
+
+ONLY ADD ROOT NOTES IN THE modeMap array because before the function gets played the code will combine the root notes and the octaves.
+
+A mode map is a quantized map in which the keys are beats and the values are modes.
+##### modeMapKeyspan: number (optional)
+
+Not filling in will make the keyspan of the modeMap the last number of the array plus 2.
+
+This variable allows the keyspan of the modeMap variable to be manually set.
+
+##### noteSpan: number[]
+
+This controls how long a specific note will be played.
+
+##### noteSpanKeyspan: number (optional)
+
+Not filling this in will cause the keyspan of the noteSpanMaps to be the length of the noteSpan array.
+
+This variable allows the keyspan of the noteSpan to be manually set.
+
+A noteSpanMap is a way to implement a melody. The keys are beats, and the values are notes without octave or root note.
+##### noteSpanValues: number[]
+
+This variable allows the values of the noteSpan QuantizedMap to be set.
+
+##### octave: number[]
+
+The octaves of the root notes played must be defined here.
+
+##### polyphony Map: number[] (optional)
+
+Not filling this in will deactivate this specific function.
+
+The numbers here define the amount of notes that can be played on a beat. If there are too many it will randomly drop notes until they do not go over the defined amount.
+##### rootNote: number[]
+The numbers here define the root note that is played. The final note will be calculated by combining the octave with the root note.
+##### rhythmMap: number[]
+Controls when each note is played. It is the ioi [(interonset interval)](https://en.wikipedia.org/wiki/Time_point).
+##### total: number
+The keyspan of the sub QuantizedMap in the value variable of the main rhythmMap QuantizedMap.
+
+Also the keyspan for maskMap
+##### velocity: number[]
+Volume. From 0-127.
+
+#### Next Step
+After creating the configuration object, you will need to add it to the [musical environment](#record-configuration-objects-to-musical-environment). Then you will need to [assign it to a player](#assigning-player-for-music-synthesizer-session)
+
+### Record Configuration Objects to Musical Environment
+To do so, you need a valid configuration object. Then you will need to call the function called ```recordConfigurationDataIntoMusicalEnvironment```. That function will take 3 arguments. First argument the configuration object, second, the name you want to record those things under. Third, the musical environment.
+
+#### Example:
+```
+recordConfigurationDataIntoMusicalEnvironment(circleOfFifthChords, 'p4', e)
+```
+
+### Assigning Player For Music Synthesizer Session
+After recording you configuration object into the [musical environment](#record-configuration-objects-to-musical-environment), you need to assign it to a player. To do so, call the ```assignPlayerForMusicSynthesizerSession``` function. It takes 4 arguments. The last argument is optional. The first one is the musical environment, the second one is the music synthesizer session you want it to be tied to. It should be in the form of a number and it will refer to a specific output point of ```e.outputs```. Third, the name of the data is recorded under. The last one is anything you want to manually overide before you assign it to the player. This argument will be an object and the variables will be listed below. This should be a string. If there are no errors after running that, you will be able to play the music by doing ```e.play('musicSynthesizerSession2')```. Change the number 2 to whatever number you inputted for your second argument.
+
+#### Example:
+```
+assignPlayerForMusicSynthesizerSession(e, 4, 'p4')
+```
+
+#### Variables:
+##### velocityMapName
+##### noteMapName
+##### octaveMapName
+##### rootNoteMapName
+##### rhythmMapName
+##### polyphanyMapName
+##### noteSpanMapName
+##### maskMapName
+##### rhythmPatternName
+##### chordProgressionName
+A chord progression map is a quantized map in which the keys are beats and the values are names of chord progressions. This requires a separate key-value store which maps chord progression names to chord maps.
+##### controlChangeMapName
+##### noteMapName
+##### channel
+MIDI channel
+
+
 ### Debugging:
 
 #### Issue 1:
@@ -65,15 +241,18 @@ This will give you all the outputs easymidi detects and you can edit the functio
 
 #### Issue 2:
 
-MIDI configuration. Configure your system so that easymidi can detect midi outputs. 
+MIDI configuration. Configure your system so that easymidi can detect midi outputs.
 
 That is OS specific.
 
+### Playing with MIDI
+The final MIDI value which is played is a function of:
+1. The note value in relative semitones. If the mode contains the relative interval values in semitones of [0,3,7,9], and the note values are [0,0,1,0], the resulting relative interval values would be [0,0,0,0].
+2. The octave value
+3. The scale/mode which filters the relative semitones
+4. A root note ( = the key)
 
-### OS:
+Each of these items can be determined by a map with beat keys.
 
-#### MacOs:
+Use all of this information to calculate the final MIDI value.
 
-##### Launching surge:
-
-When installing Surge music synthesizer, you get Surge XT and Surge ET Effects. Open this application called [Hosting AU](http://ju-x.com/hostingau.html) and choose surge as  the instrument in the application. Surge will be launched automatically by Hosting AU
