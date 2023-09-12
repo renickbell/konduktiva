@@ -88,22 +88,25 @@ Here the different properties of the configuration object will be listed:
 let newChords2 = chords.map(e => separateOctaveAndRoot(e))
 
 circleOfFifthChords = {
-  velocity: A.buildArray(30, x => 90), //Made an array length 30 full of the number 90
-   noteSpanKeyspan: 16, //Set they keyspan of the noteSpanMap to 16
-  noteSpanValues: [0, 1, 2, 3], //Set the values of the noteSpanMap to this array
-    noteSpan: [0, 4, 8, 12], //Set they keys of the noteSpanMap to this array, which is absolute beat values relative to the start of the array
-  bools: boolsData, //Sets the value of the maskMap
-  modeMap: A.buildArray(12, x=> x), //Sets the value of the modeMap and the keys of the modeMap are calculated from this.
-  modeMapKeyspan: 12, //Sets the keyspan of the modeMap.
+  velocity: A.buildArray(30, x => 90),
+   noteDurationKeyspan: 16,
+  noteDurationValues: [0, 1, 2, 3],
+//   noteDurations: [0, 4, 8, 12],
+  noteDurations: [4, 4, 4, 4],
+  bools: boolsData,
+  modeFilter: A.buildArray(12, x=> x),
+  modeFilterKeyspan: 12,
   octave: newChords2.map(x => {
-  	return x.octaveNotes
-  }), //Sets the values of the octave map.
-  rootNote: newChords2.map(x => {
-  	return x.rootNotes
-  }), //Sets the values of the rootNote map.
-  total: 12, //Sets the keyspan of the sub QuantizedMap in the value variable of the main rhythmMap QuantizedMap.
-//   polyphonyMap: A.buildArray(12, x => {return 50}), //Leaving it undefined to deactivate this specific feature.
-  rhythmMap: [0, 4, 8, 12], //Sets the values of the rhythmMap.
+      return x.octaveNotes
+  }),
+  noteValues: newChords2.map(x => {
+      return x.rootNotes
+  }),
+  total: 12,
+//   polyphonyMap: A.buildArray(12, x => {return 50}),
+  rhythmMap: [0, 4, 8, 12],
+//   noteValues: chords,
+  rootMap: ['C', 'C', 'C', 'C']
 }
 
 //More explanations of each variable below.
@@ -142,35 +145,57 @@ The wrapLookup method is also similar to the nearestLookup method but when the n
 
 An array filled with true or false values. If it is false on that beat the sound will not play.
 
-##### modeMap: number[] (optional)
+##### modeFilter: number[] (optional)
 
 Not filling it in just deactivates this specific feature.
 
-Before a note is played it will go through a filterMode function. The function will check if it needs to filter the notes by checking if the modeMap for that player exists. If it does it will proceed to check if the root note matches one of the root notes in the mode. If it does, it is allowed to be played. If it does not, it is switched out for the note that is in the mode that is closest to it.
+Before a note is played it will go through a filterMode function. The function will check if it needs to filter the notes by checking if the modeFilter for that player exists. If it does it will proceed to check if the root note matches one of the root notes in the mode. If it does, it is allowed to be played. If it does not, it is switched out for the note that is in the mode that is closest to it.
 
-ONLY ADD ROOT NOTES IN THE modeMap array because before the function gets played the code will combine the root notes and the octaves.
+ONLY ADD ROOT NOTES IN THE modeFilter array because before the function gets played the code will combine the root notes and the octaves.
 
 A mode map is a quantized map in which the keys are beats and the values are modes.
+##### modeFilterKeyspan: number (optional)
+
+Not filling in will make the keyspan of the modeFilter the last number of the array plus 2.
+
+This variable allows the keyspan of the modeFilter variable to be manually set.
+
+##### modeMap: string[] (optional)
+
+Not filling it in will deactivate the automatic modeFilter switching feature. If this is filled in modeMapKeys must be filled in too.
+
+An array of mode names. This is the information the modeFilter will be updated to at some beat. The beats are controlled by modeMapKeys.
+
+##### modeMapKeys: number[] (optional)
+
+This MUST be filled in IF modeMap is filled in. Can only be left empty when modeMap is empty.
+
+The beats numbers to update the modeFilter.
+
 ##### modeMapKeyspan: number (optional)
 
-Not filling in will make the keyspan of the modeMap the last number of the array plus 2.
+Not filling it in will cause the keyspan of the keyspan variable to be the last number in the modeMapKeys array if modeMap is filled in. If modeMap is not filled in, nothing will happen if this variable is not filled in.
 
-This variable allows the keyspan of the modeMap variable to be manually set.
+The keyspan for the modeMap Quantized map.
 
-##### noteSpan: number[]
+##### noteValues: number[] string[]
+
+The numbers here define the root note that is played. The final note will be calculated by combining the octave with the root note. The numbers here can be inputed in differnt ways. Currently there are four ways: relativeSemitone, relativeScaleDegree, noteNames, romanNumeral or, rawMidi. The input methods can be switched by editing the  ``` notesInputMode ``` variable of the MusicalEnvironment.
+
+##### noteDuration: number[]
 
 This controls how long a specific note will be played.
 
-##### noteSpanKeyspan: number (optional)
+##### noteDurationKeyspan: number (optional)
 
-Not filling this in will cause the keyspan of the noteSpanMaps to be the length of the noteSpan array.
+Not filling this in will cause the keyspan of the noteDurationMaps to be the length of the noteDuration array.
 
-This variable allows the keyspan of the noteSpan to be manually set.
+This variable allows the keyspan of the noteDuration to be manually set.
 
-A noteSpanMap is a way to implement a melody. The keys are beats, and the values are notes without octave or root note.
-##### noteSpanValues: number[]
+A noteDurationMap is a way to implement a melody. The keys are beats, and the values are notes without octave or root note.
+##### noteDurationValues: number[]
 
-This variable allows the values of the noteSpan QuantizedMap to be set.
+This variable allows the values of the noteDuration QuantizedMap to be set.
 
 ##### octave: number[]
 
@@ -181,10 +206,13 @@ The octaves of the root notes played must be defined here.
 Not filling this in will deactivate this specific function.
 
 The numbers here define the amount of notes that can be played on a beat. If there are too many it will randomly drop notes until they do not go over the defined amount.
-##### rootNote: number[]
-The numbers here define the root note that is played. The final note will be calculated by combining the octave with the root note.
+##### rootMap: string[]
+
+An array of musical letters.
+
 ##### rhythmMap: number[]
 Controls when each note is played. It is the ioi [(interonset interval)](https://en.wikipedia.org/wiki/Time_point).
+
 ##### total: number
 The keyspan of the sub QuantizedMap in the value variable of the main rhythmMap QuantizedMap.
 
@@ -218,13 +246,15 @@ assignPlayerForMusicSynthesizerSession(e, 4, 'p4')
 ##### rootNoteMapName
 ##### rhythmMapName
 ##### polyphanyMapName
-##### noteSpanMapName
+##### noteDurationMapName
 ##### maskMapName
 ##### rhythmPatternName
 ##### chordProgressionName
 A chord progression map is a quantized map in which the keys are beats and the values are names of chord progressions. This requires a separate key-value store which maps chord progression names to chord maps.
 ##### controlChangeMapName
-##### noteMapName
+##### modeFilterName
+##### rootMapName
+##### modeMapName
 ##### channel
 MIDI channel
 
