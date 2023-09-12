@@ -164,7 +164,7 @@ function visualizeVolume (info){
         }
     setTimeout(() => {
         messageAllClients({action:'animate', info: sortedInfo})
-    }, info.noteSpan * 1000)
+    }, info.noteDuration * 1000)
 }
 
 //Find availablePorts for websocketServer

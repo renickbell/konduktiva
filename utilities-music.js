@@ -19,7 +19,8 @@ const {
     Key,
     Progression,
     Midi,
-    RomanNumeral
+    RomanNumeral,
+    Mode
 } = require("tonal")
 
 /**

@@ -309,6 +309,15 @@ function simpleRhythm (env, rhythmName, deltas) {
 
 // revise these so that the algorithm is swappable
 
+/**
+  * Finds the highest value number and multiplies it by the ratio. The same number is also subtracted by itself after it is multiplied by the ratio. Both of those numbers are added to the array behind that highest value number.
+  * @param {number} minVal - The highest value number in the inputArray has to be greater than this number.
+  * @param {number} ratio - The number the highest value number will be multipled by.
+  * @param {array} inputArray - The array to modify.
+  * @example
+  * console.log(increaseDensity(0, 10, [0, 1, 2, 3, 5])) //[ 0, 1, 2, 3, 50, -45 ]
+  * console.log(increaseDensity(0, 10, [0, 1, 2, 8, 3, 5])) //[ 0, 1, 2, 80, -72, 3, 5 ]
+*/
 function increaseDensity (minVal,ratio,inputArray) {
     let max = A.getMaxIndex(inputArray);
     if (max[0][1] <= minVal) {console.log("max is already at minVal");return inputArray} 
@@ -323,6 +332,12 @@ function increaseDensity (minVal,ratio,inputArray) {
     }
 }
 
+/**
+  * Returns an array that has the same total value and the same length but the numbers in the array will be different.
+  * @param {array} inputArray - Number array.
+  * @example
+  * console.log(decreaseDensity([0, 1, 2, 3, 10])) //[ 0, 1, 5, 10 ] //[ 0, 3, 3, 10 ] //[ 1, 2, 3, 10 ]
+*/
 function decreaseDensity (inputArray) {
     let target = (A.pick(A.integerArray(0,inputArray.length - 2)));
     let outputA = inputArray.slice(0,target);
@@ -330,11 +345,18 @@ function decreaseDensity (inputArray) {
     return outputA.concat(outputB)
 }
 
+/**
+  * Uses the increaseDensity function on multiple arrays and picking randomly from an array of ratios.
+  * @param {number} minVal - The minimum value the the highest value number in the first item of the stack array can be.
+  * @param {array} ratio - 
+*/
 function recursiveIncreaseDensity (minVal, ratios, stack) {
+    console.log(minVal, stack)
     if (A.getMaxIndex(stack[0])[0][1] > minVal) {
         let r = A.pick(ratios);
         let addToStack = increaseDensity(minVal,r,stack[0]);
         return recursiveIncreaseDensity(minVal, ratios, [addToStack].concat(stack))
+        return [addToStack].concat(stack)
     }
     return stack
 }
@@ -374,18 +396,50 @@ function densityFromDeltas (inputDeltas) {
 
 //  keyspan is max value, keys is an array of absolutes (increasing values), values is an array of anything of the same length as keys 
 
+/** A QuantizedMap is a discreet function.
+ * @see {@link https://www.sparknotes.com/math/algebra2/discretefunctions/summary/}
+*/
 class QuantizedMap {
+    /** 
+      * Creates the QuantizedMap. The methods provide different ways to look for things in the quantized map.
+      * @param {number} limitValue - The keyspan/total of the QuantizedMap.
+      * @param {array} keys - The keys of the QuantizedMap which will be a number array in ascending order.
+      * @param {array} vals - The values of the QuantizedMap which will be an array.
+      * @example 
+      * let qMap = new QuantizedMap(10, [0, 2, 4, 6, 8], ['A', 'B', 'C', 'D']) //QuantizedMap { keyspan: 10, keys: [ 0, 2, 4, 6, 8 ], values: [ 'A', 'B', 'C', 'D' ] }
+    */
     constructor(limitValue,keys,vals) {
         this.keyspan = limitValue;
         this.keys = keys;
         this.values = vals;
-        }
+    }
+    /**
+      * The wrapLookup method is also similar to the nearestLookup method but when the number provided is greater than the keyspan, it does not return the last item in the values array instead it loops back around.
+      * @param {number} time - The beat number.
+      * @example
+      * qMap.wrapLookup(4) //'C'
+      * qMap.wrapLookup(5) //'C'
+      * qMap.wrapLookup(6) //'D'
+      * qMap.wrapLookup(10) //'A'
+      * qMap.wrapLookup(11) //'A'
+      * qMap.wrapLookup(12) //'B'
+    */
     wrapLookup(time) {
         let lookupTime = time%this.keyspan;
         let filteredTime = this.keys.filter(x => x <= lookupTime);
         if (filteredTime[0] == undefined) {filteredTime = [0]};
         return this.values[(filteredTime.length - 1)]
-        }
+    }
+    /**
+      * The floorLookup method does something similar to nearestLookup but when it looks for the closest it always looks for a number smaller than it.
+      * @param {number} time - The beat number.
+      * @example
+      * qMap.floorLookup(4) //'C'
+      * qMap.floorLookup(5) //'C'
+      * qMap.floorLookup(6) //'D'
+      * qMap.floorLookup(10) //'D'
+      * qMap.floorLookup(11) //'D'
+    */
     floorLookup(time) {
         let lookupTime = time;
         let output = undefined;
@@ -399,7 +453,17 @@ class QuantizedMap {
             output = this.values[(filteredTime.length - 1)]
             }
         return output
-        }
+    }
+    /**
+      * Takes a number as an input and will look for a number in the keys array that is closest to it compared to the others. It will then take the index of that number and return the value array using that index.
+      * @param {number} time - The beat number.
+      * @example
+      * qMap.nearestLookup(4) //'C'
+      * qMap.nearestLookup(5) //'D'
+      * qMap.nearestLookup(6) //'D'
+      * qMap.nearestLookup(10) //'D'
+      * qMap.nearestLookup(11) //'D'
+    */
     nearestLookup (time) {
         let lookupTime = time;
         let output = undefined;
@@ -417,9 +481,33 @@ class QuantizedMap {
             else {output = this.values[(filteredTime.length)]}
             }
         return output
-        }
+    }
+    /**
+      * nearestLookup but the numbers are wrapped.
+      * @param {number} time - Number to lookup
+    */
+    nearestWrapLookup (time){
+        return this.nearestLookup(time % this.keyspan)
+    }
+    /**
+      * floorLookup but the numbers are wrapped.
+      * @param {number} time - Number to lookup
+    */
+    floorWrapLookup (time){
+        return this.floorLookup(time % this.keyspan)
+    }
 }
 
+/**
+   * A helper function for navigating QuantizedMap. It will tell you which key will be used at a specific time when using the wrapLookup method.
+   * @param {QuantizedMap} qm - QuantizedMap to filter through.
+   * @param {number} time - The argument for the wrapLookup.
+   * @example
+   * console.log(whichWrapKey(new QuantizedMap(10, [0, 2, 4, 6, 8], ['A', 'B', 'C', 'D']), 2)) //2
+   * console.log(whichWrapKey(new QuantizedMap(10, [0, 2, 4, 6, 8], ['A', 'B', 'C', 'D']), 3)) //2
+   * console.log(whichWrapKey(new QuantizedMap(10, [0, 2, 4, 6, 8], ['A', 'B', 'C', 'D']), 10)) //0
+   * console.log(whichWrapKey(new QuantizedMap(10, [0, 2, 4, 6, 8], ['A', 'B', 'C', 'D']), 12) //2
+*/
 function whichWrapKey(qm, time) {
     let lookupTime = time%qm.keyspan;
     let filteredTime = qm.keys.filter(x => x <= lookupTime);
@@ -443,7 +531,10 @@ function calculateDensity (env, playerName, time) {
     return A.mean(densities)
 }
 
-//Might be wrong don't know how to test.
+/**
+  * Helps to make a rhythmMap in QuantizedMap form.
+  * @param {number} minIOI - The minimum value of the IOI
+*/
 function makeRhythmMap (minIOI, ratios, deltas) {
     let stack = densityStack(minIOI,ratios,deltas);
     let absolutes = stack.map(deltaToAbsolute);
@@ -453,6 +544,7 @@ function makeRhythmMap (minIOI, ratios, deltas) {
     })
     return new QuantizedMap(densities[0],R.reverse(densities),R.reverse(rows))
 }
+//Might be wrong don't know how to test.
 
 //------------------------------------------------------------------------------
 // stochastic rhythmMap functions
@@ -551,7 +643,12 @@ function mask (player, maskMap, beat, probability) {
     return maskVal
 }
 
+/** Class representing MusicalEnvironments */
 class MusicalEnvironment {
+    /** 
+      * Creates MusicalEnvironments. Remember to call setupScheduler(e) 
+      * @example let e = new MusicalEnvironment()
+    */
     constructor (){
         this.players = {};
         this.actions = {};
@@ -575,10 +672,17 @@ class MusicalEnvironment {
         this.scheduledPlayers = [];
         this.root = "A";
     }
+    /** 
+      * Returns the current beat of the MusicalEnvironment.
+    */
     currentBeat () {
         let elapsed = now() - this.timeOfChangeToCurrentTempo;
         return timeToBeats(this.currentTempo, elapsed) + this.beatOfChangeToCurrentTempo
     }
+    /**
+      * Changes the tempo of the MusicalEnvironment.
+      * @param {number} tempo - New tempo of the current MusicalEnvironment
+    */
     changeTempo(tempo) {
         this.beatOfChangeToCurrentTempo = this.currentBeat ();
         this.timeOfChangeToCurrentTempo = now();
@@ -586,14 +690,25 @@ class MusicalEnvironment {
         console.log("TEMPO CHANGE! time: " + this.timeOfChangeToCurrentTempo + "; beat: " + this.beatOfChangeToCurrentTempo);
         this.currentTempo = tempo;
     }
+    /**
+      * Returns the action function of a specific player in this MusicalEnvironment
+      * @param {string} player - Player name.
+    */
     getAction (player) {
         // console.log("running action for player " + player + " at beat " + this.currentBeat())
         return this.actions[(this.players[player].action)];
     }
+    /**
+      * Returns the IOI function of a specific player in this MusicalEnvironment.
+      * @param {string} player - Player name.
+    */
     getIOIFunc (player) {
         return this.IOIs[(this.players[player].IOIFunc)];
     }
-
+    /**
+      * Schedules events for the a specific player in this MusicalEnvironment.
+      * @param {string} player - Player name.
+    */
     scheduleEvents (player) {
         //console.log("scheduling " + player);
         let ioiFunc = this.getIOIFunc (player);
@@ -621,18 +736,27 @@ class MusicalEnvironment {
         };
         if (player.verbose == true) { console.log("last scheduled time: " + this.lastScheduledTime)}
     }
-
+    /**
+      * Starts the scheduler for the MusicalEnvironment.
+    */
     startScheduler () {
         this.timeOfChangeToCurrentTempo = now();
         this.beatOfChangeToCurrentTempo = 0;
         this.scheduler.start()
     }
+    /**
+      * Stops the scheduler for the MusicalEnvironment.
+    */
     stopScheduler () {
         this.timeOfChangeToCurrentTempo = undefined; 
         this.beatOfChangeToCurrentTempo = undefined;
         //this.lastScheduledTime = 0;
         this.scheduler.stop()
     }
+    /**
+      * MusicalEnvironment starts playing a specific player.
+      * @param {string} player - Player name.
+    */
     play (player) {
         if (this.players[player].status == "playing") 
             {console.log("Player " + this.players[player].name + " is already playing!")}
@@ -642,6 +766,10 @@ class MusicalEnvironment {
             this.players[player].startTime = now();
         }
     }
+    /**
+      * MusicalEnvironment stops a a specific player from playing.
+      * @param {string} player - Player name.
+    */
     stop (player) {
         if (this.players[player].status == "stopped") 
             {console.log("Player " + this.players[player].name + " is not playing!")}
@@ -653,38 +781,72 @@ class MusicalEnvironment {
             this.players[player].lastScheduledTime = 0;
         }
     }
+    /**
+      * Returns an array of all the player names.
+    */
     allPlayers () {
         return Object.keys(this.players)
     }
+    /** Returns an array full of arrays. Each sub array contains the player name and their status. All the player names and their status also gets logged into the console.
+    */
     allPlayerStatus () {
         Object.keys(this.players).forEach(x => console.log(x,this.players[x].status))
         return Object.keys(this.players).map(x => [x,this.players[x].status])
     }
+    /**
+      * Returns an array of all the names of players that are currently playing.
+    */
     playingPlayers () {
        let ps = this.allPlayerStatus ();
        let withStatus = ps.filter(p => p[1] == 'playing')
        return withStatus.map(p => p[0])
     }
+    /**
+      * Starts playing all the player names in the array.
+      * @param {array} ps - An array of player names.
+    */
     playN (ps) {
         ps.forEach(p => this.play(p))
     }
+    /**
+      * Stops playing all the player names in the array.
+      * @param {array} ps - An array of player names.
+    */
     stopN (ps) {
         ps.forEach(p => this.stop(p))
     }
+    /**
+      * All players start playing.
+    */
     playAll () {
         this.allPlayers().forEach(p => this.play(p))
     }
+    /**
+      * All players stop playing.
+    */
     stopAll () {
         this.allPlayers().forEach(p => this.stop(p))
     }
+    /**
+      * Stops playing all the player names in the array after checking if the players exist inside the MusicalEnvironment.
+      * @param {array} ps - An array of player names.
+    */
     solo (ps) {
         this.stopN(this.allPlayers().filter(p => !A.matchesOneOf(ps,p)))
     }
+    /**
+      * Toggles the state of a specific player. If that player is playing it will be stopped. If that player is stopped, it will start playing.
+      * @param {string} p - Player name.
+    */
     togglePlayer (p) {
        if (this.players[p].status == 'playing') {this.stop(p)} else {this.play(p)}
     }
 }
 
+/**
+  * Sets up the scheduler for the MusicalEnvironment.
+  * @param musicalEnv - Variable name of MusicalEnvironment class.
+*/
 function setupScheduler (musicalEnv) {
         musicalEnv.scheduler.add([
             {
@@ -701,7 +863,12 @@ function setupScheduler (musicalEnv) {
         ]);
     }
 
+/** Class representing a Player. */
 class Player {
+    /**
+      * Creates the player.
+      * @param {string} name - Name of the player.
+    */
     constructor(name) {
         this.name = name;
         this.status = "stopped";
@@ -722,11 +889,23 @@ class Player {
     }
 }
 
+/**
+  * Converts beats to time.
+  * @param {number} tempo - Current tempo. The current tempo of the MusicalEnvironment can be found out by running e.currentTempo
+  * @param {number} beats - The beat to convert.
+  * @example console.log(beatsToTime(100, 10)) //6
+*/
 function beatsToTime (tempo, beats) {
     let beatsPerSecond = (tempo/60);
     return beats/beatsPerSecond
 }
 
+/**
+  * Converts time to beats.
+  * @param {number} tempo - Current tempo. The current tempo of the MusicalEnvironment can be found out by running e.currentTempo
+  * @param {number} time - The time to convert.
+  * @example console.log(timeToBeats(80, 120)) //160
+*/
 function timeToBeats (tempo, time) {
     let beatsPerSecond = (tempo/60);
     return time * beatsPerSecond
@@ -735,6 +914,11 @@ function timeToBeats (tempo, time) {
 
 //--------------------------------------------------------------------------
 
+/**
+  * Sets up Player for superDirt
+  * @param env - MusicalEnvironment
+  * @param {string} playerName - Name of a player in the MusicalEnvironment.
+*/
 function setupSuperDirtPlayer (env, playerName) {
         env.players[playerName] = new Player(playerName);
         env.players[playerName].maskMap = 'default'
@@ -743,19 +927,39 @@ function setupSuperDirtPlayer (env, playerName) {
         return playerName
 }
 
+/**
+  * Sets up a simple sample pattern.
+  * @param env - MusicalEnvironment
+  * @param {string} playerName - Name of a player in the MusicalEnvironment.
+  * @param {string} sampleName - Name of the sample.
+  * @param {number} sampleIndex - Number of the sample.
+*/
 function simpleSamplePattern (env, playerName, sampleName, sampleIndex) {
         addSamplePattern (e, playerName, new QuantizedMap(4,[0],[{name: sampleName, index: sampleIndex}]));
         return playerName
 }
 
+/** Class representing a rhythm patter. */
 class RhythmPattern {
+    /**
+      * Creates the rhythmPattern.
+      * @param {string} n - Name of the rhythmPattern.
+      * @param {number} l - Length of the the rhythmPattern.
+      * @param {array} i - A number array representing IOIs.
+      * @param {array} b - An array filled with the booleans "true" and "false".
+    */
         constructor (n,l,i,b) {
                     this.patternName = n;
                     this.patternLength = l;
                     this.IOIs = i;
                     this.bools = b;
                     return this
-                }
+        }
+    /**
+      * Adds this RhythmPattern to a player.
+      * @param env - MusicalEnvironment.
+      * @param {string} playerName - Name of the player to add to.
+    */
         addToPlayer (env, playerName) {
             this.playerName = playerName
                     simpleRhythm (env, this.patternName, A.loopTo (this.patternLength,this.IOIs))
@@ -763,7 +967,12 @@ class RhythmPattern {
                     let mask = A.flipBooleans(this.bools);
                     env.players[this.playerName].maskMap = this.patternName;
                     env.maskMaps[this.patternName] = new QuantizedMap(this.patternLength,[0].concat(A.runningSum(0,this.IOIs)),mask)
-                }
+        }
+    /**
+      * Adds to MusicalEnvironment but does not add to a player.
+      * @param env - MusicalEnvironment.
+      * @param {string} playerName - Name of the player to add to.
+    */
         add (env, playerName) {
             this.playerName = playerName
                     simpleRhythm (env, this.patternName, A.loopTo (this.patternLength,this.IOIs))
@@ -772,6 +981,11 @@ class RhythmPattern {
                 }
 }
 
+/**
+  * Creates a RhythmPattern
+  * @param {object} argObj
+  * @example createRhythmPattern({voice: 'exampleVoice', patternName: 'examplePattern', patternLength: 10, IOIs: [0, 1, 2, 3, 4], bools: [true, true, true, true]})
+*/
 function createRhythmPattern (argObj) {
     let pattern = new RhythmPattern (
                         argObj.voice,

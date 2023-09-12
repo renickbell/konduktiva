@@ -5,8 +5,19 @@
 // -- contributors: Yiler Huang (yiler7777@gmail.com); Steve Wang (stevesg168@gmail.com)
 // -- license: GPL 3.0
 // --------------------------------------------------------------------------
-//Changed chordProgression map to song and makeChordProgressionMap works
-//Only parse roman numerals in the getmidi and send mid place action function.
+//Everything else except the ROman numberals is done.
+//Semitone is regular midi and scale degree is indicies(index values) in a mode.
+//Scale degree is the index of the numbers inside the mode. So, index in the array.
+//Add a variable in player to see if in scale degree or semitone mode
+//Change rootNoteMap to noteMap
+//modeMap will be beats for keys and strings which are names of mode of western msuic as values.
+//Remove current noteMap and move current rootNoteMap to noteMap
+//There will not be an array of rootNotes.
+//Relative mode: Mode.get('ionian').intervals.map(x => Interval.semitones(x))
+//RelativeSemitone mode is done and tested
+//RealiteveScaleDegree works I think
+//Roman numerals work
+//modeMap needs to be works I think
 // .load ./arrayTransformations.js
 // .load ./dataToArray.js
 // .load ./infoFromArray.js

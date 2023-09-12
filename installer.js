@@ -8,7 +8,9 @@
 
 const { spawn } = require('node:child_process');
 
-let packages = ['easymidi', 'osc', 'path', 'perf_hooks', 'ramda', 'tasktimer', 'tonal', 'socket.io', 'socket.io-client', 'http-server']
+// let packages = ['easymidi', 'osc', 'path', 'perf_hooks', 'ramda', 'tasktimer', 'tonal', 'socket.io', 'socket.io-client', 'http-server']
+
+let packages = ['easymidi', 'osc', 'ramda', 'tasktimer', 'tonal', 'socket.io', 'socket.io-client', 'http-server', 'array-toolkit']
 
 let currentInstallingIndex = 0
 function installPackages(packages) {
@@ -29,5 +31,6 @@ function installPackages(packages) {
     installPackages(packages);
   });
 }
+//Helped by chatgpt
 
 installPackages(packages)

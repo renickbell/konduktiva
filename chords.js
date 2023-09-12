@@ -70,23 +70,23 @@ function generateChordsV2 (root, octave, progression) {
     return midiChords
 }
 
-//Create noteSpan values for noteValueData
+//Create noteDuration values for noteValueData
 function createNoteSpans (noteValueData, e){
-    noteValueData.noteSpans = A.resizeArray(noteValueData.noteValues.length, noteValueData.noteSpans)
+    noteValueData.noteDurations = A.resizeArray(noteValueData.noteValues.length, noteValueData.noteDurations)
 //     noteValueData.bools = A.resizeArray(noteValueData.noteValues.length, noteValueData.bools)
 }
 
 //Creating notespan values from noteValueData:
 function createNoteSpanValues (noteValueData, name){
-    if (noteValueData.noteSpanValues !== undefined && noteValueData.noteSpanKeyspan !== undefined){
-    e.noteSpanMaps[name] = new QuantizedMap(noteValueData.noteSpanKeyspan, noteValueData.noteSpans, noteValueData.noteSpanValues)
+    if (noteValueData.noteDurationValues !== undefined && noteValueData.noteDurationKeyspan !== undefined){
+    e.noteDurationMaps[name] = new QuantizedMap(noteValueData.noteDurationKeyspan, noteValueData.noteDurations, noteValueData.noteDurationValues)
     }
-    else if (noteValueData.noteSpanValues !== undefined && noteValueData.noteSpanKeyspan === undefined){
-        console.log('noteSpanValues defined')
-    e.noteSpanMaps[name] = new QuantizedMap(noteValueData.noteSpans.length, noteValueData.noteSpans, noteValueData.noteSpanValues)
+    else if (noteValueData.noteDurationValues !== undefined && noteValueData.noteDurationKeyspan === undefined){
+        console.log('noteDurationValues defined')
+    e.noteDurationMaps[name] = new QuantizedMap(noteValueData.noteDurations.length, noteValueData.noteDurations, noteValueData.noteDurationValues)
     }
     else{
-    e.noteSpanMaps[name] = new QuantizedMap(noteValueData.noteSpans.length, A.buildArray(noteValueData.noteSpans.length, x => {return x}), noteValueData.noteSpans)
+    e.noteDurationMaps[name] = new QuantizedMap(noteValueData.noteDurations.length, A.buildArray(noteValueData.noteDurations.length, x => {return x}), noteValueData.noteDurations)
     }
 }
 
@@ -107,6 +107,15 @@ function createOctaveMaps (noteValueData, name, e){
     }
     else {
         e.octaveMaps[name] = new QuantizedMap(noteValueData.octaveMapKeyspan, noteValueData.octaveMapKeys, noteValueData.octave)
+    }
+}
+
+function createRootMap (noteValueData, name, e){
+    if (noteValueData.rootMapKeys === undefined){
+        e.rootMaps[name] = new QuantizedMap(noteValueData.rootMap.length, A.buildArray(noteValueData.rootMap.length, x => {return x}), noteValueData.rootMap)
+    }
+    else {
+        e.rootMaps[name] = new QuantizedMap(noteValueData.rootMapKeyspan, noteValueData.rootMapKeys, noteValueData.root)
     }
 }
 
@@ -161,7 +170,7 @@ function necessaryConfigurations (chosenProgression){
     configurationObj = noteRelatedNecessaryConfigurations(chosenProgression, configurationObj)
     configurationObj.total = chosenProgression.values.length
     configurationObj.octave = retreiveDataFromChosenProgressionValuesData('octave', chosenProgression)
-    configurationObj.noteSpanKeyspan = chosenProgression.keyspan
+    configurationObj.noteDurationKeyspan = chosenProgression.keyspan
     let beatCounter = 0
     configurationObj.rhythmMapKeys = chosenProgression.keys
     return configurationObj
@@ -178,22 +187,22 @@ function retreiveDataFromChosenProgressionValuesData (dataToRetreive, chosenProg
 
 //Generate the conditional configurations of the configuration object to change chord progressions:
 function conditionalNoteConfigurations (chosenProgression, configurationObj){
-    if (chosenProgression.values[0].data[0].noteSpan === undefined){
+    if (chosenProgression.values[0].data[0].noteDuration === undefined){
         let beatCounter = 0
-        configurationObj.noteSpans = []
+        configurationObj.noteDurations = []
         chosenProgression.keys.forEach(x => {
-            configurationObj.noteSpans.push(beatCounter)
+            configurationObj.noteDurations.push(beatCounter)
             beatCounter += x
         })
     }
     else {
-        configurationObj.noteSpans = retreiveDataFromChosenProgressionValuesData('noteSpan', chosenProgression)
+        configurationObj.noteDurations = retreiveDataFromChosenProgressionValuesData('noteDuration', chosenProgression)
     }
-    if (chosenProgression.values[0].data[0].noteSpanValues === undefined){
-        configurationObj.noteSpanValues = chosenProgression.keys
+    if (chosenProgression.values[0].data[0].noteDurationValues === undefined){
+        configurationObj.noteDurationValues = chosenProgression.keys
     }
     else {
-        configurationObj.noteSpanValues = retreiveDataFromChosenProgressionValuesData('noteSpanValues', chosenProgression)
+        configurationObj.noteDurationValues = retreiveDataFromChosenProgressionValuesData('noteDurationValues', chosenProgression)
     }
     if (chosenProgression.values[0].data[0].keySpan === undefined){
         configurationObj.rhythmMapValues = A.buildArray(chosenProgression.keys.length, x => {

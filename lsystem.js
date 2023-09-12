@@ -20,12 +20,12 @@ function generateRandomLsystemChordProgression (){
     let boolsData = generateLsystemBoolsData()
     let octaveData = countLetterChanges(generateRandomLsystemString(20))
     let notesData = generateLsystemNoteData()
-    let noteSpanData = generateLsystemNoteData()
+    let noteDurationData = generateLsystemNoteData()
     boolsData = A.resizeArray(notesData.length, boolsData)
-    noteSpanData = A.resizeArray(notesData.length, noteSpanData)
+    noteDurationData = A.resizeArray(notesData.length, noteDurationData)
     octaveData = A.resizeArray(notesData.length, octaveData).map(x => {return x * 2})
     velocityData = A.resizeArray(notesData.length, velocityData).map(x => {return x * (x * 10)})
-    return new QuantizedMap(notesData.length, noteSpanData, notesData.map((x, i) => {return {data: [{note: x, octave: octaveData[i], velocity: velocityData[i]}], bool: boolsData[i]}})) 
+    return new QuantizedMap(notesData.length, noteDurationData, notesData.map((x, i) => {return {data: [{note: x, octave: octaveData[i], velocity: velocityData[i]}], bool: boolsData[i]}})) 
 }
 
 //Generates lsystem in string for for for the lsystem chord progression:

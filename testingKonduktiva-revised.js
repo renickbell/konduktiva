@@ -4,6 +4,7 @@
 // license not yet decided; please do not distribute yet.
 //------------------------------------------------------------------------------
 
+//Creates a MusicalEnvironment
 e = new MusicalEnvironment()
 
 function defaultIOI (player, beat) {
