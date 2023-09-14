@@ -10,7 +10,7 @@
 function createRhythmMap (noteValueData, name){
     if (typeof noteValueData.rhythmMap !== 'string'){
         //let generatedRhythmPattern = new QuantizedMap(1, [1], [new QuantizedMap(noteValueData.total, quantizedKeys, noteValueData.rhythmMap)])
-        let generatedRhythmPattern = new QuantizedMap(1, [1], [new QuantizedMap(noteValueData.total, noteValueData.noteSpan, noteValueData.rhythmMap)])
+        let generatedRhythmPattern = new QuantizedMap(1, [1], [new QuantizedMap(noteValueData.total, noteValueData.noteDuration, noteValueData.rhythmMap)])
         e.rhythmMaps[name] = generatedRhythmPattern
     }
 }

@@ -984,11 +984,10 @@ class RhythmPattern {
 /**
   * Creates a RhythmPattern
   * @param {object} argObj
-  * @example createRhythmPattern({voice: 'exampleVoice', patternName: 'examplePattern', patternLength: 10, IOIs: [0, 1, 2, 3, 4], bools: [true, true, true, true]})
+  * @example createRhythmPattern({patternName: 'examplePattern', patternLength: 10, IOIs: [0, 1, 2, 3, 4], bools: [true, true, true, true]})
 */
 function createRhythmPattern (argObj) {
     let pattern = new RhythmPattern (
-                        argObj.voice,
                         argObj.patternName,
                         argObj.patternLength,
                         argObj.IOIs,
