@@ -316,3 +316,19 @@ function checkIfSendMidiControlChange (e, b, player){
         console.log('CC Data sent')
     }
 }
+
+function updateMidiInputList (e){
+    e.inputs = easymidi.getInputs().map(x => {
+        return {inputName: x, recordMessage: false}
+    })
+}
+
+//NEED TO SEE ACTUAL INPUT MESSAGES TO PROPERLY WRITE THIS PART.
+function receiveInputMessageFunc (deltaTime, message) {
+
+}
+function receiveMessagesFromInput (e, inputIndex, outputTarget, receiveMessages = false){
+    new Easymidi.Input(e.inputs[inputIndex].inputName).on('message', receiveInputMessageFunc)
+    e.inputs[inputIndex].recordMessage = receiveMessages
+    e.inputs[inputIndex].outputTarget = outputTarget
+}

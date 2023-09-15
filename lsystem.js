@@ -6,6 +6,14 @@
 // -- license: GPL 3.0
 // --------------------------------------------------------------------------
 
+/**
+  * Generates an L-system for a number of generations based on a starting inputString and a set of rules.
+  * @param {string} inputString - The axiom of the L-system.
+  * @param {object} rules - The rules of the L-system.
+  * @param {number} generations - The number of generations the L-system has.
+  * @example
+  * console.log(generativeParseString('a', {'a': 'ba', 'b': 'aaa'}, 5))
+*/
 function generativeParseString (inputString,rules,generations) {
     return Array.from({length: generations}, () => {
        inputString=parseString(inputString,rules)
@@ -15,6 +23,22 @@ function generativeParseString (inputString,rules,generations) {
 //Chatgpt helped with removing for loop
 
 //Gnerated the QuantizedMap for the lsystem chord progression:
+/**
+  * Generates a random L-system in form of a QuantizedMap.
+  * @example
+  * console.log(generateRandomLsystemChordProgression ()) //QuantizedMap {
+  keyspan: 6,
+  keys: [ 17, 22, 16, 17, 15, 20 ],
+  values: [
+    { data: [Array], bool: true },
+    { data: [Array], bool: false },
+    { data: [Array], bool: true },
+    { data: [Array], bool: true },
+    { data: [Array], bool: false },
+    { data: [Array], bool: false }
+  ]
+}
+*/
 function generateRandomLsystemChordProgression (){
     let velocityData = countLetterChanges(generateRandomLsystemString(20))
     let boolsData = generateLsystemBoolsData()
@@ -29,6 +53,16 @@ function generateRandomLsystemChordProgression (){
 }
 
 //Generates lsystem in string for for for the lsystem chord progression:
+/**
+  * Generates an L-system of a specific length based on the pickedAlphabets.
+  * @param {number} [length=30] - The minimum length of the L-system.
+  * @param {array} pickedAlphabets - An array filled with letters.
+  * @example
+  * console.log(generateRandomLsystemString()) //'qyppppyqyyqiqyppppyqyyqiqyppppyqyyqijqpiyqyppppyqyyqiqyppppyqyyqiqyppppyqyyqijyqqyppppyqyyqiqyppppyqyyqiqyppppyqyyqijypiip'
+  * console.log(generateRandomLsystemString(2)) //'jjuujuujuugjjjgjjjjuugjjjgjjjjuujuugjjjgjjjjuugjjjgujuujuujuugjjjgjjjjuugjjjgjjjjuujuugjjjgjjjjuugjjjg'
+  * console.log(generateRandomLsystemString(2, ['a'])) //'aaaaaaaaaaaaaaaa'
+  * console.log(generateRandomLsystemString(2, ['a', 'b'])) //'bbbbbbaababbaababbbaababbbbaababbaababbbaababbbbbaababbaababbbaababbbbbbbaababbaababbbaababbbbaababbaababbbaababbbbbaababbaababbbaababb'
+*/
 function generateRandomLsystemString (length = 30, pickedAlphabets){
     let configuration = generateRandomLSystemConfiguration(pickedAlphabets)
     console.log('configuration', configuration)
@@ -42,6 +76,18 @@ function generateRandomLsystemString (length = 30, pickedAlphabets){
 }
 
 //Generates bools data for the lsystem chord progression:
+/**
+  * Generatest L-system bools data. Returns an array filled with true or false booleans.
+  * @example console.log(generateLsystemBoolsData()) //[
+  false, true,  false, true,  false,
+  true,  false, true,  false, true,
+  false, true,  false, true,  false,
+  true,  true,  false, true,  false,
+  true,  false, true,  false, true,
+  false, true,  false, true,  false,
+  true
+]
+*/
 function generateLsystemBoolsData (){
     return generateRandomLsystemString(30, ['a', 'b']).split('').map(x => {
             if (x === 'a'){

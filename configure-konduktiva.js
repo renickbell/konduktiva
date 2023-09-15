@@ -153,6 +153,7 @@ function recordConfigurationDataIntoMusicalEnvironment (noteValueData, name, e){
 
 function addToMusicalEnvironment (e){
     e.outputs = []
+    e.inputs = updateMidiInputList(e)
 //     e.midiDataSets = {}
     e.velocityMaps = {}
     e.noteMaps = {}
