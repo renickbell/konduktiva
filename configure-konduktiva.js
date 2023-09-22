@@ -241,3 +241,41 @@ function createPlaybackPlayer (e, messageMapName, playerName = messageMapName, t
 }
 
 createPlaybackPlayer(e, 'testios', 'testios', 100)
+
+function checkingAddMapToMusicalEnvironmentArguments (objectName, mapName, keyspan, keys, values){
+    if (objectName === undefined || typeof objectName !== 'string'){
+        throw new Error('Invalid objectName type. Expected string.')
+    }
+    else if (e[objectName] === undefined){
+        throw new Error('Variable does not exist in MusicalEnvironment. Please fill in one of the variables that exist and use QuantizedMap(s)')
+    }
+    if (mapName === undefined || typeof mapName !== 'string'){
+        throw new Error('Invalid mapName type. Expected string.')
+    }
+    if (keyspan === undefined){
+        console.warn('kepspan is undefined will automatically use last item of the keys array as keyspanb.')
+    }
+    else if (typeof keyspan !== 'number'){
+        throw new Error('Invalid keyspan type. Expected number')
+    }
+    if (keys instanceof Array === false){
+        throw new Error('Invalid keys type. Expected number')
+    }
+    if (values instanceof Array === false){
+        throw new Error('Invalid values type. Expected number')
+    }
+    //differentiating between object and array from: https://stackoverflow.com/a/7803271/19515980
+    console.info('All checks passed.')
+}
+
+function addMapToMusicalEnvironment (e, objectName, mapName, keyspan, keys, values){
+    checkingAddMapToMusicalEnvironmentArguments(objectName, mapName, keyspan, keys, values)
+    if (objectName === 'rhythmMaps'){
+    }
+    else if (objectName === 'noteMaps' || objectName === 'octaveMaps'){
+    }
+    else if (objectName === 'rhythmPatterns'){
+    }
+    else if (objectName === 'chordProgressions'){
+    }
+}
