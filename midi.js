@@ -45,8 +45,24 @@ function setupMidiRhythm (env, sequenceName, rhythmPatternName = 'default') {
     return sequenceName
 }
 
+//This function is modified to set action as sendPlaybackMessage instead of superDirt
+function setupPlaybackPlayer (env, sequenceName, rhythmPatternName = 'default') {
+    env.players[sequenceName] = new Player(sequenceName);
+    env.players[sequenceName].maskMap = 'default'
+    //env.players[playerName].samplePattern = playerName;
+    env.players[sequenceName].action = 'sendPlaybackMessage';
+    env.players[sequenceName].rhythmMap = rhythmPatternName
+    return sequenceName
+}
+
 //Action function:
 function musicSynthesizerCaller (p,b) {if ((mask(p, e.maskMaps[e.players[p].maskMap] ,(e.currentBeat()),1)) != true) {callMusicSynthesizerRhythm(e, b, p);}}
+e.actions.midiSequencedRhythm = musicSynthesizerCaller
+
+//Action function:
+function sendPlaybackMessage (p,b) {if ((mask(p, e.maskMaps[e.players[p].maskMap] ,(e.currentBeat()),1)) != true) {callMusicSynthesizerRhythm(e, b, p);}}
+e.actions.sendPlaybackMessage = sendPlaybackMessage
+
 
 function filterMode (note, e, b, player){
     let mode = e.modeFilters[player.modeFilter]
@@ -323,12 +339,45 @@ function updateMidiInputList (e){
     })
 }
 
-//NEED TO SEE ACTUAL INPUT MESSAGES TO PROPERLY WRITE THIS PART.
-function receiveInputMessageFunc (deltaTime, message) {
-
+function ignoreMessagesFromInput (e, inputIndex){
+    let currentInput = e.inputs[inputIndex]
+    currentInput.outputPort.off('message', currentInput.inputFunc)
 }
-function receiveMessagesFromInput (e, inputIndex, outputTarget, receiveMessages = false){
-    new Easymidi.Input(e.inputs[inputIndex].inputName).on('message', receiveInputMessageFunc)
-    e.inputs[inputIndex].recordMessage = receiveMessages
-    e.inputs[inputIndex].outputTarget = outputTarget
+
+function receiveMessagesFromInput (e, inputIndex, outputIndex, recordMessages){
+    let currentInput = e.inputs[inputIndex]
+    if (currentInput.recordedMessages === undefined){
+        currentInput.recordedMessages = new QuantizedMap(0, [], [])
+    }
+    if (recordMessages !== undefined){
+        currentInput.recordMessages = recordMessages
+    }
+    currentInput.outputIndex = outputIndex
+    currentInput.inputFunc = (deltaTime, message) => {
+        let currentInput = e.inputs[inputIndex]
+        if (currentInput.outputIndex !== undefined){
+            e.outputs[currentInput.outputIndex].send(deltaTime._type, deltaTime)
+        }
+        if (currentInput.recordMessages === true){
+//             currentInput.recordedMessages.keys.push(e.currentBeat())
+            currentInput.recordedMessages.keys.push(Math.floor(new Date().getTime() / 1000))
+            //Time from: https://stackoverflow.com/a/25250596
+            currentInput.recordedMessages.values.push(deltaTime)
+            currentInput.recordedMessages.keyspan = e.currentBeat() + 2
+        }
+    }
+    currentInput.outputPort = new easymidi.Input(currentInput.inputName)
+    currentInput.outputPort.on('message', currentInput.inputFunc)
+}
+
+function addInputMessageToRecordedMessages (inputIndex, recordedMessagesName){
+    e.recordedMessages[recordedMessagesName] = e.inputs[inputIndex].recordedMessages
+    let messages = e.recordedMessages[recordedMessages]
+    let relativeKeys = [0]
+    messages.keys.forEach((x, i) => {
+        if (i < messages.length - 1){
+            relativeKeys.push(messages[i] - x)
+        }
+    })
+    messages.keys = relativeKeys
 }

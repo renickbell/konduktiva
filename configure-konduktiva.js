@@ -174,6 +174,8 @@ function addToMusicalEnvironment (e){
     e.rootMaps = {} //English alphabets for music
      e.notesInputMode = 'relativeSemitone' //OR 'relativeScaleDegree'
 //     e.notesInputMode = 'relativeScaleDegree' 
+    e.recordedMessages = {}
+     e.messageMaps = {}
 }
 
 //e.players.musicSynthesizerSession3.pattern
@@ -184,3 +186,58 @@ function addToMusicalEnvironment (e){
 // e.play('musicSynthesizerSession3')
 // 
 // e.stop('musicSynthesizerSession3')
+
+function checkIfAllMessagesExist (messageList){
+    messageList.forEach(x => {
+        try{
+            if(e.recordedMessages[x] === undefined){
+                throw new Error('recordedMessage ' + x + ' does not exist.')
+            }
+        }
+        catch{
+            throw new Error('recordedMessage ' + x + ' does not exist.')
+        }
+    })
+}
+
+function scaleQuantizedMapToKeyspan (newKeyspan, map){
+    let scaleFactor = newKeyspan / map.keyspan
+    map.keys = map.keys.map(x => {
+        return x * scaleFactor
+    })
+    map.keyspan = newKeyspan
+    return map
+}
+
+function combineQuantizeMaps (messageList, e){
+    let returnedMap = new QuantizedMap(0, [], [])
+    messageList.forEach(x => {
+        e.recordedMessages[x].keys.forEach(b => {
+            returnedMap.keys.push(b + returnedMap.keyspan)
+        })
+        returnedMap.keyspan += e.recordedMessages[x].keyspan
+        returnedMap.values.push(e.recordedMessages[x].values)
+    })
+    returnedMap.values = returnedMap.values.flat()
+    return returnedMap
+}
+
+function splitOnePlaybackMapIntoMany(e, messageMapName, messageMap){
+}
+function createPlaybackPlayer (e, messageMapName, playerName = messageMapName, totalKeyspan = combineAllKeySpans(messageMapName)){
+    setupPlaybackPlayer(e, playerName, playerName)
+    let messageList = e.messageMaps[messageMapName]
+    checkIfAllMessagesExist(messageList)
+    e.messageMaps[messageMapName] = combineQuantizeMaps(messageList, e)
+    let currentMessageMap = e.messageMaps[messageMapName]
+    e.rhythmMaps[messageMapName] = new QuantizedMap(1, [1] ,new QuantizedMap(currentMessageMap.keyspan, currentMessageMap.keys, currentMessageMap.keys))
+    e.maskMaps[messageMapName] = new QuantizedMap(currentMessageMap.keyspan, currentMessageMap.keys,currentMessageMap.keys.map(x => {return true}))
+    e.noteMaps[messageMapName] = new QuantizedMap(0, [], [])
+    e.noteMaps[messageMapName] = new QuantizedMap(0, [], [])
+    e.noteMaps[messageMapName] = new QuantizedMap(0, [], [])
+    splitOnePlaybackMapIntoMany(e.messageMaps[messageMapName])
+    e.players[playerName].rhythmMap = messageMapName
+    e.players[playerName].maskMap = messageMapName
+}
+
+createPlaybackPlayer(e, 'testios', 'testios', 100)

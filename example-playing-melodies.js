@@ -14,12 +14,19 @@ e.play('musicSynthesizerSession3')
 e.play('musicSynthesizerSession4')
 e.play('musicSynthesizerSession2')
 
+
 // messageAllClients({action: 'animationExample'})
 e.stopAll()
 
 e.stop('musicSynthesizerSession3')
 
 e.currentBeat()
+
+updateMidiInputList(e)
+receiveMessagesFromInput(e, 1, 1, true, 100)
+
+e.recordedMessages['m1'] = e.inputs[1].recordedMessages
+e.messageMaps['testios'] = ['m1']
 //use an L-system to create a melod:
     //keys in L system represent scale degree or operations in scale degree
 
