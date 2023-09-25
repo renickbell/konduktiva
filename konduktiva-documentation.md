@@ -180,10 +180,153 @@ Controls the midi velocity variable from 0-127 at a given beat. The keys are the
 
 ### Methods in the MusicalEnvironment
 ### currentBeat
+-> Number
+
 Returns the current beat of the MusicalEnvironment
+##### Syntax
+```
+e.currentBeat()
+```
+
+##### Parameters
+
+##### Examples
+```
+console.log(e.currentBeat())
+```
+
+---
+
+---
+
 ### changeTempo
+Number ->
+
 Takes a number as an argument and changes the currentTempo to that number.
+##### Syntax
+```
+e.changeTempo(tempo)
+```
+
+##### Parameters
+###### tempo
+New tempo of the current MusicalEnvironment
+
+##### Examples
+```
+console.log(e.changeTempo(100)) //TEMPO CHANGE! time: 5.690928572999313; beat: 8.493846618000418
+console.log(e.changeTempo(120)) //TEMPO CHANGE! time: 22.66408885199949; beat: 36.78241345300153
+```
+
+---
+
+---
+
 ### getAction
+string -> Function
+
 Returns the action function of a specific player in this MusicalEnvironment
 Takes player name in form of a string as an argument.
-##
+##### Syntax
+```
+e.getAction(player)
+```
+
+##### Parameters
+###### player
+Name of a variable in e.players
+
+##### Examples
+```
+console.log(e.getAction('kick')) //[Function (anonymous)]
+console.log(e.getAction('snare')) //[Function (anonymous)]
+```
+
+---
+
+---
+
+### getIOIFunc
+string -> Function
+
+Returns the IOI function of a specific player in this MusicalEnvironment.
+
+##### Syntax
+```
+e.getIOIFunc(player)
+```
+
+##### Parameters
+###### player
+Name of a variable in e.players
+
+##### Examples
+```
+console.log(e.getIOIFunc('kick')) //[Function: defaultIOI]
+console.log(e.getIOIFunc('snare')) //[Function: defaultIOI]
+```
+
+---
+
+---
+
+### scheduleEvents
+ASK BELL
+string -> 
+
+Returns the IOI function of a specific player in this MusicalEnvironment. Not meant to be called by user.
+##### Syntax
+```
+e.scheduledPlayers(player)
+```
+
+##### Parameters
+###### player
+Name of a variable in e.players
+
+##### Examples
+```
+e.scheduleEvents('musicSynthesizerSession1')
+```
+
+---
+
+---
+
+### startScheduler
+
+Starts the scheduler for the MusicalEnvironment. It takes no arguments and returns nothing.
+##### Syntax
+```
+e.startScheduler()
+```
+
+##### Parameters
+
+##### Examples
+```
+e.startScheduler()
+```
+
+---
+
+---
+
+### stopScheduler
+
+Stops the scheduler for the MusicalEnvironment. Takes no arguments and retunrs nothing.
+##### Syntax
+```
+e.stopScheduler()
+```
+
+##### Parameters
+
+##### Examples
+```
+e.stopScheduler()
+```
+
+---
+
+---
