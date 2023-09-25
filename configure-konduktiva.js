@@ -240,14 +240,14 @@ function createPlaybackPlayer (e, messageMapName, playerName = messageMapName, t
     e.players[playerName].maskMap = messageMapName
 }
 
-createPlaybackPlayer(e, 'testios', 'testios', 100)
+// createPlaybackPlayer(e, 'testios', 'testios', 100)
 
 function checkingAddMapToMusicalEnvironmentArguments (objectName, mapName, keyspan, keys, values){
     if (objectName === undefined || typeof objectName !== 'string'){
         throw new Error('Invalid objectName type. Expected string.')
     }
     else if (e[objectName] === undefined){
-        throw new Error('Variable does not exist in MusicalEnvironment. Please fill in one of the variables that exist and use QuantizedMap(s)')
+        throw new Error('Variable does not exist in MusicalEnvironment. Please fill in one of the variables that exist and uses QuantizedMap(s). To check find all variables, do Object.keys(musicalEnvironment)')
     }
     if (mapName === undefined || typeof mapName !== 'string'){
         throw new Error('Invalid mapName type. Expected string.')
@@ -259,23 +259,168 @@ function checkingAddMapToMusicalEnvironmentArguments (objectName, mapName, keysp
         throw new Error('Invalid keyspan type. Expected number')
     }
     if (keys instanceof Array === false){
-        throw new Error('Invalid keys type. Expected number')
+        throw new Error('Invalid keys type. Expected number array')
+    }
+    else if (keys.every(x => typeof x === 'number') === false){
+        throw new Error('Invalid keys type. Expected number array')
     }
     if (values instanceof Array === false){
-        throw new Error('Invalid values type. Expected number')
+        throw new Error('Invalid values type. Expected array')
     }
     //differentiating between object and array from: https://stackoverflow.com/a/7803271/19515980
-    console.info('All checks passed.')
+//     console.info('Preliminary checks have passeed.')
 }
 
+function createDefaultRhythmMap (e, objectName, mapName, keyspan, keys, values){
+    if (checkAllItemsType(values, 'number')) {
+        e.rhythmMaps[mapName] = new QuantizedMap(1, [1], new QuantizedMap(keyspan, keys, values))
+    }
+    return true
+}
+
+function createSubarrayMap (e, objectName, mapName, keyspan, keys, values){
+    if (checkAllItemsType(values, 'array')){
+        e[objectName][mapName] = new QuantizedMap(keyspan, keys, values)
+    }
+    return true
+}
+
+function createRhythmPatternMap (e, objectName, mapName, keyspan, keys, values){
+    if (checkAllItemsType(values, 'boolean')){
+        e.rhythmPatterns[mapName] = new QuantizedMap(keyspan, keys, values)
+    }
+    return true
+}
+
+function createDeafaultMaskMap (e, objectName, mapName, keyspan, keys, values){
+    if (checkAllItemsType(values, 'boolean')){
+        e.maskMaps[mapName] = new QuantizedMap(keyspan, keys, A.flipBooleans(values))
+    }
+    return true
+}
+
+function checkChordProgressionDataType (values){
+    if (findItemType(values) !== 'Array'){
+        throw new Error('invalid values type. expected array. check values')
+    }
+    return values.every((x, i) => {
+        console.log(findItemType(x.data))
+        if (findItemType(x.data) !== 'Array'){
+            throw new error('invalid data type. expected number. check values[' + i + '].data.')
+        }
+        else if (findItemType(x.bool) !== 'boolean'){
+            throw new Error('Invalid boolean type. Expected number. Check values[' + i + '].data.boolean')
+        }
+        return x.data.every(d => {
+            if (findItemType(d.note) !== 'number'){
+                throw new Error('Invalid data note type. Expected number. Check values[' + i + '].data.note')
+            }
+            else if (findItemType(d.octave) !== 'number'){
+                throw new Error('Invalid octave type. Expected number. Check values[' + i + '].data.octave')
+            }
+            else if (findItemType(d.rootNote) !== 'string'){
+                throw new Error('Invalid rootNote type. Expected number. Check values[' + i + '].data.rootNote')
+            }
+            else if (findItemType(d.velocity) !== 'number'){
+                throw new Error('Invalid velocity type. Expected number. Check values[' + i + '].data.velocity')
+            }
+            return true
+        })
+    })
+}
+
+function createChordProgressionMap (e, objectName, mapName, keyspan, keys, values){
+    if (checkAllItemsType(values, 'object') && checkChordProgressionDataType(values)){
+        e.chordProgressions[mapName] = new QuantizedMap(keyspan, keys, values)
+    }
+}
+
+function createDefaultMap (e, objectName, mapName, keyspan, keys, values){
+    if (checkAllItemsType(values, 'number')){
+        e[objectName][mapName] = new QuantizedMap(keyspan, keys, values)
+    }
+}
+
+function createSongMap (e, objectName, mapName, keyspan, keys, values){
+    if (checkAllItemsType(values, 'string') === false){
+        throw new Error ('Invalid items in values array. Expected an array filled with strings.')
+    }
+    else if (values.every((x, i) => {if (e.chordProgressions[x] === undefined){
+        throw new Error (x + ' is not a property name of musicalEnvironment.chordProgressions. Fix index ' + i)
+        return false
+        }
+        return true
+    }) === false){
+        throw new Error ('Invalid items in values array. Expected name of a property in musicalEnvironment.chordProgressions')
+            }
+    else {
+        e.song[mapName] = new QuantizedMap(keyspan, keys, values)
+    }
+    return true
+}
+
+// createSongMap(e, 'song', 'yo', 100, [0, 1, 2, 3], ['lsystem', 'twelveBars', 'lsystem', 'scarboroughFair' ])
 function addMapToMusicalEnvironment (e, objectName, mapName, keyspan, keys, values){
     checkingAddMapToMusicalEnvironmentArguments(objectName, mapName, keyspan, keys, values)
-    if (objectName === 'rhythmMaps'){
+    switch (objectName){
+        case'rhythmMaps':
+            createDefaultRhythmMap(e, objectName, mapName, keyspan, keys, values)
+            break;
+        case 'noteMaps':
+        case 'octaveMap':
+            createSubarrayMap(e, objectName, mapName, keyspan, keys, values)
+            break;
+        case 'rhythmPatterns':
+            createRhythmPatternMap(e, objectName, mapName, keyspan, keys, values)
+        case 'maskMaps':
+            createDeafaultMaskMap(e, objectName, mapName, keyspan, keys, values)
+            break;
+        case 'chordProgressions':
+            createChordProgressionMap(e, objectName, mapName, keyspan, keys, values)
+            break;
+        case 'song':
+            createSongMap(e, objectName, mapName, keyspan, keys, values)
+            break;
+        default: 
+            createDefaultMap(e, objectName, mapName, keyspan, keys, values);
     }
-    else if (objectName === 'noteMaps' || objectName === 'octaveMaps'){
+    console.log('Successfully created ', objectName, ' named ', mapName)
+    return true
+}
+
+addMapToMusicalEnvironment(e, 'rhythmMaps', 'chalk', 10, [0, 1, 2, 3], [4, 5, 6, 7])
+
+function findItemType (item){
+    if (typeof item === 'object' && item instanceof Array){
+        //differentiating between object and array from: https://stackoverflow.com/a/7803271/19515980
+        return 'Array'
     }
-    else if (objectName === 'rhythmPatterns'){
+    return typeof item
+}
+
+function typesOfItemsInArray (inputArray){
+    let types = {}
+    inputArray.forEach((x, i) => {
+        let finalType = findItemType(x)
+        if (types[finalType] === undefined){
+            types[finalType] = [i]
+        }
+        else {
+            types[finalType].push(i)
+        }
+    })
+    return types
+}
+
+function checkAllItemsType (inputArray, type){
+    let arrayInfo = typesOfItemsInArray(inputArray)
+    if (Object.keys(arrayInfo).length !== 1){
+        return false
     }
-    else if (objectName === 'chordProgressions'){
+    else if (Object.keys(arrayInfo)[0].toLowerCase() === type.toLowerCase()){
+        return true
+    }
+    else {
+        return false
     }
 }
