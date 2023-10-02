@@ -330,3 +330,116 @@ e.stopScheduler()
 ---
 
 ---
+
+### play
+String -> 
+
+#### Syntax
+```
+e.play(player)
+```
+
+#### Parameters
+##### players
+Player name
+
+### Examples
+```
+e.play('musicSynthesizerSession1')
+```
+
+---
+
+---
+
+### stop
+String -> 
+
+#### Syntax
+```
+e.stop(player)
+```
+
+#### Parameters
+##### players
+Player name
+
+### Examples
+```
+e.stop('musicSynthesizerSession1')
+```
+
+---
+
+---
+
+### allPlayers
+ -> 
+
+Returns an array of all the player names.
+##### Syntax
+```
+e.allPlayers()
+```
+
+##### Parameters
+
+##### Examples
+```
+console.log(e.allPlayers)
+```
+
+---
+
+---
+
+### allPlayerStatus
+ -> [[String, String] ...]
+
+
+## Interacting with the Musical Environment
+
+There are different ways you can interacte and change things in the MusicalEnvironment. You can change it by doing ```e.variable = ```. This way is excellent if you are familliar with what you are doing and if you have time. When live coding we often have to act and think quickly. When doing this is is especially easy to make mistakes when making QuanitzedMaps. 
+
+### addMapToMusicalEnvironment
+
+This function helps add QuantizedMaps into the MusicalEnvironment with correct types. If something is wrong, this function will throw an error. 
+##### Syntax
+```
+addMapToMusicalEnvironment (e, objectName, mapName, keyspan, keys, values)
+```
+
+##### Parameters
+###### e
+MusicalEnvironment
+###### objectName
+Name of a variable in the MusicalEnvironment to add to.
+###### mapName
+Name of the new QuantizedMap.
+###### keyspan
+Th keyspan of the new QuantizedMap.
+###### keys
+The keys of the new QuantizedMap.
+###### values
+The values of the new QuantizedMap.
+
+##### Examples
+```
+addMapToMusicalEnvironment(e, 'rhythmMaps', 'chalk', 10, [0, 1, 2, 3], [4, 5, 6, 7])
+console.log(e.rhythmMaps.chalk)
+/*
+QuantizedMap {
+  keyspan: 1,
+  keys: [ 1 ],
+  values: QuantizedMap {
+    keyspan: 10,
+    keys: [ 0, 1, 2, 3 ],
+    values: [ 4, 5, 6, 7 ]
+  }
+}
+*/
+```
+
+---
+
+---
