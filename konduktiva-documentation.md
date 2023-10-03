@@ -102,7 +102,15 @@ QuantizedMap
 
 ## MusicalEnvironment
 
+This is a class used for storing all of the data that is needed for producing a performance with Konduktiva, including Players, Actions, IOI functions, RhythmMaps, and so on.
 You populate the MusicalEnvironment with Players, IOI functions, and action functions. The tempo exists as a property of this MusicalEnvironment.
+
+### Constructor
+ The constructor takes no arguments. Call it to get a default MusicalEnvironment which can then be adjusted to your needs.
+ 
+ ```
+ e = new MusicalEnvironment();
+ ```
 
 ### Variables in the MusicalEnvironment
 The titles of each variable in this documentation are aimed at giving as much information as possible. For example, the first title "bools: boolean[]". "bools" is the variable name and "boolean[]" tells you that the variable bools is supposed to be an array full of booleans.
