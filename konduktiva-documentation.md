@@ -6,10 +6,15 @@ Konduktiva is a JavaScript library for live coding, an improved version of the C
 
 ## Installation
 
-1. Install the files by downloading the files on this page as a zip or use git to download the files by typing this command in the terminal:
+1. Install by using NPM or use git to download the files by typing this command in the terminal:
     ```
     git clone https://github.com/mrname5/Using-Konduktiva-With-MIDI.git
     ```
+    OR
+    ```
+    npm i @renickbell/konduktiva
+    ```
+
 2. Install [Nodejs](https://nodejs.org/en). If [npm](https://www.npmjs.com/package/npm) does not automatically get installed with Nodejs, [install npm](https://github.com/npm/cli).
 
     2.1. Check if nodejs is installed by running this command in the terminal:
@@ -446,6 +451,144 @@ QuantizedMap {
   }
 }
 */
+```
+
+---
+
+---
+
+### Players
+Players are processes that can be started or stopped using the metaphor of a player in a musical ensemble like a band or orchestra.
+
+Players are data structures to represent an agent which carries out Action functions in time according to an IOI function.
+
+Players can be used for a single or multiple outputs. Anything that can be manipulated with a JavaScript function call can be an output. Actions for the SuperDirt sampler and MIDI are included in the distribution.
+
+By starting and stopping Players, a performance can be realized.
+
+
+##### Syntax
+```
+new Player(name)
+```
+
+##### Parameters
+###### name
+Name of the player. This will also be the value of the name variable in the player.
+
+##### Examples
+```
+e.players.testPlayer = new Player('testPlayer')
+e.players.testPlayer.maskMap = 'default'
+e.players.testPlayer.action = 'midiSequencedRhythm'
+e.players.testPlayer.rhythmMap = 'default'
+console.log(e.palyers.testPlayer)
+```
+
+This class is usually called by helper functions like setupMidiRhythm or setupPlaybackPlayer. To make the the player work, the user needs to give it a maskMap, action function and, a rhythmMap.
+
+---
+
+---
+
+### QuantizedMap
+
+A QuantizedMap is a discrete function in which an input returns one of a set of possible outputs.
+
+A common use is to provide a set of time intervals from 0 to n in which each interval is mapped to a specific output.
+
+##### Quantized Map
+###### Keyspan: number
+Keyspan is the total
+###### Keys: number[]
+An array of numbers in ascending order.
+###### values: number[]
+###### To make a new Quantized Map
+```
+new QuantizedMap(keyspan, keys, values)
+```
+###### nearestLookup: Method
+Takes a number as an input and will look for a number in the keys array that is closest to it compared to the others. It will then take the index of that number and return the value array using that index.
+###### floorLookup: Method
+The floorLookup method does something similar to nearestLookup but when it looks for the closest it always looks for a number smaller than it.
+###### wrapLookup: Method
+The wrapLookup method is also similar to the nearestLookup method but when the number provided is greater than the keyspan, it does not return the last item in the values array instead it loops back around.
+
+---
+
+---
+
+### RhythmPattern
+
+A RhythmPattern is a set of parameters bundled as an object which is used to create a rhythm pattern and mask pattern for a particular Player.
+
+#### Methods 
+##### constructor
+String -> Number -> [Number ...] -> [Boolean] -> Object
+
+Creates the RhythmPattern
+##### Syntax
+```
+new RhythmPattern(n, l, i, b)
+```
+
+##### Parameters
+###### n
+Name of the rhythmPattern.
+###### l
+Length of the rhythmPattern
+###### i
+A number array filled with the booleans "true" and "false".
+
+##### Examples
+```
+let testR = new RhythmPattern('dopeRhythm', 5, [2, 2, 2, 2, 2], [true, false, true, true])
+```
+
+---
+
+---
+##### addToPlayer
+MusicalEnvironment -> String -> 
+
+Adds this RhythmPattern to a player.
+##### Syntax
+```
+testR.addToPlayer(env, playerName)
+```
+
+##### Parameters
+###### env
+MusicalEnvironment
+###### playerName
+Name of the player to add to.
+
+##### Examples
+```
+testR.addToPlayer(e, 'p3')
+```
+
+---
+
+---
+##### add
+MusicalEnvironment -> String -> 
+
+Adds to MusicalEnvironment but does not add to a player.
+##### Syntax
+```
+testR.add(env, playerName)
+```
+
+##### Parameters
+###### env
+MusicalEnvironment
+###### playerName
+Name of the player to add to.
+
+##### Examples
+```
+testR.add(e, 'p3')
 ```
 
 ---
