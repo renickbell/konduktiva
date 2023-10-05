@@ -14,10 +14,15 @@ This document works as both a documentation and a tutorial about how to use the 
 
 ### Installation:
 
-1. Install the files by downloading the files on this page as a zip or use git to download the files by typing this command in the terminal:
+1. Install by using NPM or use git to download the files by typing this command in the terminal:
     ```
     git clone https://github.com/mrname5/Using-Konduktiva-With-MIDI.git
     ```
+    OR
+    ```
+    npm i @renickbell/konduktiva
+    ```
+
 2. Install [Nodejs](https://nodejs.org/en). If [npm](https://www.npmjs.com/package/npm) does not automatically get installed with Nodejs, [install npm](https://github.com/npm/cli).
 
     2.1. Check if nodejs is installed by running this command in the terminal:
