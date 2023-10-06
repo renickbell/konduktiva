@@ -409,7 +409,190 @@ console.log(e.allPlayers)
 ### allPlayerStatus
  -> [[String, String] ...]
 
+Returns an array full of arrays. Each sub array contains the player name and their status. All the player names and their status also gets logged into the console.
+##### Syntax
+```
+e.allPlayerStatus()
+```
 
+##### Parameters
+
+##### Examples
+```
+console.log(e.allPlayerStatus())
+/*
+[
+  [ 'kick', 'stopped' ],
+  [ 'snare', 'stopped' ],
+  [ 'perc', 'stopped' ],
+  [ 'hat', 'stopped' ],
+  [ 'sub', 'stopped' ],
+  [ 'stab1', 'stopped' ],
+  [ 'stab2', 'stopped' ],
+  [ 'atmo', 'stopped' ],
+  [ 'musicSynthesizerSession1', 'stopped' ]
+]
+*/
+```
+
+---
+
+---
+
+### playingPlayers
+ ->
+
+Returns an array of all the names of players that are currently playing.
+##### Syntax
+```
+e.playingPlayers()
+```
+
+##### Parameters
+
+##### Examples
+```
+console.log(e.playingPlayers()) //[]
+```
+
+---
+
+---
+
+### playN
+[String] -> 
+
+Starts playing all the player names in the array.
+
+##### Syntax
+```
+e.playN(ps)
+```
+
+##### Parameters
+###### ps
+An array of player names.
+
+##### Examples
+```
+e.playN(['musicSynthesizerSession1', 'musicSynthesizerSession2'])
+```
+
+---
+
+---
+
+
+### stopN
+[String] -> 
+
+Stops playing all the player names in the array.
+
+##### Syntax
+```
+e.stopN(ps)
+```
+
+##### Parameters
+###### ps
+An array of player names.
+
+##### Examples
+```
+e.stopN(['musicSynthesizerSession1', 'musicSynthesizerSession2'])
+```
+
+---
+
+---
+
+### playAll
+ ->
+
+All players start playing.
+
+##### Syntax
+```
+e.playAll()
+```
+
+##### Parameters
+
+##### Examples
+```
+e.playAll()
+```
+
+---
+
+---
+
+### stopAll
+ ->
+
+All players stop playing.
+
+##### Syntax
+```
+e.stopAll()
+```
+
+##### Parameters
+
+##### Examples
+```
+e.stopAll()
+```
+
+---
+
+---
+
+### solo
+
+[String] ->
+
+Stops playing all the player names in the array after checking if the players exist inside the MusicalEnvironment.
+##### Syntax
+```
+e.solo(ps)
+```
+
+##### Parameters
+###### ps
+An array of player names.
+
+##### Examples
+```
+e.stopN(['musicSynthesizerSession1', 'musicSynthesizerSession2'])
+```
+
+---
+
+---
+
+### togglePlayer
+String -> 
+
+Toggles the state of a specific player. If that player is playing it will be stopped. If that player is stopped, it will start playing.
+
+##### Syntax
+```
+e.togglePlayer(p)
+```
+
+##### Parameters
+###### p
+Player name
+
+##### Examples
+```
+e.togglePlayer('musicSynthesizerSession1')
+```
+
+---
+
+---
 ## Interacting with the Musical Environment
 
 There are different ways you can interacte and change things in the MusicalEnvironment. You can change it by doing ```e.variable = ```. This way is excellent if you are familliar with what you are doing and if you have time. When live coding we often have to act and think quickly. When doing this is is especially easy to make mistakes when making QuanitzedMaps. 
