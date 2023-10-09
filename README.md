@@ -17,16 +17,7 @@ This document works as both a documentation and a tutorial about how to use the 
 
 ### Installation:
 
-1. Install by using NPM or use git to download the files by typing this command in the terminal:
-    ```
-    git clone https://github.com/mrname5/Using-Konduktiva-With-MIDI.git
-    ```
-    OR
-    ```
-    npm i @renickbell/konduktiva
-    ```
-
-2. Install [Nodejs](https://nodejs.org/en). If [npm](https://www.npmjs.com/package/npm) does not automatically get installed with Nodejs, [install npm](https://github.com/npm/cli).
+1. Install [Nodejs](https://nodejs.org/en). If [npm](https://www.npmjs.com/package/npm) does not automatically get installed with Nodejs, [install npm](https://github.com/npm/cli).
 
     2.1. Check if nodejs is installed by running this command in the terminal:
     ```
@@ -39,7 +30,16 @@ This document works as both a documentation and a tutorial about how to use the 
 
     2.3. You can close the terminals you have opened prior to this step.
 
-3. Open the terminal, move to the directory called using-konduktiva-with-midi. This effect can be achieved by using the ``` cd [directory name command] ``` command or navigate to that directory with the file manager and right click to open a terminal session there. We will call this terminal session t1. Then, run this command:
+2. Install Konduktiva by using NPM or use git to download the files by typing this command in the terminal. You might choose to move the installation location to outside the node modules folder because it is not meant to be used with await import or requrie. It is meant to be used in the global scope.:
+    ```
+    git clone https://github.com/mrname5/Using-Konduktiva-With-MIDI.git
+    ```
+    OR
+    ```
+    npm i @renickbell/konduktiva
+    ```
+
+3. Open the terminal, move to the directory where the code has been installed in. This effect can be achieved by using the ``` cd [directory name command] ``` command or navigate to that directory with the file manager and right click to open a terminal session there. We will call this terminal session t1. Then, run this command:
     ```
     node installer.js
     ```
@@ -56,7 +56,9 @@ This document works as both a documentation and a tutorial about how to use the 
     node
     ```
 
-3. Paste the contents of example-session-with-melodies.js inside t1.
+3. Inside the nodejs session in t1 paste this the contents of example-session-with-melodies.js.
+
+**NOTE**: This called is not meant to be used in the global scope. Things might not work as intended when it is used with require or await import.
 
 4. Now you can try pasting the code in example-playing-melodies.js(A file where all the other necessary files are loaded) into t1. You will see that now you are able to control the music. Instructions on how to do so are below.
 

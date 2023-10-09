@@ -2,6 +2,11 @@
 // -- command-history-playback.js
 // --------------------------------------------------------------------------
 // Works as long as all dependencies are there.
+// Tried using eval to use require and await import. DID not work require and await import only works in top level modules not meant to be called programmatically
+// Tried using .load 
+// Using tmux send keys might be an option. This example is from bard AI:
+// tmux send-keys -t <window number>.<pane number> <stuff>
+// tmux send-keys -t 1.2 "Hello, world!"
 // I got the eval method I use from: https://stackoverflow.com/a/23699187/19515980
 fs = require('fs')
 path = require('path');
@@ -140,38 +145,41 @@ class CommandHistoryPlayer {
         }
     }
     tryImportingDependencies (command){
-        let libraryName = command.slice(command.indexOf('(') + 1, command.indexOf(')'))
-        let variableName = command.slice(0, command.indexOf('='))
-        console.log('importing modules')
-        let endVariableName = this.checkForEndVariableName(command, variableName)
-        try{
-            if ((1, eval)(variableName) !== undefined){
-                return true
-            }
-        }catch{}
-        try{
-            if (endVariableName === undefined){
-                console.log('trying require to import library: ', '(' + variableName + ' = require(' + libraryName + '))')
-                (1, eval)('(' + variableName + ' = require(' + libraryName + '))')
-                console.log('succeded with importing with require')
-            }
-            else {
-                console.log('trying require to import library: ', '(' + endVariableName + ' = require(' + libraryName + '))')
-                (1, eval)('(' + endVariableName + ' = require(' + libraryName + '))')
-                console.log('succeded with importing with require')
-                this.playbackFile.userInputs.splice(this.actionIndex + 1, 1)
-            }
-
+        let command = 'R = await import(ramda)'
+//         let libraryName = command.slice(command.indexOf('(') + 1, command.indexOf(')'))
+//         let variableName = command.slice(0, command.indexOf('='))
+//         console.log('importing modules')
+//         let importInString = variableName + "= await import('" + libraryName +" ')"
+        fs.writeFileSync('importing-library.js', command)
+        (1, eval)(".load ./importing-library.js")
+//         let endVariableName = this.checkForEndVariableName(command, variableName)
+//         try{
+//             if ((1, eval)(variableName) !== undefined){
+//                 return true
+//             }
+//         }catch{}
+//         try{
+//             if (endVariableName === undefined){
+//                 console.log('trying require to import library: ', '(' + variableName + ' = require(' + libraryName + '))')
+//                 (1, eval)('(' + variableName + ' = require(' + libraryName + '))')
+//                 console.log('succeded with importing with require')
+//             }
+//             else {
+//                 console.log('trying require to import library: ', '(' + endVariableName + ' = require(' + libraryName + '))')
+//                 (1, eval)('(' + endVariableName + ' = require(' + libraryName + '))')
+//                 console.log('succeded with importing with require')
+//                 this.playbackFile.userInputs.splice(this.actionIndex + 1, 1)
+//             }
+//         catch{
+//             try{
+//                 (1, eval)('(() => {import(' + libraryName + ').then(module => {' + variableName + '= module.default || module})})()')
+//             }
+//             catch{
+//                 this.promptUserToManuallyImportLibrary(command, variableName)
+//             }
+//         }
+//     }
         }
-        catch{
-            try{
-                (1, eval)('(() => {import(' + libraryName + ').then(module => {' + variableName + '= module.default || module})})()')
-            }
-            catch{
-                this.promptUserToManuallyImportLibrary(command, variableName)
-            }
-        }
-    }
     preEvaluateChecks (command){
         if (command.slice(0, 6).includes('.load') || command.slice(0, 2) === '//'){
             return false
@@ -233,7 +241,7 @@ class CommandHistoryPlayer {
 //console.log('running action', currentCommandInfo)
 
 // historyPlayer1 = new CommandHistoryPlayer('./15Aug-repl-history-9-.txt')
-historyPlayer1 = new CommandHistoryPlayer('./16Aug-repl-history-3-.txt')
+historyPlayer1 = new CommandHistoryPlayer('./libraries-to-import.txt')
 historyPlayer1.play()
 
 historyPlayer1.arop()
@@ -274,3 +282,14 @@ historyPlayer1.repeat()
 function asyncImportEvalTest (libraryName, variableName){
     (1, eval)('(' + variableName + ' = require(' + JSON.stringify(libraryName) + '))')
 }
+
+function importingLibraries(command) {
+  console.log('trying to import shit', command, fs);
+  fs.writeFileSync('importing-library.js', command);
+  let variableName = command.slice(0, command.indexOf('='))
+
+//    (1, eval)(".load ./importing-library.js");
+}
+
+importingLibraries("A = await import('array-toolkit')")
+
