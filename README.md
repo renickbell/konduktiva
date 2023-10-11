@@ -284,7 +284,7 @@ This will give you all the outputs easymidi detects and you can edit the functio
 
 MIDI configuration. Configure your system so that easymidi can detect midi outputs.
 
-That is OS specific.
+This is OS specific.
 
 ### Playing with MIDI
 The final MIDI value which is played is a function of:
