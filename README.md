@@ -1,4 +1,5 @@
-# Using-Konduktiva-With-MIDI
+# Konduktiva 
+Using-Konduktiva-With-MIDI
 initial author: Renick Bell (renick@gmail.com)
 
 initial creation date: Wed Jun 28 10:08:48 AM CST 2023
