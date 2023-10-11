@@ -12,7 +12,7 @@
     "tonal": "^5.0.0"
   },
   "name": "@renickbell/konduktiva",
-  "version": "1.1.5",
+  "version": "1.2.0",
   "repository": {
       "type": "git",
       "url": "git+https://github.com/renickbell/konduktiva.git"
