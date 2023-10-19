@@ -1,5 +1,5 @@
 // --------------------------------------------------------------------------
-// -- konduktiva-configuration-setup.js
+// -- auto-configure-vim-tmux.js
 // --------------------------------------------------------------------------
 //Helped by Github Copilot
 //Helped by BardAI
@@ -86,7 +86,7 @@ function addTmuxConfig(vimrcPath) {
 function findVimrcOnUnix() {
     let homePath = process.env.HOME;
     if (fs.existsSync(homePath + '/.vimrc') === false && fs.existsSync(homePath + '/.vim/vimrc') === false) {
-        console.log('vimrc found')
+        console.log('vimrc not found')
         createVimrcUnix()
         return true
     }
@@ -125,13 +125,33 @@ function findVimrcOnWindows() {
 //vimrc locations: https://stackoverflow.com/a/60932757/19515980
 
 async function createTslimeUnix() {
-    let vimrc = await fetchText("https://renickbell.net/vim/plugin/tslime.vim")
-    fs.writeFileSync(homePath + '/.vim/plugin/tslime.vim', vimrc);
+    let tslime = await fetchText("https://renickbell.net/vim/plugin/tslime.vim")
+    //Check if the .vim directory exists if it does not create it in the homepath:
+    if (fs.existsSync(homePath + '/.vim') === false){
+        fs.mkdirSync(homePath + '/.vim')
+        console.log('.vim directory created')
+    }
+    //check if the plugin directory exists if it does not create it in the .vim directory:
+    if (fs.existsSync(homePath + '/.vim/plugin') === false){
+        fs.mkdirSync(homePath + '/.vim/plugin')
+        console.log('.vim/plugin directory created')
+    }
+    fs.writeFileSync(homePath + '/.vim/plugin/tslime.vim', tslime);
     console.log('tslime.vim created for Unix')
 }
 
 async function createTslimeWindows() {
     let vimrc = await fetchText("https://renickbell.net/vim/plugin/tslime.vim")
+    //Check if the .vim directory exists if it does not create it in the homepath:
+    if (fs.existsSync(homePath + '/vimfiles') === false){
+        fs.mkdirSync(homePath + '/vimfiles')
+        console.log('vimfiles directory created')
+    }
+    //check if the plugin directory exists if it does not create it in the .vim directory:
+    if (fs.existsSync(homePath + '/vimfiles/plugin') === false){
+        fs.mkdirSync(homePath + '/vimfiles/plugin')
+        console.log('vimfiles/plugin directory created')
+    }
     fs.writeFileSync(homePath + '/vimfiles/plugin/tslime.vim', vimrc);
     console.log('tslime.vim created for Windows')
 }
@@ -176,5 +196,3 @@ if (platform === 'darwin'){
 
 //Meaning of process.os(): https://stackoverflow.com/a/8684009/19515980
 //VIM does not come witha .vimrc: https://g.co/bard/share/d3ace3c4963d
-
-
