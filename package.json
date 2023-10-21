@@ -2,10 +2,11 @@
   "dependencies": {
     "array-toolkit": "^3.3.4",
     "easymidi": "^3.1.0",
+    "http-server": "^14.1.1",
     "osc": "^2.4.4",
     "path": "^0.12.7",
     "perf_hooks": "^0.0.1",
-    "ramda": "^0.29.0",
+    "ramda": "^0.29.1",
     "socket.io": "^4.7.2",
     "socket.io-client": "^4.7.2",
     "tasktimer": "^3.0.0",
@@ -14,14 +15,14 @@
   "name": "@renickbell/konduktiva",
   "version": "1.2.0",
   "repository": {
-      "type": "git",
-      "url": "git+https://github.com/renickbell/konduktiva.git"
+    "type": "git",
+    "url": "git+https://github.com/renickbell/konduktiva.git"
   },
   "author": "Renick Bell",
   "contributors": "Steve Wang, Yiler Huang",
-    "bugs": {
+  "bugs": {
     "url": "https://github.com/renickbell/konduktiva/issues"
-    },
+  },
   "license": "GPL-3.0",
   "homepage": "https://github.com/renickbell/konduktiva"
 }

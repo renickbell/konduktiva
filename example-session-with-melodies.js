@@ -31,11 +31,14 @@
 .load ./utilities-general.js
 .load ./lsystem.js
 .load ./chords.js
+// .load ./working-chords.js
 .load ./example-chord-progression-scarborough-fair.js
 .load ./rhythm.js
+// .load ./working-rhythm.js
 .load ./websocket.js
 .load ./harmony.js
 .load ./configure-konduktiva.js
+// .load ./working-configure-konduktiva.js
 .load ./generate-melody.js
 .load ./midi.js
 e.actions.midiSequencedRhythm = musicSynthesizerCaller
@@ -49,4 +52,16 @@ e.actions.midiSequencedRhythm = musicSynthesizerCaller
 
 //chord progression map is the new name for the timeline thing
 
-//arrayTransformations.js dataToArray.js infoFromArray.js konduktiva-revised-2.js testingKonduktiva-revised.js konduktiva-superdirt-revised.js defaultSuperDirtPlayers-revised.js utilities-array.js utilities-string.js utilities-music.js utilities-general.js lsystem.js chords.js example-chord-progression-scarborough-fair.js rhythm.js websocket.js harmony.js configure-konduktiva.js generate-melody.js midi.js example-websocket-session.js example-melodies-data.js
+//konduktiva-revised-2.js testingKonduktiva-revised.js konduktiva-superdirt-revised.js defaultSuperDirtPlayers-revised.js utilities-string.js utilities-music.js utilities-general.js lsystem.js chords.js example-chord-progression-scarborough-fair.js rhythm.js websocket.js harmony.js configure-konduktiva.js generate-melody.js midi.js example-websocket-session.js example-melodies-data.js
+
+/*
+ * break into multiple modules
+
+core konduktiva in its own module
+
+chords and other crap in other module
+
+
+
+Today make musical environment argument and make e setup functions
+*/

@@ -74,25 +74,29 @@ function generateChordsV2 (root, octave, progression) {
 function createNoteSpans (noteValueData, e){
     noteValueData.noteDurations = A.resizeArray(noteValueData.noteValues.length, noteValueData.noteDurations)
 //     noteValueData.bools = A.resizeArray(noteValueData.noteValues.length, noteValueData.bools)
+    return noteValueData
 }
 
 //Creating notespan values from noteValueData:
-function createNoteSpanValues (noteValueData, name){
+function createNoteSpanValues (noteValueData, name, e){
     if (noteValueData.noteDurationValues !== undefined && noteValueData.noteDurationKeyspan !== undefined){
+        console.log('1aaaa')
     e.noteDurationMaps[name] = new QuantizedMap(noteValueData.noteDurationKeyspan, noteValueData.noteDurations, noteValueData.noteDurationValues)
     }
     else if (noteValueData.noteDurationValues !== undefined && noteValueData.noteDurationKeyspan === undefined){
+        console.log('2')
         console.log('noteDurationValues defined')
     e.noteDurationMaps[name] = new QuantizedMap(noteValueData.noteDurations.length, noteValueData.noteDurations, noteValueData.noteDurationValues)
     }
     else{
+        console.log('3')
     e.noteDurationMaps[name] = new QuantizedMap(noteValueData.noteDurations.length, A.buildArray(noteValueData.noteDurations.length, x => {return x}), noteValueData.noteDurations)
     }
 }
 
 //Create quantizedMaps that have to do with notes and other things related to note: 
 function createNoteRelatedMaps (noteValueData, name, e){
-    createNoteSpanValues(noteValueData, name)
+    createNoteSpanValues(noteValueData, name, e)
     console.log(name, e)
     if (noteValueData.noteValuesKeys === undefined){
         noteValueData.noteValuesKeys = A.buildArray(noteValueData.noteValues.length, x => {return x})
@@ -241,7 +245,7 @@ function conditionalNoteConfigurations (chosenProgression, configurationObj){
 //     return configurationObj
 // }
 
-function assignChordProgressionToPlayer (chosenChordProgression){
+function assignChordProgressionToPlayer (chosenChordProgression, e){
     let chosenProgression = e.chordProgressions[chosenChordProgression]
     let configurationObj = sortIntoConfigurationObj(chosenProgression)
     configurationObj = inputOtherNecessaryConfigurationVariables(configurationObj)
@@ -279,7 +283,7 @@ function checkIfChangeChordProgression (e, b, player){
     else {
         let defaultName = A.findMostFrequentItem(Object.values(player))
         console.log('step1')
-    recordConfigurationDataIntoMusicalEnvironment(assignChordProgressionToPlayer(correctCurrentChordProgression), defaultName, e)
+    recordConfigurationDataIntoMusicalEnvironment(assignChordProgressionToPlayer(correctCurrentChordProgression, e), defaultName, e)
         console.log('step2')
         assignPlayerForMusicSynthesizerSession(e, 3, {rhythmMapName: 'straight'}, defaultName)
         console.log('step3')
@@ -338,7 +342,7 @@ function convertMusicalLettersToMidi (letterArray){
 }
 //Helped by chatgpt
 
-function makeChordProgression (name, total, iois, notes, octaves){
+function makeChordProgression (name, total, iois, notes, octaves, e){
     if (iois === undefined){
         let splitNotes = separateOctaveAndRoot(iois.map(x => {
             return x[1]

@@ -14,7 +14,7 @@ function assignPlayerForMusicSynthesizerSession (e, session, defaultName, player
     else if (defaultName !== undefined && playerData.velocityMapName === undefined){
         playerData.velocityMapName = defaultName
     }
-    if (checkIfSessionPlayerExist(session) === undefined){
+    if (checkIfSessionPlayerExist(session, e) === undefined){
     createSessionPlayer(e, session, playerData.velocityMapName, playerData.noteMapName, playerData.octaveMapName, playerData.rhythmMapName, playerData.polyphonyMapName, playerData.noteDurationMapName, playerData.maskMapName, playerData.rhythmPatternName, playerData.chordProgressionMapName, playerData.controlChangeMapName, playerData.modeFilterName, playerData.rootMapName, playerData.modeMapName, playerData.channel)
     }
     else{
@@ -23,7 +23,7 @@ function assignPlayerForMusicSynthesizerSession (e, session, defaultName, player
 }
 
 //Check if this player name has been used:
-function checkIfSessionPlayerExist (session){
+function checkIfSessionPlayerExist (session, e){
     return Object.keys(e.players).find(x => x === 'musicSynthesizerSession' + session)
 }
 
@@ -130,9 +130,11 @@ function createModeMaps (noteValueData, name, e){
     }
 }
 
+let hi;
 //Create maps and other things from noteValue Data and save these new things in the musical environment:
 function recordConfigurationDataIntoMusicalEnvironment (noteValueData, name, e){
     createNoteSpans(noteValueData, e)
+    console.log('ejrngiekrjgbeirgbekrgjbebr', noteValueData)
     createNoteRelatedMaps(noteValueData, name, e)
     createOctaveMaps(noteValueData, name, e)
 //     e.rootNoteMaps[name] = new QuantizedMap(noteValueData.rootNote.length, A.buildArray(noteValueData.rootNote.length, x => {return x}), noteValueData.rootNote)
@@ -178,6 +180,8 @@ function addToMusicalEnvironment (e){
      e.messageMaps = {}
 }
 
+addToMusicalEnvironment(e)
+
 //e.players.musicSynthesizerSession3.pattern
 
 // let twelveBarsConfiguration = assignChordProgressionToPlayer('p3', 'lsystem') 
@@ -187,7 +191,7 @@ function addToMusicalEnvironment (e){
 // 
 // e.stop('musicSynthesizerSession3')
 
-function checkIfAllMessagesExist (messageList){
+function checkIfAllMessagesExist (messageList, e){
     messageList.forEach(x => {
         try{
             if(e.recordedMessages[x] === undefined){
@@ -227,7 +231,7 @@ function splitOnePlaybackMapIntoMany(e, messageMapName, messageMap){
 function createPlaybackPlayer (e, messageMapName, playerName = messageMapName, totalKeyspan = combineAllKeySpans(messageMapName)){
     setupPlaybackPlayer(e, playerName, playerName)
     let messageList = e.messageMaps[messageMapName]
-    checkIfAllMessagesExist(messageList)
+    checkIfAllMessagesExist(messageList, e)
     e.messageMaps[messageMapName] = combineQuantizeMaps(messageList, e)
     let currentMessageMap = e.messageMaps[messageMapName]
     e.rhythmMaps[messageMapName] = new QuantizedMap(1, [1] ,new QuantizedMap(currentMessageMap.keyspan, currentMessageMap.keys, currentMessageMap.keys))
@@ -242,7 +246,7 @@ function createPlaybackPlayer (e, messageMapName, playerName = messageMapName, t
 
 // createPlaybackPlayer(e, 'testios', 'testios', 100)
 
-function checkingAddMapToMusicalEnvironmentArguments (objectName, mapName, keyspan, keys, values){
+function checkingAddMapToMusicalEnvironmentArguments (objectName, mapName, keyspan, keys, values, e){
     if (objectName === undefined || typeof objectName !== 'string'){
         throw new Error('Invalid objectName type. Expected string.')
     }
@@ -361,7 +365,7 @@ function createSongMap (e, objectName, mapName, keyspan, keys, values){
 
 // createSongMap(e, 'song', 'yo', 100, [0, 1, 2, 3], ['lsystem', 'twelveBars', 'lsystem', 'scarboroughFair' ])
 function addMapToMusicalEnvironment (e, objectName, mapName, keyspan, keys, values){
-    checkingAddMapToMusicalEnvironmentArguments(objectName, mapName, keyspan, keys, values)
+    checkingAddMapToMusicalEnvironmentArguments(objectName, mapName, keyspan, keys, values, e)
     switch (objectName){
         case'rhythmMaps':
             createDefaultRhythmMap(e, objectName, mapName, keyspan, keys, values)

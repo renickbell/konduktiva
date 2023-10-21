@@ -7,7 +7,7 @@
 // --------------------------------------------------------------------------
 
 //Create rhythm map related things:
-function createRhythmMap (noteValueData, name){
+function createRhythmMap (noteValueData, name, e){
     if (typeof noteValueData.rhythmMap !== 'string'){
         //let generatedRhythmPattern = new QuantizedMap(1, [1], [new QuantizedMap(noteValueData.total, quantizedKeys, noteValueData.rhythmMap)])
         let generatedRhythmPattern = new QuantizedMap(1, [1], [new QuantizedMap(noteValueData.total, noteValueData.noteDuration, noteValueData.rhythmMap)])
@@ -16,7 +16,7 @@ function createRhythmMap (noteValueData, name){
 }
 
 //Create mask map from note value data:
-function createMaskMap (noteValueData, name){
+function createMaskMap (noteValueData, name, e){
     e.maskMaps[name] = new QuantizedMap(noteValueData.total)
     let currentMaskMap = e.maskMaps[name]
     if (noteValueData.maskMapKeys === undefined){

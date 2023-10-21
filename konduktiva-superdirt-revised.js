@@ -57,7 +57,7 @@ function samplePattern (allSamples, patternLength, substringArray, poolSize, ste
     return new QuantizedMap(absolutes[0],absolutes[1],selectedSamples)
 }
 
-function playSuperDirtSample (env, player, beat) {
+function playSuperDirtSample (env, player, beat, e) {
     let currentSample = env.samplePatterns[e.players[player].samplePattern].wrapLookup(beat);
     var msg = {
             address: '/play2',
