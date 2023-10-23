@@ -41,10 +41,35 @@
 // .load ./working-configure-konduktiva.js
 .load ./generate-melody.js
 .load ./midi.js
-e.actions.midiSequencedRhythm = musicSynthesizerCaller
 .load ./example-websocket-session.js
 .load ./example-melodies-data.js
+function setUpDefaultMusicalEnvironment (){
+    let e = new MusicalEnvironment()
+    setUpDefaultRhythmMapsToMusicalEnvironment(e)
+    setUpDefaultActionToMusicalEnvironment(e)
+    setUpDefaultMaskMapsForMusicalEnvironment(e)
+    setUpDefaultIOIsForMusicalEnvironment(e)
+    setUpDefaultCurrentDensityGraphsForMusicalEnvironment(e)
+    setUpDefaultDensityGraphsForMusicalEnvironment(e)
+    setUpDefaultPlayersForMusicalEnvironments(e)
+    addToMusicalEnvironment(e)
+    addMapToMusicalEnvironment(e, 'rhythmMaps', 'chalk', 10, [0, 1, 2, 3], [4, 5, 6, 7])
+    updateMidiOutputList(e)
+    setupScheduler(e)
+    e.startScheduler()
+    e.actions.midiSequencedRhythm = musicSynthesizerCaller
+    recordConfigurationDataIntoMusicalEnvironment(lsystemData, 'p1', e)
+    recordConfigurationDataIntoMusicalEnvironment(circleOfFifthChords, 'p4', e)
+    recordConfigurationDataIntoMusicalEnvironment(circleOfFifthMelody, 'p3', e)
+    assignPlayerForMusicSynthesizerSession(e, 1, 'p1', {rhythmMapName: 'straight', chordProgressionMapName: 'twelveBars-lsystem-scarbrofair'})
+    assignPlayerForMusicSynthesizerSession(e, 3, 'p3', {rhythmMapName: 'straight'})
+    assignPlayerForMusicSynthesizerSession(e, 4, 'p4')
+    recordConfigurationDataIntoMusicalEnvironment(melodyData, 'p2', e)
+    assignPlayerForMusicSynthesizerSession(e, 2, 'p3')
+    return e
+}
 
+let e = setUpDefaultMusicalEnvironment()
 //.load ./22May-backup--steve-midi-music.js
 
 //chords.js sort into rhythm.js

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------
 
 //Creates a MusicalEnvironment
-e = new MusicalEnvironment()
+// e = new MusicalEnvironment()
 
 function defaultIOI (player, beat) {
     return getIOI (e, player, beat)
@@ -31,7 +31,6 @@ function setUpDefaultCurrentDensityGraphsForMusicalEnvironment (e){
     e.currentDensityGraphs = ['veryHighGlobal','defaultTechno']
     e.currentDensityGraphs = ['lowGlobal','defaultTechno']
     e.currentDensityGraphs = ['mediumGlobal','defaultTechno']
-    e.currentDensityGraphs 
 }
 
 
@@ -274,13 +273,13 @@ function setUpDefaultRhythmMapsToMusicalEnvironment (e) {
 }
 
 
-function setUpDefaultMusicalEnvironment (e){
-    setUpDefaultRhythmMapsToMusicalEnvironment(e)
-    setUpDefaultActionToMusicalEnvironment(e)
-    setUpDefaultMaskMapsForMusicalEnvironment(e)
-    setUpDefaultIOIsForMusicalEnvironment(e)
-    setUpDefaultCurrentDensityGraphsForMusicalEnvironment(e)
-    setUpDefaultDensityGraphsForMusicalEnvironment(e)
-}
+// function setUpDefaultMusicalEnvironment (e){
+//     setUpDefaultRhythmMapsToMusicalEnvironment(e)
+//     setUpDefaultActionToMusicalEnvironment(e)
+//     setUpDefaultMaskMapsForMusicalEnvironment(e)
+//     setUpDefaultIOIsForMusicalEnvironment(e)
+//     setUpDefaultCurrentDensityGraphsForMusicalEnvironment(e)
+//     setUpDefaultDensityGraphsForMusicalEnvironment(e)
+// }
 
-setUpDefaultMusicalEnvironment(e)
+// setUpDefaultMusicalEnvironment(e)

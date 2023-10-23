@@ -729,6 +729,7 @@ class MusicalEnvironment {
             //if (player == 'kick') {console.log(unmaskedOnsets)}
             times.forEach(
                 (t,i) => {
+                    console.log('hi here', player)
                     setTimeout(x => (this.getAction(player))(player,unmaskedOnsets[i]),
                     Math.max(1000 * (t - now()),0))
                 }

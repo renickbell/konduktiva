@@ -180,7 +180,7 @@ function addToMusicalEnvironment (e){
      e.messageMaps = {}
 }
 
-addToMusicalEnvironment(e)
+// addToMusicalEnvironment(e)
 
 //e.players.musicSynthesizerSession3.pattern
 
@@ -392,7 +392,7 @@ function addMapToMusicalEnvironment (e, objectName, mapName, keyspan, keys, valu
     return true
 }
 
-addMapToMusicalEnvironment(e, 'rhythmMaps', 'chalk', 10, [0, 1, 2, 3], [4, 5, 6, 7])
+// addMapToMusicalEnvironment(e, 'rhythmMaps', 'chalk', 10, [0, 1, 2, 3], [4, 5, 6, 7])
 
 function findItemType (item){
     if (typeof item === 'object' && item instanceof Array){

@@ -6,9 +6,9 @@
 // -- license: GPL 3.0
 // --------------------------------------------------------------------------
 
-setupScheduler(e)
-e.startScheduler()
-addToMusicalEnvironment(e)
+// setupScheduler(e)
+// e.startScheduler()
+// addToMusicalEnvironment(e)
 
 chordProgressionScarboroughFair = [
   [{ note: 2, octave: 2 }, { note: 5, octave: 2 }, { note: 9, octave: 2 }],  // Dm
@@ -415,26 +415,26 @@ noteValues: circleOfFifthMelodySplitNotes.rootNotes.map(x => {return [x]}),
 //   noteValues: circleOfFifthMelodyGeneration.notes, 
 // }
 
-updateMidiOutputList(e)
+// updateMidiOutputList(e)
 //e.changeTempo(250)
-recordConfigurationDataIntoMusicalEnvironment(lsystemData, 'p1', e)
+// recordConfigurationDataIntoMusicalEnvironment(lsystemData, 'p1', e)
 //assignPlayerForMusicSynthesizerSession(1, 'p1')
 //melodyData.noteDuration = A.buildArray(melodyData.noteValues.length, x => {return x})
 
 //recordConfigurationDataIntoMusicalEnvironment(randomMelodyData, 'p1')
-recordConfigurationDataIntoMusicalEnvironment(circleOfFifthChords, 'p4', e)
+// recordConfigurationDataIntoMusicalEnvironment(circleOfFifthChords, 'p4', e)
 // recordConfigurationDataIntoMusicalEnvironment(randomMelodyData, 'p3', e)
-recordConfigurationDataIntoMusicalEnvironment(circleOfFifthMelody, 'p3', e)
+// recordConfigurationDataIntoMusicalEnvironment(circleOfFifthMelody, 'p3', e)
 
 
 // assignPlayerForMusicSynthesizerSession(e, 1, {rhythmMapName: 'straight', chordProgressionMapName: 'twelveBars-lsystem-scarbrofair'}, 'p1')
 // assignPlayerForMusicSynthesizerSession(e, 3, {rhythmMapName: 'straight'}, 'p3')
-assignPlayerForMusicSynthesizerSession(e, 1, 'p1', {rhythmMapName: 'straight', chordProgressionMapName: 'twelveBars-lsystem-scarbrofair'})
-assignPlayerForMusicSynthesizerSession(e, 3, 'p3', {rhythmMapName: 'straight'})
-assignPlayerForMusicSynthesizerSession(e, 4, 'p4')
+// assignPlayerForMusicSynthesizerSession(e, 1, 'p1', {rhythmMapName: 'straight', chordProgressionMapName: 'twelveBars-lsystem-scarbrofair'})
+// assignPlayerForMusicSynthesizerSession(e, 3, 'p3', {rhythmMapName: 'straight'})
+// assignPlayerForMusicSynthesizerSession(e, 4, 'p4')
 //assignPlayerForMusicSynthesizerSession(2, 'p2')
-recordConfigurationDataIntoMusicalEnvironment(melodyData, 'p2', e)
+// recordConfigurationDataIntoMusicalEnvironment(melodyData, 'p2', e)
 //assignPlayerForMusicSynthesizerSession(2,'p2')
-assignPlayerForMusicSynthesizerSession(e, 2, 'p3')
+// assignPlayerForMusicSynthesizerSession(e, 2, 'p3')
 //console.time('p1')
 

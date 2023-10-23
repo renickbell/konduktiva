@@ -57,4 +57,4 @@ function setUpDefaultPlayersForMusicalEnvironments (e){
         }
 }
 
-setUpDefaultPlayersForMusicalEnvironments(e)
+// setUpDefaultPlayersForMusicalEnvironments(e)
