@@ -40,7 +40,7 @@ This document works as both a documentation and a tutorial about how to use the 
     npm i @renickbell/konduktiva
     ```
 
-3. Open the terminal, move to the directory where the code has been installed in. This effect can be achieved by using the ``` cd [directory name command] ``` command or navigate to that directory with the file manager and right click to open a terminal session there. We will call this terminal session t1. Then, run this command:
+3. **(ONLY REQUIRED WHEN INSTALLED USING Github)** Open the terminal, move to the directory where the code has been installed in. This effect can be achieved by using the ``` cd [directory name command] ``` command or navigate to that directory with the file manager and right click to open a terminal session there. We will call this terminal session t1. Then, run this command:
     ```
     node installer.js
     ```
@@ -57,11 +57,23 @@ This document works as both a documentation and a tutorial about how to use the 
     node
     ```
 
-3. Inside the nodejs session in t1 paste this the contents of example-session-with-melodies.js.
+3. Inside the nodejs session in t1 type this to load the package if you installed using **Github** (navigate to the location you have saved the code):
 
-**NOTE**: This called is not meant to be used in the global scope. Things might not work as intended when it is used with require or await import.
+```
+let K = require('./src/combined.js')
+```
 
-4. Now you can try pasting the code in example-playing-melodies.js(A file where all the other necessary files are loaded) into t1. You will see that now you are able to control the music. Instructions on how to do so are below.
+Run this if you installed using *NPM*
+
+```
+let K = require('@renickbell/konduktiva')
+```
+
+4. Now you can try creating a musical environment which will allow you to start playing music like this:
+
+```
+let e = K.setUpDefaultMusicalEnvironment()
+```
 
 ### Playing and Pausing music:
 
