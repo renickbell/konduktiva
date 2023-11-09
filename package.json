@@ -25,5 +25,16 @@
     "url": "https://github.com/renickbell/konduktiva/issues"
   },
   "license": "GPL-3.0",
-  "homepage": "https://github.com/renickbell/konduktiva"
+  "homepage": "https://github.com/renickbell/konduktiva",
+  "exports": {
+    ".": {
+      "require": "./src/combined.js"
+    },
+    "./src/*": "./src/*.js",
+    "./src/": "./src/"
+  },
+    "files": [
+    "src"
+  ]
+
 }
