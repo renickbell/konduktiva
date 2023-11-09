@@ -58,6 +58,7 @@ function setUpDefaultMusicalEnvironment (){
     setupScheduler(e)
     e.startScheduler()
     e.actions.midiSequencedRhythm = musicSynthesizerCaller
+    e.actions.sendPlaybackMessage = sendPlaybackMessage
     recordConfigurationDataIntoMusicalEnvironment(lsystemData, 'p1', e)
     recordConfigurationDataIntoMusicalEnvironment(circleOfFifthChords, 'p4', e)
     recordConfigurationDataIntoMusicalEnvironment(circleOfFifthMelody, 'p3', e)

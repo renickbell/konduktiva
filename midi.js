@@ -59,9 +59,6 @@ function setupPlaybackPlayer (env, sequenceName, rhythmPatternName = 'default') 
 function musicSynthesizerCaller (p,b) {if ((mask(p, e.maskMaps[e.players[p].maskMap] ,(e.currentBeat()),1)) != true) {callMusicSynthesizerRhythm(e, b, p);}}
 e.actions.midiSequencedRhythm = musicSynthesizerCaller
 
-//Action function:
-function sendPlaybackMessage (p,b) {if ((mask(p, e.maskMaps[e.players[p].maskMap] ,(e.currentBeat()),1)) != true) {callMusicSynthesizerRhythm(e, b, p);}}
-e.actions.sendPlaybackMessage = sendPlaybackMessage
 
 
 function filterMode (note, e, b, player){
@@ -360,7 +357,8 @@ function receiveMessagesFromInput (e, inputIndex, outputIndex, recordMessages){
         }
         if (currentInput.recordMessages === true){
 //             currentInput.recordedMessages.keys.push(e.currentBeat())
-            currentInput.recordedMessages.keys.push(Math.floor(new Date().getTime() / 1000))
+//             currentInput.recordedMessages.keys.push(Math.floor(new Date().getTime() / 1000))
+            currentInput.recordedMessages.keys.push(e.currentBeat())
             //Time from: https://stackoverflow.com/a/25250596
             currentInput.recordedMessages.values.push(deltaTime)
             currentInput.recordedMessages.keyspan = e.currentBeat() + 2
@@ -381,3 +379,60 @@ function addInputMessageToRecordedMessages (inputIndex, recordedMessagesName){
     })
     messages.keys = relativeKeys
 }
+
+// --------------------------------------------------------------------------
+//New stuff not in es directory:
+
+// //Action function:
+// function sendPlaybackMessage (p,b) {if ((mask(p, e.maskMaps[e.players[p].maskMap] ,(e.currentBeat()),1)) != true) {sendPlaybackMessage(e, b, p);}}
+// e.actions.sendPlaybackMessage = sendPlaybackMessage
+
+function convertQuantizedMapToRelativeForm (map){
+    let amountToRemove = map.keys[0] - 0
+    if (amountToRemove !== 0){
+        map.keyspan -= amountToRemove
+        map.keys = map.keys.map(x => {
+            return x - amountToRemove
+        })
+    }
+    return map
+}
+
+function sendPlaybackMessage (e, b, session){
+    console.log(typeof e, typeof b, typeof session)
+    let player = e.players[session]
+    let dataToSend = e.recordedMessages[player.recordedMessages].wrapLookup(b)
+    e.outputs[player.session - 1].send(dataToSend._type, dataToSend)
+}
+
+function generateQuantizedMapFromAbsoluteNumberArray (numbers){
+    let numbersLength = numbers.length - 1
+    return new QuantizedMap(numbers[numbers.length - 1], numbers, numbers.map((x, i) => {
+        if (i < numbersLength){
+            return numbers[i + 1] - x
+        }
+    }).slice(0, numbers.length - 1))
+}
+
+function createPlaybackPlayer (e, session, recordedMessagesName){
+    let message = e.recordedMessages[recordedMessagesName]
+//     e.rhythmMaps[recordedMessagesName] = new QuantizedMap(1, [1], generateQuantizedMapFromAbsoluteNumberArray(message.keys))
+//     e.maskMaps[recordedMessagesName] = new QuantizedMap(message.keyspan, messages.keys, messages.keys.map(x => {return true}))
+//     player.rhythmMap = recordedMessagesName
+//     player.maskMap = recordedMessagesName
+    let player = e.players[recordedMessagesName]
+    setupPlaybackPlayer(e, recordedMessagesName)
+    let numbersLength = message.keys.length - 0
+    let numbers = message.keys
+    e.rhythmPatterns[recordedMessagesName + 'Playback'] = new RhythmPattern (recordedMessagesName, message.keyspan, numbers.map((x, i) => {
+        if (i < numbersLength){
+            return numbers[i + 1] - x
+        }
+    }).slice(0, numbers.length - 1), message.keys.map(x => {return true}))
+    e.rhythmPatterns[recordedMessagesName + 'Playback'].add(e, recordedMessagesName)
+    e.players.m1.rhythmMap = 'straight'
+}
+
+e.stop('m1')
+
+e.play('m1')

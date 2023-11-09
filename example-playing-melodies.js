@@ -6,6 +6,11 @@
 // -- license: GPL 3.0
 // --------------------------------------------------------------------------
 
+
+// let K = require('./combined.js')
+// createDefaultWebsocketServer()
+// let e = K.setUpDefaultMusicalEnvironment()
+
 updateMidiOutputList(e)
 //e.changeTempo(250)
 
@@ -25,8 +30,10 @@ e.currentBeat()
 updateMidiInputList(e)
 receiveMessagesFromInput(e, 1, 1, true, 100)
 
-e.recordedMessages['m1'] = e.inputs[1].recordedMessages
-e.messageMaps['testios'] = ['m1']
+e.recordedMessages['m1'] =  convertQuantizedMapToRelativeForm(e.inputs[1].recordedMessages)
+e.messageMaps['testios'] = new QuantizedMap(26, [0], ['m1'])
+
+createPlaybackPlayer (e, 2, 'm1')
 //use an L-system to create a melod:
     //keys in L system represent scale degree or operations in scale degree
 

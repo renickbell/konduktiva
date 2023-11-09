@@ -10,10 +10,11 @@
     "socket.io": "^4.7.2",
     "socket.io-client": "^4.7.2",
     "tasktimer": "^3.0.0",
-    "tonal": "^5.0.0"
+    "tonal": "^5.0.0",
+    "type-check": "^0.4.0"
   },
   "name": "@renickbell/konduktiva",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/renickbell/konduktiva.git"
