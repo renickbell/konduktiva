@@ -8,7 +8,6 @@
 
 
 // let K = require('./combined.js')
-// createDefaultWebsocketServer()
 // let e = K.setUpDefaultMusicalEnvironment()
 
 updateMidiOutputList(e)

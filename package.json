@@ -15,7 +15,7 @@
     "type-check": "^0.4.0"
   },
   "name": "@renickbell/konduktiva",
-  "version": "3.0.1",
+  "version": "3.5.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/renickbell/konduktiva.git"
@@ -29,12 +29,16 @@
   "homepage": "https://github.com/renickbell/konduktiva",
   "exports": {
     ".": {
-      "require": "./src/combined.js"
+      "require": "./src/combined.js",
+      "import": "./es/combined.mjs"
     },
     "./src/*": "./src/*.js",
-    "./src/": "./src/"
+    "./src/": "./src/",
+    "./es/*": "./es/*.js",
+    "./es/": "./es/"
   },
   "files": [
-    "src"
+    "src",
+    "es"
   ]
 }

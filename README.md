@@ -63,10 +63,22 @@ This document works as both a documentation and a tutorial about how to use the 
 let K = require('./src/combined.js')
 ```
 
+OR
+
+```
+let K = await import('./es/combined.mjs')
+```
+
 Run this if you installed using *NPM*
 
 ```
 let K = require('@renickbell/konduktiva')
+```
+
+OR
+
+```
+let K = await import('@renickbell/konduktiva')
 ```
 
 4. Now you can try creating a musical environment which will allow you to start playing music like this:
