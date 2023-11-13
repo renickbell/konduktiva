@@ -33,6 +33,9 @@ e.recordedMessages['m1'] =  convertQuantizedMapToRelativeForm(e.inputs[1].record
 e.messageMaps['testios'] = new QuantizedMap(26, [0], ['m1'])
 
 createPlaybackPlayer (e, 2, 'm1')
+e.play('m1')
+
+e.stop('m1')
 //use an L-system to create a melod:
     //keys in L system represent scale degree or operations in scale degree
 

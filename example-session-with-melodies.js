@@ -78,6 +78,12 @@ let e = setUpDefaultMusicalEnvironment()
 
 //chord progression map is the new name for the timeline thing
 
+// let files = ['./konduktiva-revised-2.js', './testingKonduktiva-revised.js', './konduktiva-superdirt-revised.js', './defaultSuperDirtPlayers-revised.js', './utilities-string.js', './utilities-music.js', './utilities-general.js', './lsystem.js', './chords.js', './example-chord-progression-scarborough-fair.js', './rhythm.js', './websocket.js', './harmony.js', './configure-konduktiva.js', './generate-melody.js', './midi.js', './example-websocket-session.js', './example-melodies-data.js']
+// 
+// files.forEach( async (x) => {
+//     (1, eval)(fs.readFileSync(x, 'utf-8'))
+// })
+
 //konduktiva-revised-2.js testingKonduktiva-revised.js konduktiva-superdirt-revised.js defaultSuperDirtPlayers-revised.js utilities-string.js utilities-music.js utilities-general.js lsystem.js chords.js example-chord-progression-scarborough-fair.js rhythm.js websocket.js harmony.js configure-konduktiva.js generate-melody.js midi.js example-websocket-session.js example-melodies-data.js
 
 /*

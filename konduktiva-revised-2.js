@@ -710,7 +710,7 @@ class MusicalEnvironment {
       * @param {string} player - Player name.
     */
     scheduleEvents (player) {
-        //console.log("scheduling " + player);
+//         console.log("scheduling " + player);
         let ioiFunc = this.getIOIFunc (player);
         let onsets = getNextOnsets3(ioiFunc,player, this.currentBeat(), this.currentBeat() + timeToBeats(this.currentTempo,this.lookahead),[]);
         let onsetsAfterLastScheduled = onsets.filter(x => x > this.players[player].lastScheduledTime);
@@ -730,8 +730,10 @@ class MusicalEnvironment {
             times.forEach(
                 (t,i) => {
                     console.log('hi here', player)
-                    setTimeout(x => (this.getAction(player))(player,unmaskedOnsets[i]),
-                    Math.max(1000 * (t - now()),0))
+                    setTimeout(x => (
+                        //HERE made action function take musicalEnvironment as an argument.
+                        this.getAction(player))(player,unmaskedOnsets[i], this)
+                        ,Math.max(1000 * (t - now()),0))
                 }
             );
         };
