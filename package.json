@@ -1,6 +1,5 @@
 {
   "dependencies": {
-    "@renickbell/konduktiva": "^3.0.0",
     "array-toolkit": "^3.3.4",
     "easymidi": "^3.1.0",
     "http-server": "^14.1.1",
@@ -14,8 +13,9 @@
     "tonal": "^5.0.0",
     "type-check": "^0.4.0"
   },
-  "name": "@renickbell/konduktiva",
+  "name": "konduktiva",
   "version": "3.5.0",
+  "documentation": "npm-README.md",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/renickbell/konduktiva.git"
