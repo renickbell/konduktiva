@@ -15,7 +15,6 @@
   },
   "name": "konduktiva",
   "version": "3.5.0",
-  "documentation": "npm-README.md",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/renickbell/konduktiva.git"
