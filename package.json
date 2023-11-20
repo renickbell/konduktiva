@@ -3,6 +3,7 @@
     "array-toolkit": "^3.3.4",
     "easymidi": "^3.1.0",
     "http-server": "^14.1.1",
+    "konduktiva": "^1.0.1",
     "osc": "^2.4.4",
     "path": "^0.12.7",
     "perf_hooks": "^0.0.1",

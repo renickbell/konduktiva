@@ -69,8 +69,8 @@ function setUpDefaultMusicalEnvironment (){
     assignPlayerForMusicSynthesizerSession(e, 2, 'p3')
     return e
 }
-
 let e = setUpDefaultMusicalEnvironment()
+
 //.load ./22May-backup--steve-midi-music.js
 
 //chords.js sort into rhythm.js

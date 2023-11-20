@@ -155,7 +155,7 @@ randomMelody2 = {
 
 melodyDataNoteData = generateChords(0, 4, "7", "major")
 melodyData = {
-  rootMap: ['C', 'C', 'C', 'C'],
+  rootMap: ['C', 'D', 'E', 'F'],
   velocity: [
     112, 107, 116, 115,
     109, 107,  97, 112,
@@ -166,10 +166,8 @@ melodyData = {
   noteDurations: A.buildArray(12, x => {return x * 4}),
   bools: A.buildArray(48, x => {return true}), 
   //noteValuesKeys: A.buildArray(12, x => {return (x * 4)}),
-  octave: chordProgressionScarboroughFair.map(x => {
-      return x.map(n => {
-          return 0
-      })
+  octave: chordProgressionScarboroughFair.map((x, i) => {
+      return [i, i, i]
   }),
   noteValues: chordProgressionScarboroughFair.map(x => {
       return x.map(n => {
@@ -182,11 +180,8 @@ melodyData = {
    noteDurationKeyspan: 64,
   noteDurationValues: A.buildArray(16, x => {return (x)}),
   noteDurations: A.buildArray(16, x => {return x * 4}),
-  noteValues: noteData.map(x => {
-      return x.map(n => {
-          return n.note
-      })
-  }),
+  noteValues: noteData.map((x, i) => {
+      return [i*2, i*2, i*2]  }),
    total: 64,
   polyphonyMap: A.buildArray(16, x => {return 50}),
   //rhythmMap: A.buildArray(40, x => {return randomRange(0.5, 1.5, 2)}),

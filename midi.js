@@ -102,9 +102,7 @@ function convertRomanNumeralsToMidi (info){
             return Note.fromMidi(x)
         })
     }
-//     console.log('testing for roman numerals', info.noteValues[0])
     if (typeof info.noteValues[0] === 'string'){
-        console.log('Yo octave stuff', info.letters[0] + info.octaves[0])
         info.finalValues = Progression.fromRomanNumerals(info.letters[0] + info.octaves[0], info.noteValues)
         info.finalValues = info.finalValues.map(x => {
             return Midi.toMidi(x)
@@ -112,11 +110,6 @@ function convertRomanNumeralsToMidi (info){
         console.log('converted', info.finalValues)
         return info
     }
-//     info.noteValues = info.noteValues.map((x, i) => {
-//         console.log(stringOctaves[i], x)
-//         return Progression.fromRomanNumerals(stringOctaves[i], x)
-//     })
-//     info.noteValues = Progression.fromRomanNumerals(stringOctaves[0], info.noteValues)
     return info
 }
 //Roman numeral conversions to midi with tonal helped by chatgpt
@@ -230,8 +223,10 @@ function checkIfChangeFilteredMode (e, b, player){
 
 //Gather and sort information and prepare to send through midi:
 function callMusicSynthesizerRhythm (e, b, session){
-    console.log('session', session)
     let player = e.players[session]
+    if (player.verbose === true){
+        console.log('session', session)
+    }
     let info = getNoteInfoToSend(player, b, session)
     info = filterPolyphany(e, b, player, info)
     let octaveFloor = new QuantizedMap(8, [3, 4, 5, 6, 7], [3, 4, 5, 6, 7])

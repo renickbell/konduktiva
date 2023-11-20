@@ -10,14 +10,19 @@
 // let K = require('./combined.js')
 // let e = K.setUpDefaultMusicalEnvironment()
 
-updateMidiOutputList(e)
-//e.changeTempo(250)
+// updateMidiOutputList(e)
+e.changeTempo(50)
 
 e.play('musicSynthesizerSession1')
 e.play('musicSynthesizerSession3')
 e.play('musicSynthesizerSession4')
 e.play('musicSynthesizerSession2')
 
+
+e.play('exampleMidiPlayer1')
+e.play('exampleMidiPlayer2')
+e.play('exampleMidiPlayer3')
+e.play('exampleMidiPlayer4')
 
 // messageAllClients({action: 'animationExample'})
 e.stopAll()
@@ -36,6 +41,8 @@ createPlaybackPlayer (e, 2, 'm1')
 e.play('m1')
 
 e.stop('m1')
+
+
 //use an L-system to create a melod:
     //keys in L system represent scale degree or operations in scale degree
 

@@ -166,8 +166,8 @@ function generateLsystemByAssigningNumberToLetter (mode, octaves,length) {
     let octavesAlphabets = A.safeSplice(alphabets, alphabets.length, octaves.length)
     let octavesData = convertLsystemStringToNumbersViaAssignedLetters(octavesAlphabets,  generateRandomLsystemString(length, octavesAlphabets), octaves)
     return modeData.map((x, i) =>{
-        return {note: x, octave: octavesData[i]}
+        return {note: x, octave: octavesData[i % modeData.length]}
     })
 }
 
-// hi = generateLsystemByAssigningNumberToLetter([0,2,4,7,9,11], [4 ,5, 6], 10)
+hi = generateLsystemByAssigningNumberToLetter([0,2,4,7,9,11], [4 ,5, 6], 10)

@@ -7,7 +7,7 @@
 // --------------------------------------------------------------------------
 
 //Generated a random melody and outputs an array with objects that contains notes and octaves:
-function generateRandomMelody (rootNote, mode, melodyLength, octaveMin = 1, octaveMax = 12, melodyMin = 1, melodyMax = 12, chords){
+function generateRandomMelody (rootNote, mode, melodyLength, octaveMin = 1, octaveMax = 12, melodyMin = 1, melodyMax = 12){
     let modes = {
       ionian: [0, 2, 4, 5, 7, 9, 11],
       dorian: [0, 2, 3, 5, 7, 9, 10],

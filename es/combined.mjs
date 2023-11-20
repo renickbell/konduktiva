@@ -722,14 +722,16 @@ export class MusicalEnvironment {
       * @param {string} player - Player name.
     */
     scheduleEvents (player) {
-        //console.log("scheduling " + player);
+//         console.log("scheduling " + player);
         let ioiFunc = this.getIOIFunc (player);
         let onsets = getNextOnsets3(ioiFunc,player, this.currentBeat(), this.currentBeat() + timeToBeats(this.currentTempo,this.lookahead),[]);
         let onsetsAfterLastScheduled = onsets.filter(x => x > this.players[player].lastScheduledTime);
+//         console.log('onsetsAfterLastScheduled', onsetsAfterLastScheduled)
         if (player.verbose == true) {
         console.log(" -------------------------------------------------------------------------- " );
         console.log("current beat: " + this.currentBeat());
-        console.log("onsets after last scheduled: " + onsetsAfterLastScheduled)};
+        console.log("onsets after last scheduled: " + onsetsAfterLastScheduled)
+        };
         if (onsetsAfterLastScheduled[0] !== undefined) {
             this.players[player].lastScheduledTime = R.last(onsetsAfterLastScheduled);
             // run the masking here
@@ -739,10 +741,11 @@ export class MusicalEnvironment {
             let times = unmaskedOnsets.map(x => beatsToTime(this.currentTempo, x - (this.currentBeat())));
             if (player.verbose == true) { console.log("these are the times for events of player " + player + ": " + times)};
             //if (player == 'kick') {console.log(unmaskedOnsets)}
+//             console.log('times', times)
             times.forEach(
                 (t,i) => {
-                    console.log('hi here', player)
-                    setTimeout(x => (this.getAction(player))(player,unmaskedOnsets[i]),
+//                     console.log('hi here', player)
+                    setTimeout(x => (this.getAction(player))(player,unmaskedOnsets[i], this),
                     Math.max(1000 * (t - now()),0))
                 }
             );
@@ -854,7 +857,123 @@ export class MusicalEnvironment {
     togglePlayer (p) {
        if (this.players[p].status == 'playing') {this.stop(p)} else {this.play(p)}
     }
+    checkingAddMapToMusicalEnvironmentArguments (objectName, mapName, keyspan, keys, values){
+        let e = this
+        if (objectName === undefined || typeof objectName !== 'string'){
+            throw new Error('Invalid objectName type. Expected string.')
+        }
+        else if (e[objectName] === undefined){
+            throw new Error('Variable does not exist in MusicalEnvironment. Please fill in one of the variables that exist and uses QuantizedMap(s). To check find all variables, do Object.keys(musicalEnvironment)')
+        }
+        if (mapName === undefined || typeof mapName !== 'string'){
+            throw new Error('Invalid mapName type. Expected string.')
+        }
+        if (keyspan === undefined){
+            console.warn('kepspan is undefined will automatically use last item of the keys array as keyspanb.')
+        }
+        else if (typeof keyspan !== 'number'){
+            throw new Error('Invalid keyspan type. Expected number')
+        }
+        if (keys instanceof Array === false){
+            throw new Error('Invalid keys type. Expected number array')
+        }
+        else if (keys.every(x => typeof x === 'number') === false){
+            throw new Error('Invalid keys type. Expected number array')
+        }
+        if (values instanceof Array === false){
+            throw new Error('Invalid values type. Expected array')
+        }
+        //differentiating between object and array from: https://stackoverflow.com/a/7803271/19515980
+    //     console.info('Preliminary checks have passeed.')
+    }
+    createDefaultRhythmMap (objectName, mapName, keyspan, keys, values){
+        let e = this
+        if (checkAllItemsType(values, 'number')) {
+            e.rhythmMaps[mapName] = new QuantizedMap(1, [1], new QuantizedMap(keyspan, keys, values))
+        }
+        return true
+    }
+    createSubarrayMap (objectName, mapName, keyspan, keys, values){
+        let e = this
+        if (checkAllItemsType(values, 'array')){
+            e[objectName][mapName] = new QuantizedMap(keyspan, keys, values)
+        }
+        return true
+    }
+    createRhythmPatternMap (objectName, mapName, keyspan, keys, values){
+        let e = this
+        if (checkAllItemsType(values, 'boolean')){
+            e.rhythmPatterns[mapName] = new QuantizedMap(keyspan, keys, values)
+        }
+        return true
+    }
+    createDeafaultMaskMap (objectName, mapName, keyspan, keys, values){
+        let e = this
+        if (checkAllItemsType(values, 'boolean')){
+            e.maskMaps[mapName] = new QuantizedMap(keyspan, keys, A.flipBooleans(values))
+        }
+        return true
+    }
+    createChordProgressionMap (objectName, mapName, keyspan, keys, values){
+        let e = this
+        if (checkAllItemsType(values, 'object') && checkChordProgressionDataType(values)){
+            e.chordProgressions[mapName] = new QuantizedMap(keyspan, keys, values)
+        }
+    }
+    createSongMap (objectName, mapName, keyspan, keys, values){
+        let e = this
+        if (checkAllItemsType(values, 'string') === false){
+            throw new Error ('Invalid items in values array. Expected an array filled with strings.')
+        }
+        else if (values.every((x, i) => {if (e.chordProgressions[x] === undefined){
+            throw new Error (x + ' is not a property name of musicalEnvironment.chordProgressions. Fix index ' + i)
+            return false
+            }
+            return true
+        }) === false){
+            throw new Error ('Invalid items in values array. Expected name of a property in musicalEnvironment.chordProgressions')
+                }
+        else {
+            e.song[mapName] = new QuantizedMap(keyspan, keys, values)
+        }
+        return true
+    }
+    createDefaultMap (objectName, mapName, keyspan, keys, values){
+        let e = this
+        if (checkAllItemsType(values, 'number')){
+            e[objectName][mapName] = new QuantizedMap(keyspan, keys, values)
+        }
+    }
+    addMap (objectName, mapName, keyspan, keys, values){
+        let e = this
+        this.checkingAddMapToMusicalEnvironmentArguments(objectName, mapName, keyspan, keys, values)
+        switch (objectName){
+            case'rhythmMaps':
+                this.createDefaultRhythmMap(objectName, mapName, keyspan, keys, values)
+                break;
+            case 'noteMaps':
+            case 'octaveMap':
+                this.createSubarrayMap(objectName, mapName, keyspan, keys, values)
+                break;
+            case 'rhythmPatterns':
+                this.createRhythmPatternMap(objectName, mapName, keyspan, keys, values)
+            case 'maskMaps':
+                this.createDeafaultMaskMap(objectName, mapName, keyspan, keys, values)
+                break;
+            case 'chordProgressions':
+                this.createChordProgressionMap(objectName, mapName, keyspan, keys, values)
+                break;
+            case 'song':
+                this.createSongMap(objectName, mapName, keyspan, keys, values)
+                break;
+            default:
+                this.createDefaultMap(objectName, mapName, keyspan, keys, values);
+        }
+        console.log('Successfully created ', objectName, ' named ', mapName)
+        return true
+    }
 }
+// addMapToMusicalEnvironment(e, 'rhythmMaps', 'chalk', 10, [0, 1, 2, 3], [4, 5, 6, 7])
 
 /**
   * Sets up the scheduler for the MusicalEnvironment.
@@ -2417,7 +2536,7 @@ export function assignPlayerForMusicSynthesizerSession (e, session, defaultName,
 
 //Check if this player name has been used:
 export function checkIfSessionPlayerExist (session, e){
-    return Object.keys(e.players).find(x => x === 'musicSynthesizerSession' + session)
+    return Object.keys(e.players).find(x => x === 'exampleMidiPlayer' + session)
 }
 
 export function checkIfAddChordProgressionMapToPlayer (chordProgressionMapName, e){
@@ -2436,9 +2555,9 @@ export function checkIfAddChordProgressionMapToPlayer (chordProgressionMapName, 
 
 //Create Player:
 export function createSessionPlayer (e, session, velocityMapName, noteMapName = velocityMapName, octaveMapName = velocityMapName, rhythmMapName = velocityMapName, polyphonyMapName = velocityMapName, noteDurationMapName = velocityMapName, maskMapName = velocityMapName, rhythmPatternName = velocityMapName, chordProgressionMapName = velocityMapName, controlChangeMapName = velocityMapName, modeFilterName = velocityMapName, rootMapName = velocityMapName, modeMapName = velocityMapName, channel = 1){
-    let name = 'musicSynthesizerSession' + JSON.stringify(session)
+    let name = 'exampleMidiPlayer' + JSON.stringify(session)
     setupMidiRhythm(e, name, rhythmMapName)
-    let sessionPlayer = e.players['musicSynthesizerSession' + session]
+    let sessionPlayer = e.players['exampleMidiPlayer' + session]
     sessionPlayer.velocityMap = velocityMapName
     sessionPlayer.noteMap = noteMapName
     sessionPlayer.octaveMap = octaveMapName
@@ -2453,7 +2572,7 @@ export function createSessionPlayer (e, session, velocityMapName, noteMapName = 
     sessionPlayer.modeFilter = modeFilterName
     sessionPlayer.modeMap = modeMapName
     sessionPlayer.rootMap = rootMapName
-    let playerName = 'musicSynthesizerSession' + session
+    let playerName = 'exampleMidiPlayer' + session
     e.rhythmPatterns[rhythmPatternName].add(e, playerName)
     e.outputs.push(new easymidi.Output(easymidi.getOutputs()[session]))
     try{
@@ -2466,7 +2585,7 @@ export function createSessionPlayer (e, session, velocityMapName, noteMapName = 
 //Edit Player:
 export function editSessionPlayer (e, session, velocityMapName, noteMapName = velocityMapName, octaveMapName = velocityMapName, rhythmMapName = velocityMapName, polyphonyMapName = velocityMapName, noteDurationMapName = velocityMapName, maskMapName = velocityMapName, rhythmPatternName = velocityMapName, chordProgressionMapName = velocityMapName, controlChangeMapName = velocityMapName, modeFilterName = velocityMapName, rootMapName = velocityMapName, modeMapName = velocityMapName, channel = 1){
     console.log('chose to edit')
-    let sessionPlayer = e.players['musicSynthesizerSession' + session]
+    let sessionPlayer = e.players['exampleMidiPlayer' + session]
     sessionPlayer.velocityMap = velocityMapName
     sessionPlayer.noteMap = noteMapName
     sessionPlayer.octaveMap = octaveMapName
@@ -2481,7 +2600,7 @@ export function editSessionPlayer (e, session, velocityMapName, noteMapName = ve
     sessionPlayer.modeMap = modeMapName
     sessionPlayer.rootMap = rootMapName
     sessionPlayer.polyphonyMap = polyphonyMapName
-    let playerName = 'musicSynthesizerSession' + session
+    let playerName = 'exampleMidiPlayer' + session
     e.rhythmPatterns[rhythmPatternName].add(e, playerName)
     e.outputs[session - 1] = (new easymidi.Output(easymidi.getOutputs()[session]))
     try{
@@ -2575,14 +2694,14 @@ export function addToMusicalEnvironment (e){
 
 // addToMusicalEnvironment(e)
 
-//e.players.musicSynthesizerSession3.pattern
+//e.players.exampleMidiPlayer3.pattern
 
 // let twelveBarsConfiguration = assignChordProgressionToPlayer('p3', 'lsystem')
 // recordConfigurationDataIntoMusicalEnvironment(twelveBarsConfiguration, 'p3')
 // assignPlayerForMusicSynthesizerSession(e, 3, {rhythmMapName: 'straight'}, 'p3')
-// e.play('musicSynthesizerSession3')
+// e.play('exampleMidiPlayer3')
 //
-// e.stop('musicSynthesizerSession3')
+// e.stop('exampleMidiPlayer3')
 
 export function checkIfAllMessagesExist (messageList, e){
     messageList.forEach(x => {
@@ -2619,82 +2738,27 @@ export function combineQuantizeMaps (messageList, e){
     return returnedMap
 }
 
-export function splitOnePlaybackMapIntoMany(e, messageMapName, messageMap){
-}
-export function createPlaybackPlayer (e, messageMapName, playerName = messageMapName, totalKeyspan = combineAllKeySpans(messageMapName)){
-    setupPlaybackPlayer(e, playerName, playerName)
-    let messageList = e.messageMaps[messageMapName]
-    checkIfAllMessagesExist(messageList, e)
-    e.messageMaps[messageMapName] = combineQuantizeMaps(messageList, e)
-    let currentMessageMap = e.messageMaps[messageMapName]
-    e.rhythmMaps[messageMapName] = new QuantizedMap(1, [1] ,new QuantizedMap(currentMessageMap.keyspan, currentMessageMap.keys, currentMessageMap.keys))
-    e.maskMaps[messageMapName] = new QuantizedMap(currentMessageMap.keyspan, currentMessageMap.keys,currentMessageMap.keys.map(x => {return true}))
-    e.noteMaps[messageMapName] = new QuantizedMap(0, [], [])
-    e.noteMaps[messageMapName] = new QuantizedMap(0, [], [])
-    e.noteMaps[messageMapName] = new QuantizedMap(0, [], [])
-    splitOnePlaybackMapIntoMany(e.messageMaps[messageMapName])
-    e.players[playerName].rhythmMap = messageMapName
-    e.players[playerName].maskMap = messageMapName
-}
+// export function splitOnePlaybackMapIntoMany(e, messageMapName, messageMap){
+// }
+// export function createPlaybackPlayer (e, messageMapName, playerName = messageMapName, totalKeyspan = combineAllKeySpans(messageMapName)){
+//     setupPlaybackPlayer(e, playerName, playerName)
+//     let messageList = e.messageMaps[messageMapName]
+//     checkIfAllMessagesExist(messageList, e)
+//     e.messageMaps[messageMapName] = combineQuantizeMaps(messageList, e)
+//     let currentMessageMap = e.messageMaps[messageMapName]
+//     e.rhythmMaps[messageMapName] = new QuantizedMap(1, [1] ,new QuantizedMap(currentMessageMap.keyspan, currentMessageMap.keys, currentMessageMap.keys))
+//     e.maskMaps[messageMapName] = new QuantizedMap(currentMessageMap.keyspan, currentMessageMap.keys,currentMessageMap.keys.map(x => {return true}))
+//     e.noteMaps[messageMapName] = new QuantizedMap(0, [], [])
+//     e.noteMaps[messageMapName] = new QuantizedMap(0, [], [])
+//     e.noteMaps[messageMapName] = new QuantizedMap(0, [], [])
+//     splitOnePlaybackMapIntoMany(e.messageMaps[messageMapName])
+//     e.players[playerName].rhythmMap = messageMapName
+//     e.players[playerName].maskMap = messageMapName
+// }
 
 // createPlaybackPlayer(e, 'testios', 'testios', 100)
 
-export function checkingAddMapToMusicalEnvironmentArguments (objectName, mapName, keyspan, keys, values, e){
-    if (objectName === undefined || typeof objectName !== 'string'){
-        throw new Error('Invalid objectName type. Expected string.')
-    }
-    else if (e[objectName] === undefined){
-        throw new Error('Variable does not exist in MusicalEnvironment. Please fill in one of the variables that exist and uses QuantizedMap(s). To check find all variables, do Object.keys(musicalEnvironment)')
-    }
-    if (mapName === undefined || typeof mapName !== 'string'){
-        throw new Error('Invalid mapName type. Expected string.')
-    }
-    if (keyspan === undefined){
-        console.warn('kepspan is undefined will automatically use last item of the keys array as keyspanb.')
-    }
-    else if (typeof keyspan !== 'number'){
-        throw new Error('Invalid keyspan type. Expected number')
-    }
-    if (keys instanceof Array === false){
-        throw new Error('Invalid keys type. Expected number array')
-    }
-    else if (keys.every(x => typeof x === 'number') === false){
-        throw new Error('Invalid keys type. Expected number array')
-    }
-    if (values instanceof Array === false){
-        throw new Error('Invalid values type. Expected array')
-    }
-    //differentiating between object and array from: https://stackoverflow.com/a/7803271/19515980
-//     console.info('Preliminary checks have passeed.')
-}
 
-export function createDefaultRhythmMap (e, objectName, mapName, keyspan, keys, values){
-    if (checkAllItemsType(values, 'number')) {
-        e.rhythmMaps[mapName] = new QuantizedMap(1, [1], new QuantizedMap(keyspan, keys, values))
-    }
-    return true
-}
-
-export function createSubarrayMap (e, objectName, mapName, keyspan, keys, values){
-    if (checkAllItemsType(values, 'array')){
-        e[objectName][mapName] = new QuantizedMap(keyspan, keys, values)
-    }
-    return true
-}
-
-export function createRhythmPatternMap (e, objectName, mapName, keyspan, keys, values){
-    if (checkAllItemsType(values, 'boolean')){
-        e.rhythmPatterns[mapName] = new QuantizedMap(keyspan, keys, values)
-    }
-    return true
-}
-
-export function createDeafaultMaskMap (e, objectName, mapName, keyspan, keys, values){
-    if (checkAllItemsType(values, 'boolean')){
-        e.maskMaps[mapName] = new QuantizedMap(keyspan, keys, A.flipBooleans(values))
-    }
-    return true
-}
 
 export function checkChordProgressionDataType (values){
     if (findItemType(values) !== 'Array'){
@@ -2725,67 +2789,6 @@ export function checkChordProgressionDataType (values){
         })
     })
 }
-
-export function createChordProgressionMap (e, objectName, mapName, keyspan, keys, values){
-    if (checkAllItemsType(values, 'object') && checkChordProgressionDataType(values)){
-        e.chordProgressions[mapName] = new QuantizedMap(keyspan, keys, values)
-    }
-}
-
-export function createDefaultMap (e, objectName, mapName, keyspan, keys, values){
-    if (checkAllItemsType(values, 'number')){
-        e[objectName][mapName] = new QuantizedMap(keyspan, keys, values)
-    }
-}
-
-export function createSongMap (e, objectName, mapName, keyspan, keys, values){
-    if (checkAllItemsType(values, 'string') === false){
-        throw new Error ('Invalid items in values array. Expected an array filled with strings.')
-    }
-    else if (values.every((x, i) => {if (e.chordProgressions[x] === undefined){
-        throw new Error (x + ' is not a property name of musicalEnvironment.chordProgressions. Fix index ' + i)
-        return false
-        }
-        return true
-    }) === false){
-        throw new Error ('Invalid items in values array. Expected name of a property in musicalEnvironment.chordProgressions')
-            }
-    else {
-        e.song[mapName] = new QuantizedMap(keyspan, keys, values)
-    }
-    return true
-}
-
-// createSongMap(e, 'song', 'yo', 100, [0, 1, 2, 3], ['lsystem', 'twelveBars', 'lsystem', 'scarboroughFair' ])
-export function addMapToMusicalEnvironment (e, objectName, mapName, keyspan, keys, values){
-    checkingAddMapToMusicalEnvironmentArguments(objectName, mapName, keyspan, keys, values, e)
-    switch (objectName){
-        case'rhythmMaps':
-            createDefaultRhythmMap(e, objectName, mapName, keyspan, keys, values)
-            break;
-        case 'noteMaps':
-        case 'octaveMap':
-            createSubarrayMap(e, objectName, mapName, keyspan, keys, values)
-            break;
-        case 'rhythmPatterns':
-            createRhythmPatternMap(e, objectName, mapName, keyspan, keys, values)
-        case 'maskMaps':
-            createDeafaultMaskMap(e, objectName, mapName, keyspan, keys, values)
-            break;
-        case 'chordProgressions':
-            createChordProgressionMap(e, objectName, mapName, keyspan, keys, values)
-            break;
-        case 'song':
-            createSongMap(e, objectName, mapName, keyspan, keys, values)
-            break;
-        default:
-            createDefaultMap(e, objectName, mapName, keyspan, keys, values);
-    }
-    console.log('Successfully created ', objectName, ' named ', mapName)
-    return true
-}
-
-// addMapToMusicalEnvironment(e, 'rhythmMaps', 'chalk', 10, [0, 1, 2, 3], [4, 5, 6, 7])
 
 export function findItemType (item){
     if (typeof item === 'object' && item instanceof Array){
@@ -2920,13 +2923,28 @@ export function randomlyGeneratingMelodiesWithRules (mode, startValue, rules, mi
 // randomlyGeneratingMelodiesWithRules([0,2,4,7,9,11], 80, {increase: 30, decrease: 30, same: 40},50, 120, 100)
 
 // --------------------------------------------------------------------------
-//midi.mjs:
+//midi.js:
+
+//helped by chatgpt
+export function checkIfUseVerboseLogging (player){
+    if ((player.verbose === true || player === true) && arguments.length === 2){
+        console.log(arguments[1])
+        return true
+    }
+    else if ((player.verbose === true || player === true) && arguments.length > 2){
+        let combinedString = ''
+        Object.values(arguments).splice(1).forEach(x => {combinedString += x + ' '})
+        console.log(combinedString)
+        return true
+    }
+    return false
+}
 
 //Send Midi Data to music synthesizer:
 export function sendMidiData (info, player, note){
    // add2Log(note)
     //add2Log('--------------------------------------------------------------------------')
-   console.log('note', note, 'velocity: ', info.velocity, 'channel', player.channel - 1, 'session', player.session - 1)
+   checkIfUseVerboseLogging(player, 'note', note, 'velocity: ', info.velocity, 'channel', player.channel - 1, 'session', player.session - 1)
     e.outputs[player.session - 1].send('noteon', {
       note: note,
       velocity: info.velocity,
@@ -2951,7 +2969,7 @@ export function convertVelocityToMidiValues (inputVelocity){
     }
 }
 
-//This function is modified to set action as sequenceSize instead of superDirt
+//This export function is modified to set action as sequenceSize instead of superDirt
 export function setupMidiRhythm (env, sequenceName, rhythmPatternName = 'default') {
     env.players[sequenceName] = new Player(sequenceName);
     env.players[sequenceName].maskMap = 'default'
@@ -2961,7 +2979,7 @@ export function setupMidiRhythm (env, sequenceName, rhythmPatternName = 'default
     return sequenceName
 }
 
-//This function is modified to set action as sendPlaybackMessage instead of superDirt
+//This export function is modified to set action as sendPlaybackMessage instead of superDirt
 export function setupPlaybackPlayer (env, sequenceName, rhythmPatternName = 'default') {
     env.players[sequenceName] = new Player(sequenceName);
     env.players[sequenceName].maskMap = 'default'
@@ -2971,13 +2989,13 @@ export function setupPlaybackPlayer (env, sequenceName, rhythmPatternName = 'def
     return sequenceName
 }
 
-//Action function:
+//Action export function:
 export function musicSynthesizerCaller (p,b) {if ((mask(p, e.maskMaps[e.players[p].maskMap] ,(e.currentBeat()),1)) != true) {callMusicSynthesizerRhythm(e, b, p);}}
 // e.actions.midiSequencedRhythm = musicSynthesizerCaller
 
-//Action function:
-export function sendPlaybackMessage (p,b) {if ((mask(p, e.maskMaps[e.players[p].maskMap] ,(e.currentBeat()),1)) != true) {callMusicSynthesizerRhythm(e, b, p);}}
-// e.actions.sendPlaybackMessage = sendPlaybackMessage
+// //Action export function:
+// export function sendPlaybackMessage (p,b) {if ((mask(p, e.maskMaps[e.players[p].maskMap] ,(e.currentBeat()),1)) != true) {callMusicSynthesizerRhythm(e, b, p);}}
+// // e.actions.sendPlaybackMessage = sendPlaybackMessage
 
 
 export function filterMode (note, e, b, player){
@@ -2986,7 +3004,7 @@ export function filterMode (note, e, b, player){
         return note
     }
     else if (e.notesInputMode === 'relativeSemitone'){
-        console.log('filtering mode map for', player.modeFilter)
+        checkIfUseVerboseLogging(player, 'filtering mode map for', player.modeFilter)
         return mode.floorWrapLookup(note)
     }
     else{
@@ -3023,26 +3041,20 @@ export function convertRomanNumeralsToMidi (info){
     }
 //     console.log('testing for roman numerals', info.noteValues[0])
     if (typeof info.noteValues[0] === 'string'){
-        console.log('Yo octave stuff', info.letters[0] + info.octaves[0])
         info.finalValues = Progression.fromRomanNumerals(info.letters[0] + info.octaves[0], info.noteValues)
         info.finalValues = info.finalValues.map(x => {
             return Midi.toMidi(x)
         })
-        console.log('converted', info.finalValues)
+        checkIfUseVerboseLogging(player, 'converted' + info.finalValues)
         return info
     }
-//     info.noteValues = info.noteValues.map((x, i) => {
-//         console.log(stringOctaves[i], x)
-//         return Progression.fromRomanNumerals(stringOctaves[i], x)
-//     })
-//     info.noteValues = Progression.fromRomanNumerals(stringOctaves[0], info.noteValues)
     return info
 }
 //Roman numeral conversions to midi with tonal helped by chatgpt
 
 export function calculateFinalNoteValue (info){
     if (info.finalValues === undefined){
-//         console.log('finalNote not detected', info.finalNote)
+        checkIfUseVerboseLogging(e, 'finalNote not detected', info.finalNote)
         info.finalValues = info.noteValues.map(x => {
             return Note.midi(info.letters[0] + info.octaves[0]) + x
         })
@@ -3053,7 +3065,7 @@ export function calculateFinalNoteValue (info){
 export function isNumeric(n) {
   return !isNaN(parseFloat(n)) && isFinite(n);
 }
-//Function from: https://stackoverflow.com/a/5778071
+//export function from: https://stackoverflow.com/a/5778071
 
 export function checkIfStringIncluesNumber (inputString){
     let splitArray = inputString.split('')
@@ -3065,9 +3077,10 @@ export function checkIfStringIncluesNumber (inputString){
     })
 }
 
-export function convertLettersToMidi (info){
+export function convertLettersToMidi (info, player){
     if (info.finalValues !== undefined){
-        console.log('finalNote already defined')
+            console.log('finalNote already defined')
+        checkIfUseVerboseLogging(e, 'finalNote already defined')
         return info
     }
     if (typeof info.octaves[0] === 'string'){
@@ -3081,25 +3094,23 @@ export function convertLettersToMidi (info){
         })
     }
     if (typeof info.noteValues[0] === 'string'){
-        console.log('beforee', info.noteValues)
         info.noteValues = info.noteValues.map(x => {
             if (checkIfStringIncluesNumber(x) === false){
                 return Note.midi(x + '-1')
             }
             else {
-                console.log('wrong')
                 return Note.midi(x)
             }
         })
-        console.log('Converting note values NOW', info.noteValues)
     }
+    checkIfUseVerboseLogging(player, 'Converting letters to MIDI')
     return info
 }
 //Helped by chatgpt
 
 export function convertNoteValuesToMidi (info, e, b, player){
     if (info.finalValues !== undefined){
-        console.log('finalNote already detected 2')
+        checkIfUseVerboseLogging(player, 'finalNote already detected 2')
         return info
     }
     if (e.notesInputMode === 'relativeScaleDegree'){
@@ -3107,8 +3118,7 @@ export function convertNoteValuesToMidi (info, e, b, player){
         info.noteValues = info.noteValues.map(x => {
             return mode.nearestWrapLookup(x)
         })
-        console.log('mode', mode)
-        console.log('this feature works HAHA', info.noteValues)
+        checkIfUseVerboseLogging(player, 'mode', mode)
     }
     else{
         info.noteValues = info.noteValues.map(x => {
@@ -3129,21 +3139,21 @@ export function checkIfChangeFilteredMode (e, b, player){
     }
     let currentMode = currentModeMap.wrapLookup(b)
     let correctMode = getRelativeMode(currentMode)
-    console.log('testing modeFilter', e.modeFilters[player.modeFilter], correctMode)
+    checkIfUseVerboseLogging(player, 'testing modeFilter', e.modeFilters[player.modeFilter], correctMode)
     try{
         if (JSON.stringify(e.modeFilters[player.modeFilter].keys) === JSON.stringify(correctMode)){
             return false
         }
         else {
-            console.log('changing mode NOW')
+            checkIfUseVerboseLogging(player, 'changing mode NOW')
             e.modeFilters[player.modeFilter] = new QuantizedMap(correctMode[correctMode.length - 1], correctMode, correctMode)
             return true
         }
     }
     catch{
-        console.log('changing mode NOW')
-        e.modeFilters[player.modeFilter] = new QuantizedMap(correctMode[correctMode.length - 1], correctMode, correctMode)
-        return true
+            checkIfUseVerboseLogging(player, 'changing mode NOW')
+            e.modeFilters[player.modeFilter] = new QuantizedMap(correctMode[correctMode.length - 1], correctMode, correctMode)
+            return true
     }
 }
 
@@ -3160,14 +3170,14 @@ export function callMusicSynthesizerRhythm (e, b, session){
     console.log('music notes', midiToMusicNotes(info.noteValues))
     */
     //info.noteValues = handleDissonance(b, info)
-    info = convertRomanNumeralsToMidi(info)
-    info = convertLettersToMidi(info)
+    info = convertRomanNumeralsToMidi(info, player)
+    info = convertLettersToMidi(info, player)
     visualizeVolume(info)
     checkIfChangeChordProgression(e, b, player)
     checkIfSendMidiControlChange(e, b, player)
     checkIfChangeFilteredMode(e, b, player)
     info = convertNoteValuesToMidi(info, e, b, player)
-    info = calculateFinalNoteValue(info)
+    info = calculateFinalNoteValue(info, player)
 //     console.log('FINAL playing finaValues', info.finalValues)
     info.finalValues.forEach((x, i) => {
         //console.log('info;', x,octaveFloor.floorLookup(info.octaves[i]))
@@ -3208,7 +3218,7 @@ export function updateMidiOutputList (e){
     })
 }
 
-//Yiler function:
+//Yiler export function:
 export function getMidiKeys(scaleOrChordNotesArray) {
     let outputArray = scaleOrChordNotesArray.map(e => Note.midi(e))
     return outputArray
@@ -3237,15 +3247,15 @@ export function midiToMusicNotes (array){
 export function checkIfSendMidiControlChange (e, b, player){
 //     console.log(e.controlChangeMaps, player.controlChangeMaps)
     if (e.controlChangeMaps[player.controlChangeMap] === undefined){
-        console.log('CC unknown')
+        checkIfUseVerboseLogging(player, 'CC unknown')
         return true
     }
     let correctCC = e.controlChangeMaps[player.controlChangeMap].wrapLookup(b)
-    console.log('correctCC', correctCC)
+    checkIfUseVerboseLogging(player, 'correctCC' + correctCC)
     if (player.currentControlChange !== correctCC){
         player.currentControlChange = correctCC
         e.outputs[player.session - 1].send('cc', correctCC)
-        console.log('CC Data sent')
+        checkIfUseVerboseLogging(player, 'CC data sent')
     }
 }
 
@@ -3298,8 +3308,101 @@ export function addInputMessageToRecordedMessages (inputIndex, recordedMessagesN
     messages.keys = relativeKeys
 }
 
-//--------------------------------------------------------------------------
-//example-websocket-session.mjs:
+// --------------------------------------------------------------------------
+//New stuff not in es directory:
+
+// //Action export function:
+// export function sendPlaybackMessage (p,b) {if ((mask(p, e.maskMaps[e.players[p].maskMap] ,(e.currentBeat()),1)) != true) {sendPlaybackMessage(e, b, p);}}
+// e.actions.sendPlaybackMessage = sendPlaybackMessage
+
+export function convertQuantizedMapToRelativeForm (map){
+    let amountToRemove = map.keys[0] - 0
+    if (amountToRemove !== 0){
+        map.keyspan -= amountToRemove
+        map.keys = map.keys.map(x => {
+            return x - amountToRemove
+        })
+    }
+    return map
+}
+
+export function sendPlaybackMessage (p, b, e){
+    let session = p
+//     console.log(typeof e, b, session)
+//     if ((mask(p, e.maskMaps[e.players[p].maskMap] ,(e.currentBeat()),1)) != true) {
+        let player = e.players[session]
+        let dataToSend = e.recordedMessages[player.recordedMessages].wrapLookup(b)
+    console.log('data to send', dataToSend)
+        e.outputs[player.session - 1].send(dataToSend._type, dataToSend)
+//     }
+}
+
+
+export function generateQuantizedMapFromAbsoluteNumberArray (numbers){
+    let numbersLength = numbers.length - 1
+    return new QuantizedMap(numbers[numbers.length - 1], numbers, numbers.map((x, i) => {
+        if (i < numbersLength){
+            return numbers[i + 1] - x
+        }
+    }).slice(0, numbers.length - 1))
+}
+
+// export function createPlaybackPlayer (e, session, recordedMessagesName){
+//     let message = e.recordedMessages[recordedMessagesName]
+// //     e.rhythmMaps[recordedMessagesName] = new QuantizedMap(1, [1], generateQuantizedMapFromAbsoluteNumberArray(message.keys))
+// //     e.maskMaps[recordedMessagesName] = new QuantizedMap(message.keyspan, messages.keys, messages.keys.map(x => {return true}))
+// //     player.rhythmMap = recordedMessagesName
+// //     player.maskMap = recordedMessagesName
+// //     console.log(typeof e, recordedMessagesName, e.players)
+//     setupPlaybackPlayer(e, recordedMessagesName)
+//     let player = e.players[recordedMessagesName]
+//     let numbersLength = message.keys.length - 0
+//     let numbers = message.keys
+//     e.rhythmPatterns[recordedMessagesName + 'Playback'] = new RhythmPattern (recordedMessagesName, message.keyspan, numbers.map((x, i) => {
+//         if (i < numbersLength){
+//             return numbers[i + 1] - x
+//         }
+//     }).slice(0, numbers.length - 1), message.keys.map(x => {return true}))
+//     e.rhythmPatterns[recordedMessagesName + 'Playback'].add(e, recordedMessagesName)
+//     console.log('palyer', player)
+//     player.rhythmMap = 'straight'
+//     console.log('recordedMessagesName', recordedMessagesName)
+//     player.recordedMessages = recordedMessagesName
+//     player.session = session
+// }
+
+export function createPlaybackPlayer (e, session, recordedMessagesName){
+    let message = e.recordedMessages[recordedMessagesName]
+//     e.rhythmMaps[recordedMessagesName] = new QuantizedMap(1, [1], generateQuantizedMapFromAbsoluteNumberArray(message.keys))
+//     e.maskMaps[recordedMessagesName] = new QuantizedMap(message.keyspan, messages.keys, messages.keys.map(x => {return true}))
+//     player.rhythmMap = recordedMessagesName
+//     player.maskMap = recordedMessagesName
+//     console.log(typeof e, recordedMessagesName, e.players)
+    setupPlaybackPlayer(e, recordedMessagesName)
+    let player = e.players[recordedMessagesName]
+    let numbersLength = message.keys.length - 0
+    let numbers = message.keys
+    e.rhythmPatterns[recordedMessagesName + 'Playback'] = new RhythmPattern (recordedMessagesName, message.keyspan, numbers.map((x, i) => {
+        if (i < numbersLength){
+            return numbers[i + 1] - x
+        }
+    }).slice(0, numbers.length - 1), message.keys.map(x => {return true}))
+    e.rhythmPatterns[recordedMessagesName + 'Playback'].add(e, recordedMessagesName)
+    console.log('palyer', player)
+    player.rhythmMap = 'straight'
+    console.log('recordedMessagesName', recordedMessagesName)
+    player.recordedMessages = recordedMessagesName
+    player.session = session
+}
+
+
+// e.stop('m1')
+//
+// e.play('m1')
+
+// --------------------------------------------------------------------------
+//example-websocket-session.js:
+
 
 export let clients = [];
 
@@ -3789,7 +3892,7 @@ export function setUpDefaultMusicalEnvironment (){
     setUpDefaultDensityGraphsForMusicalEnvironment(e)
     setUpDefaultPlayersForMusicalEnvironments(e)
     addToMusicalEnvironment(e)
-    addMapToMusicalEnvironment(e, 'rhythmMaps', 'chalk', 10, [0, 1, 2, 3], [4, 5, 6, 7])
+    e.addMap('rhythmMaps', 'chalk', 10, [0, 1, 2, 3], [4, 5, 6, 7])
     updateMidiOutputList(e)
     setupScheduler(e)
     e.startScheduler()
