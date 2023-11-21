@@ -589,25 +589,233 @@ Player name
 ```
 e.togglePlayer('musicSynthesizerSession1')
 ```
+### checkingAddMapToMusicalEnvironmentArguments
 
----
+String -> String ->  Number, [Number] -> [[Number]]|[Number] -> 
 
----
-## Interacting with the Musical Environment
+Checks the arguments of addMap method.
 
-There are different ways you can interacte and change things in the MusicalEnvironment. You can change it by doing ```e.variable = ```. This way is excellent if you are familliar with what you are doing and if you have time. When live coding we often have to act and think quickly. When doing this is is especially easy to make mistakes when making QuanitzedMaps. 
+#### Syntax 
+e.checkingAddMapToMusicalEnvironmentArguments(objectName, mapName, keyspan, keys, values)
 
-### addMapToMusicalEnvironment
+#### Parameters
+###### objectName
+Name of a variable in the MusicalEnvironment to add to.
+###### mapName
+Name of the new QuantizedMap.
+###### keyspan
+Th keyspan of the new QuantizedMap.
+###### keys
+The keys of the new QuantizedMap.
+###### values
+The values of the new QuantizedMap.
+
+##### Example:
+```
+e.checkingAddMapToMusicalEnvironmentArguments('rhythmMaps', 'chalk', 10, [0, 1, 2, 3], [4, 5, 6, 7])
+//undefined
+```
+
+### createDefaultRhythmMap
+String -> String ->  Number, [Number] -> [Number] -> Boolean
+
+Creates the default a rhythmMap with the information provided
+
+#### Syntax 
+e.createDefaultRhythmMap(objectName, mapName, keyspan, keys, values)
+
+##### Parameters
+###### objectName
+Name of a variable in the MusicalEnvironment to add to.
+###### mapName
+Name of the new QuantizedMap.
+###### keyspan
+Th keyspan of the new QuantizedMap.
+###### keys
+The keys of the new QuantizedMap.
+###### values
+The values of the new QuantizedMap.
+
+#### Examples
+```
+e.createDefaultRhythmMap('rhythmMaps', 'chalk', 10, [0, 1, 2, 3], [4, 5, 6, 7])
+//true
+```
+
+### createSubarrayMap 
+String -> String ->  Number, [Number] -> [Number] -> Boolean
+
+Creates subArray QuantizedMaps and adds them to MusicalEnvivronment. This is used for noteMaps and octaveMaps.
+
+#### Syntax
+e.createSubarrayMap(objectName, mapName, keyspan, keys, values)
+
+##### Parameters
+###### objectName
+Name of a variable in the MusicalEnvironment to add to.
+###### mapName
+Name of the new QuantizedMap.
+###### keyspan
+Th keyspan of the new QuantizedMap.
+###### keys
+The keys of the new QuantizedMap.
+###### values
+The values of the new QuantizedMap.
+
+#### Examples
+```
+e.createSubarrayMap('rhythmMaps', 'chalk', 10, [0, 1, 2, 3], [4, 5, 6, 7])
+//true
+```
+
+### createRhythmPatternMap 
+String -> String ->  Number, [Number] -> [Boolean] -> Boolean
+
+Creates the default rhythmPattern maps based on the information.
+
+#### Syntax
+```
+e.createRhythmPatternMap(objectName, mapName, keyspan, keys, values)
+```
+
+##### Parameters
+###### objectName
+Name of a variable in the MusicalEnvironment to add to.
+###### mapName
+Name of the new QuantizedMap.
+###### keyspan
+Th keyspan of the new QuantizedMap.
+###### keys
+The keys of the new QuantizedMap.
+###### values
+The values of the new QuantizedMap.
+
+#### Examples
+```
+e.createRhythmPatternMap('rhythmMaps', 'chalk', 10, [0, 1, 2, 3], [4, 5, 6, 7])
+//true
+```
+
+### createDefaultMaskMap
+String -> String ->  Number, [Number] -> [Boolean] -> Boolean
+
+Creates the default maskMap based on the information provided.
+
+#### Syntax
+```
+e.createDefaultMaskMaps(objectName, mapName, keyspan, keys, values)
+```
+
+##### Parameters
+###### objectName
+Name of a variable in the MusicalEnvironment to add to.
+###### mapName
+Name of the new QuantizedMap.
+###### keyspan
+Th keyspan of the new QuantizedMap.
+###### keys
+The keys of the new QuantizedMap.
+###### values
+The values of the new QuantizedMap.
+
+#### Examples
+```
+e.createDefaultMaskMap('rhythmMaps', 'chalk', 10, [0, 1, 2, 3], [4, 5, 6, 7])
+```
+
+### createChordProgressionMap
+String -> String ->  Number, [Number] -> [Boolean] -> Boolean
+
+Create default chord progression map with information provided.
+
+#### Syntax
+e.createChordProgressionMap(objectName, mapName, keyspan, keys, values)
+
+##### Parameters
+###### objectName
+Name of a variable in the MusicalEnvironment to add to.
+###### mapName
+Name of the new QuantizedMap.
+###### keyspan
+Th keyspan of the new QuantizedMap.
+###### keys
+The keys of the new QuantizedMap.
+###### values
+The values of the new QuantizedMap.
+
+#### Examples
+```
+e.createDefaultMaskMap('rhythmMaps', 'chalk', 10, [0, 1, 2, 3], [4, 5, 6, 7])
+//true
+```
+
+### createSongMap
+String -> String ->  Number, [Number] -> [Boolean] -> Boolean
+
+Creates the default song map with based on the information provided.
+
+#### Syntax
+```
+e.createSongMap(objectName, mapName, keyspan, keys, values)
+```
+
+##### Parameters
+###### objectName
+Name of a variable in the MusicalEnvironment to add to.
+###### mapName
+Name of the new QuantizedMap.
+###### keyspan
+Th keyspan of the new QuantizedMap.
+###### keys
+The keys of the new QuantizedMap.
+###### values
+The values of the new QuantizedMap.
+
+#### Examples
+```
+e.createSongMap('rhythmMaps', 'chalk', 15000, [1000, 5000, 10000], ['twelveBars', 'lsystem', 'scarboroughFair'])
+
+//true
+```
+
+### createDefaultMap
+String -> String ->  Number, [Number] -> [Boolean] -> Boolean
+
+Create default chord progression map with information provided.
+
+#### Syntax
+```
+e.createDefaultMap(objectName, mapName, keyspan, keys, values)
+//true
+```
+
+##### Parameters
+###### objectName
+Name of a variable in the MusicalEnvironment to add to.
+###### mapName
+Name of the new QuantizedMap.
+###### keyspan
+Th keyspan of the new QuantizedMap.
+###### keys
+The keys of the new QuantizedMap.
+###### values
+The values of the new QuantizedMap.
+
+#### Examples
+```
+e.createDefaultMap('rhythmMaps', 'chalk', 10, [0, 1, 2, 3], [4, 5, 6, 7])
+//true
+```
+
+### addMap
 
 This function helps add QuantizedMaps into the MusicalEnvironment with correct types. If something is wrong, this function will throw an error. 
 ##### Syntax
 ```
-addMapToMusicalEnvironment (e, objectName, mapName, keyspan, keys, values)
+e.addMap(objectName, mapName, keyspan, keys, values)
 ```
 
 ##### Parameters
-###### e
-MusicalEnvironment
 ###### objectName
 Name of a variable in the MusicalEnvironment to add to.
 ###### mapName
@@ -621,7 +829,7 @@ The values of the new QuantizedMap.
 
 ##### Examples
 ```
-addMapToMusicalEnvironment(e, 'rhythmMaps', 'chalk', 10, [0, 1, 2, 3], [4, 5, 6, 7])
+e.addMap('rhythmMaps', 'chalk', 10, [0, 1, 2, 3], [4, 5, 6, 7])
 console.log(e.rhythmMaps.chalk)
 /*
 QuantizedMap {
@@ -639,6 +847,10 @@ QuantizedMap {
 ---
 
 ---
+## Interacting with the Musical Environment
+
+There are different ways you can interacte and change things in the MusicalEnvironment. You can change it by doing ```e.variable = ```. This way is excellent if you are familliar with what you are doing and if you have time. When live coding we often have to act and think quickly. When doing this is is especially easy to make mistakes when making QuanitzedMaps. 
+
 
 ### Players
 Players are processes that can be started or stopped using the metaphor of a player in a musical ensemble like a band or orchestra.

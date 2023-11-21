@@ -939,7 +939,7 @@ class MusicalEnvironment {
         }
         return true
     }
-    createDeafaultMaskMap (objectName, mapName, keyspan, keys, values){
+    createDefaultMaskMap (objectName, mapName, keyspan, keys, values){
         let e = this
         if (checkAllItemsType(values, 'boolean')){
             e.maskMaps[mapName] = new QuantizedMap(keyspan, keys, A.flipBooleans(values))
@@ -990,7 +990,7 @@ class MusicalEnvironment {
             case 'rhythmPatterns':
                 this.createRhythmPatternMap(objectName, mapName, keyspan, keys, values)
             case 'maskMaps':
-                this.createDeafaultMaskMap(objectName, mapName, keyspan, keys, values)
+                this.createDefaultMaskMap(objectName, mapName, keyspan, keys, values)
                 break;
             case 'chordProgressions':
                 this.createChordProgressionMap(objectName, mapName, keyspan, keys, values)
@@ -2910,7 +2910,7 @@ function addToMusicalEnvironment (e){
     e.controlChangeMaps = {}
     e.chordProgressions = generateChordProgressions()
     e.song = {
-        'twelveBars-lsystem-scarbrofair': new QuantizedMap(15000, [1000, 5000, 10000], ['twelveBars', 'lsystem', 'scarbrofair'])
+        'twelveBars-lsystem-scarbrofair': new QuantizedMap(15000, [1000, 5000, 10000], ['twelveBars', 'lsystem', 'scarboroughFair'])
     }
     e.modeFilters = {}
     e.modeMaps = {}

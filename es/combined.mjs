@@ -890,28 +890,33 @@ export class MusicalEnvironment {
         let e = this
         if (checkAllItemsType(values, 'number')) {
             e.rhythmMaps[mapName] = new QuantizedMap(1, [1], new QuantizedMap(keyspan, keys, values))
+            return true
         }
-        return true
+        throw new Error ('values type incorrect expected number')
     }
     createSubarrayMap (objectName, mapName, keyspan, keys, values){
         let e = this
         if (checkAllItemsType(values, 'array')){
             e[objectName][mapName] = new QuantizedMap(keyspan, keys, values)
+            return true
         }
-        return true
+        throw new Error('value type incorrect expected array')
+        return false
     }
     createRhythmPatternMap (objectName, mapName, keyspan, keys, values){
         let e = this
         if (checkAllItemsType(values, 'boolean')){
             e.rhythmPatterns[mapName] = new QuantizedMap(keyspan, keys, values)
+            return true
         }
-        return true
+        throw new Error('value type incorrect expected boolean')
     }
     createDeafaultMaskMap (objectName, mapName, keyspan, keys, values){
         let e = this
         if (checkAllItemsType(values, 'boolean')){
             e.maskMaps[mapName] = new QuantizedMap(keyspan, keys, A.flipBooleans(values))
         }
+        throw new Error('value type incorrect expected boolean')
         return true
     }
     createChordProgressionMap (objectName, mapName, keyspan, keys, values){
@@ -919,6 +924,7 @@ export class MusicalEnvironment {
         if (checkAllItemsType(values, 'object') && checkChordProgressionDataType(values)){
             e.chordProgressions[mapName] = new QuantizedMap(keyspan, keys, values)
         }
+        throw new Error('value type incorrect expected object')
     }
     createSongMap (objectName, mapName, keyspan, keys, values){
         let e = this
@@ -942,7 +948,9 @@ export class MusicalEnvironment {
         let e = this
         if (checkAllItemsType(values, 'number')){
             e[objectName][mapName] = new QuantizedMap(keyspan, keys, values)
+            return true
         }
+        throw new Error('value type incorrect expected number')
     }
     addMap (objectName, mapName, keyspan, keys, values){
         let e = this
@@ -2681,7 +2689,7 @@ export function addToMusicalEnvironment (e){
     e.controlChangeMaps = {}
     e.chordProgressions = generateChordProgressions()
     e.song = {
-        'twelveBars-lsystem-scarbrofair': new QuantizedMap(15000, [1000, 5000, 10000], ['twelveBars', 'lsystem', 'scarbrofair'])
+        'twelveBars-lsystem-scarbrofair': new QuantizedMap(15000, [1000, 5000, 10000], ['twelveBars', 'lsystem', 'scarboroughFair'])
     }
     e.modeFilters = {}
     e.modeMaps = {}
