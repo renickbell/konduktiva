@@ -4221,6 +4221,26 @@ function setUpDefaultMusicalEnvironment (){
     return e
 }
 
+function setUpDefaultMusicalEnvironmentOnePlayer (){
+    let e = new MusicalEnvironment()
+    setUpDefaultRhythmMapsToMusicalEnvironment(e)
+    setUpDefaultActionToMusicalEnvironment(e)
+    setUpDefaultMaskMapsForMusicalEnvironment(e)
+    setUpDefaultIOIsForMusicalEnvironment(e)
+    setUpDefaultCurrentDensityGraphsForMusicalEnvironment(e)
+    setUpDefaultDensityGraphsForMusicalEnvironment(e)
+    setUpDefaultPlayersForMusicalEnvironments(e)
+    addToMusicalEnvironment(e)
+    e.addMap('rhythmMaps', 'chalk', 10, [0, 1, 2, 3], [4, 5, 6, 7])
+    updateMidiOutputList(e)
+    setupScheduler(e)
+    e.startScheduler()
+    e.actions.midiSequencedRhythm = musicSynthesizerCaller
+    e.actions.sendPlaybackMessage = sendPlaybackMessage
+    recordConfigurationDataIntoMusicalEnvironment(lsystemData, 'p1', e)
+    assignPlayerForMusicSynthesizerSession(e, 1, 'p1', {rhythmMapName: 'straight', chordProgressionMapName: 'twelveBars-lsystem-scarbrofair'})
+    return e
+}
 
 
 function setUpKonduktiva (){
@@ -4240,7 +4260,7 @@ function setUpKonduktiva (){
 
 // export let e = setUpDefaultMusicalEnvironment()
 
-addToModuleExports({setUpDefaultMusicalEnvironment, setUpKonduktiva})
+addToModuleExports({setUpDefaultMusicalEnvironment, setUpKonduktiva, setUpDefaultMusicalEnvironmentOnePlayer})
 
 //let K = require('./combined.js')
 //let e = K.setUpDefaultMusicalEnvironment()

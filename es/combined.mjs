@@ -3917,5 +3917,27 @@ export function setUpDefaultMusicalEnvironment (){
     return e
 }
 
+export function setUpDefaultMusicalEnvironmentOnePlayer (){
+    let e = new MusicalEnvironment()
+    setUpDefaultRhythmMapsToMusicalEnvironment(e)
+    setUpDefaultActionToMusicalEnvironment(e)
+    setUpDefaultMaskMapsForMusicalEnvironment(e)
+    setUpDefaultIOIsForMusicalEnvironment(e)
+    setUpDefaultCurrentDensityGraphsForMusicalEnvironment(e)
+    setUpDefaultDensityGraphsForMusicalEnvironment(e)
+    setUpDefaultPlayersForMusicalEnvironments(e)
+    addToMusicalEnvironment(e)
+    e.addMap('rhythmMaps', 'chalk', 10, [0, 1, 2, 3], [4, 5, 6, 7])
+    updateMidiOutputList(e)
+    setupScheduler(e)
+    e.startScheduler()
+    e.actions.midiSequencedRhythm = musicSynthesizerCaller
+    e.actions.sendPlaybackMessage = sendPlaybackMessage
+    recordConfigurationDataIntoMusicalEnvironment(lsystemData, 'p1', e)
+    assignPlayerForMusicSynthesizerSession(e, 1, 'p1', {rhythmMapName: 'straight', chordProgressionMapName: 'twelveBars-lsystem-scarbrofair'})
+    return e
+}
+
+
 // let e = setUpDefaultMusicalEnvironment()
 
