@@ -91,10 +91,10 @@ let e = K.setUpDefaultMusicalEnvironment()
 
 #### To make all the sessions/instances of the music synthesizer play do this:
 
-    e.play('musicSynthesizerSession1')
-    e.play('musicSynthesizerSession3')
-    e.play('musicSynthesizerSession4')
-    e.play('musicSynthesizerSession2')
+    e.play('exampleMidiPlayer1')
+    e.play('exampleMidiPlayer3')
+    e.play('exampleMidiPlayer4')
+    e.play('exampleMidiPlayer2')
 
 ----
 
@@ -267,7 +267,7 @@ recordConfigurationDataIntoMusicalEnvironment(circleOfFifthChords, 'p4', e)
 ```
 
 ### Assigning Player For Music Synthesizer Session
-After recording you configuration object into the [musical environment](#record-configuration-objects-to-musical-environment), you need to assign it to a player. To do so, call the ```assignPlayerForMusicSynthesizerSession``` function. It takes 4 arguments. The last argument is optional. The first one is the musical environment, the second one is the music synthesizer session you want it to be tied to. It should be in the form of a number and it will refer to a specific output point of ```e.outputs```. Third, the name of the data is recorded under. The last one is anything you want to manually overide before you assign it to the player. This argument will be an object and the variables will be listed below. This should be a string. If there are no errors after running that, you will be able to play the music by doing ```e.play('musicSynthesizerSession2')```. Change the number 2 to whatever number you inputted for your second argument.
+After recording you configuration object into the [musical environment](#record-configuration-objects-to-musical-environment), you need to assign it to a player. To do so, call the ```assignPlayerForMusicSynthesizerSession``` function. It takes 4 arguments. The last argument is optional. The first one is the musical environment, the second one is the music synthesizer session you want it to be tied to. It should be in the form of a number and it will refer to a specific output point of ```e.outputs```. Third, the name of the data is recorded under. The last one is anything you want to manually overide before you assign it to the player. This argument will be an object and the variables will be listed below. This should be a string. If there are no errors after running that, you will be able to play the music by doing ```e.play('exampleMidiPlayer2')```. Change the number 2 to whatever number you inputted for your second argument.
 
 #### Example:
 ```
