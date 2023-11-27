@@ -3265,6 +3265,7 @@ function filterMode (note, e, b, player){
     }
     else if (e.notesInputMode === 'relativeSemitone'){
         checkIfUseVerboseLogging(player, 'filtering mode map for', player.modeFilter)
+        checkIfUseVerboseLogging(player, 'originial note: ' + note + 'after: ' + mode.floorWrapLookup(note))
         return mode.floorWrapLookup(note)
     }
     else{
@@ -3339,7 +3340,7 @@ function checkIfStringIncluesNumber (inputString){
 
 function convertLettersToMidi (info, player){
     if (info.finalValues !== undefined){
-            console.log('finalNote already defined')
+//             console.log('finalNote already defined')
         checkIfUseVerboseLogging(e, 'finalNote already defined')
         return info
     }
@@ -3422,7 +3423,6 @@ function callMusicSynthesizerRhythm (e, b, session){
     let player = e.players[session]
     let info = getNoteInfoToSend(player, b, session)
     info = filterPolyphany(e, b, player, info)
-    let octaveFloor = new QuantizedMap(8, [3, 4, 5, 6, 7], [3, 4, 5, 6, 7])
     /*
     console.log('first step look up', e.noteDurationMaps[player.noteDurationMapName].wrapLookup(b))
     console.log('b', b)
@@ -3440,10 +3440,6 @@ function callMusicSynthesizerRhythm (e, b, session){
     info = calculateFinalNoteValue(info, player)
 //     console.log('FINAL playing finaValues', info.finalValues)
     info.finalValues.forEach((x, i) => {
-        //console.log('info;', x,octaveFloor.floorLookup(info.octaves[i]))
-//             console.log('note', x + (octaveFloor.floorLookup(info.octaves[i]) * 12))
-//         console.log(session + ': ' ,x + (octaveFloor.floorLookup(info.octaves[i]) * 12))
-//         sendMidiData(info, player, x + (octaveFloor.floorLookup(info.octaves[i]) * 12))
         sendMidiData(info, player, x)
     })
     return true
