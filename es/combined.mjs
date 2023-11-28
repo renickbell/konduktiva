@@ -890,33 +890,28 @@ export class MusicalEnvironment {
         let e = this
         if (checkAllItemsType(values, 'number')) {
             e.rhythmMaps[mapName] = new QuantizedMap(1, [1], new QuantizedMap(keyspan, keys, values))
-            return true
         }
-        throw new Error ('values type incorrect expected number')
+        return true
     }
     createSubarrayMap (objectName, mapName, keyspan, keys, values){
         let e = this
         if (checkAllItemsType(values, 'array')){
             e[objectName][mapName] = new QuantizedMap(keyspan, keys, values)
-            return true
         }
-        throw new Error('value type incorrect expected array')
-        return false
+        return true
     }
     createRhythmPatternMap (objectName, mapName, keyspan, keys, values){
         let e = this
         if (checkAllItemsType(values, 'boolean')){
             e.rhythmPatterns[mapName] = new QuantizedMap(keyspan, keys, values)
-            return true
         }
-        throw new Error('value type incorrect expected boolean')
+        return true
     }
-    createDeafaultMaskMap (objectName, mapName, keyspan, keys, values){
+    createDefaultMaskMap (objectName, mapName, keyspan, keys, values){
         let e = this
         if (checkAllItemsType(values, 'boolean')){
             e.maskMaps[mapName] = new QuantizedMap(keyspan, keys, A.flipBooleans(values))
         }
-        throw new Error('value type incorrect expected boolean')
         return true
     }
     createChordProgressionMap (objectName, mapName, keyspan, keys, values){
@@ -924,7 +919,6 @@ export class MusicalEnvironment {
         if (checkAllItemsType(values, 'object') && checkChordProgressionDataType(values)){
             e.chordProgressions[mapName] = new QuantizedMap(keyspan, keys, values)
         }
-        throw new Error('value type incorrect expected object')
     }
     createSongMap (objectName, mapName, keyspan, keys, values){
         let e = this
@@ -948,9 +942,7 @@ export class MusicalEnvironment {
         let e = this
         if (checkAllItemsType(values, 'number')){
             e[objectName][mapName] = new QuantizedMap(keyspan, keys, values)
-            return true
         }
-        throw new Error('value type incorrect expected number')
     }
     addMap (objectName, mapName, keyspan, keys, values){
         let e = this
@@ -966,7 +958,7 @@ export class MusicalEnvironment {
             case 'rhythmPatterns':
                 this.createRhythmPatternMap(objectName, mapName, keyspan, keys, values)
             case 'maskMaps':
-                this.createDeafaultMaskMap(objectName, mapName, keyspan, keys, values)
+                this.createDefaultMaskMap(objectName, mapName, keyspan, keys, values)
                 break;
             case 'chordProgressions':
                 this.createChordProgressionMap(objectName, mapName, keyspan, keys, values)
@@ -979,6 +971,46 @@ export class MusicalEnvironment {
         }
         console.log('Successfully created ', objectName, ' named ', mapName)
         return true
+    }
+        convertMusicalEnvironmentToString (){
+        let e = this
+        let env = {}
+        Object.keys(e).forEach(x => {
+            if (e[x] instanceof Object && typeof e[x][Object.keys(e[x])[0]] === 'function'){
+                console.log('Function detected', x)
+                env[x] = {}
+                Object.keys(e[x]).forEach(v => {
+                    env[x][v] = e[x][v].toString()
+                })
+            }
+            else if (e[x] instanceof TaskTimer === false){
+                console.log('string', x)
+                env[x] = JSON.stringify(e[x])
+            }
+            else {
+                env[x] = e[x].toString()
+            }
+        })
+        return env
+    }
+    //helped by chatgpt
+    sendClientEnvInfo (clientIndex, server){
+        if (server !== undefined || typeof wss.address().port !== 'number'){
+            console.log(server + ' is not a websocket server')
+            return false
+        }
+        else if (typeof wss.address().port !== 'number'){
+            console.log('wss is not a websocket server')
+            return false
+        }
+        if (clientIndex === undefined){
+            wss.clients.forEach(x => {
+                x.send(JSON.stringify({action: 'showMusicalEnvInfo', info: this.convertMusicalEnvironmentToString()}))
+            })
+        }
+        else if (clientIndex >= 0 && clientIndex < clients.length - 1){
+            clients[clientIndex].send(JSON.stringify({action: 'showMusicalEnvInfo', info: this.convertMusicalEnvironmentToString()}))
+        }
     }
 }
 // addMapToMusicalEnvironment(e, 'rhythmMaps', 'chalk', 10, [0, 1, 2, 3], [4, 5, 6, 7])

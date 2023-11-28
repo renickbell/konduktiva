@@ -1004,6 +1004,46 @@ class MusicalEnvironment {
         console.log('Successfully created ', objectName, ' named ', mapName)
         return true
     }
+        convertMusicalEnvironmentToString (){
+        let e = this
+        let env = {}
+        Object.keys(e).forEach(x => {
+            if (e[x] instanceof Object && typeof e[x][Object.keys(e[x])[0]] === 'function'){
+                console.log('Function detected', x)
+                env[x] = {}
+                Object.keys(e[x]).forEach(v => {
+                    env[x][v] = e[x][v].toString()
+                })
+            }
+            else if (e[x] instanceof TaskTimer === false){
+                console.log('string', x)
+                env[x] = JSON.stringify(e[x])
+            }
+            else {
+                env[x] = e[x].toString()
+            }
+        })
+        return env
+    }
+    //helped by chatgpt
+    sendClientEnvInfo (clientIndex, server){
+        if (server !== undefined || typeof wss.address().port !== 'number'){
+            console.log(server + ' is not a websocket server')
+            return false
+        }
+        else if (typeof wss.address().port !== 'number'){
+            console.log('wss is not a websocket server')
+            return false
+        }
+        if (clientIndex === undefined){
+            wss.clients.forEach(x => {
+                x.send(JSON.stringify({action: 'showMusicalEnvInfo', info: this.convertMusicalEnvironmentToString()}))
+            })
+        }
+        else if (clientIndex >= 0 && clientIndex < clients.length - 1){
+            clients[clientIndex].send(JSON.stringify({action: 'showMusicalEnvInfo', info: this.convertMusicalEnvironmentToString()}))
+        }
+    }
 }
 // addMapToMusicalEnvironment(e, 'rhythmMaps', 'chalk', 10, [0, 1, 2, 3], [4, 5, 6, 7])
 

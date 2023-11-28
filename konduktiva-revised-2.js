@@ -645,8 +645,8 @@ function mask (player, maskMap, beat, probability) {
 
 /** Class representing MusicalEnvironments */
 class MusicalEnvironment {
-    /** 
-      * Creates MusicalEnvironments. Remember to call setupScheduler(e) 
+    /**
+      * Creates MusicalEnvironments. Remember to call setupScheduler(e)
       * @example let e = new MusicalEnvironment()
     */
     constructor (){
@@ -672,7 +672,7 @@ class MusicalEnvironment {
         this.scheduledPlayers = [];
         this.root = "A";
     }
-    /** 
+    /**
       * Returns the current beat of the MusicalEnvironment.
     */
     currentBeat () {
@@ -714,10 +714,12 @@ class MusicalEnvironment {
         let ioiFunc = this.getIOIFunc (player);
         let onsets = getNextOnsets3(ioiFunc,player, this.currentBeat(), this.currentBeat() + timeToBeats(this.currentTempo,this.lookahead),[]);
         let onsetsAfterLastScheduled = onsets.filter(x => x > this.players[player].lastScheduledTime);
+//         console.log('onsetsAfterLastScheduled', onsetsAfterLastScheduled)
         if (player.verbose == true) {
         console.log(" -------------------------------------------------------------------------- " );
         console.log("current beat: " + this.currentBeat());
-        console.log("onsets after last scheduled: " + onsetsAfterLastScheduled)};
+        console.log("onsets after last scheduled: " + onsetsAfterLastScheduled)
+        };
         if (onsetsAfterLastScheduled[0] !== undefined) {
             this.players[player].lastScheduledTime = R.last(onsetsAfterLastScheduled);
             // run the masking here
@@ -727,13 +729,12 @@ class MusicalEnvironment {
             let times = unmaskedOnsets.map(x => beatsToTime(this.currentTempo, x - (this.currentBeat())));
             if (player.verbose == true) { console.log("these are the times for events of player " + player + ": " + times)};
             //if (player == 'kick') {console.log(unmaskedOnsets)}
+//             console.log('times', times)
             times.forEach(
                 (t,i) => {
-                    console.log('hi here', player)
-                    setTimeout(x => (
-                        //HERE made action function take musicalEnvironment as an argument.
-                        this.getAction(player))(player,unmaskedOnsets[i], this)
-                        ,Math.max(1000 * (t - now()),0))
+//                     console.log('hi here', player)
+                    setTimeout(x => (this.getAction(player))(player,unmaskedOnsets[i], this),
+                    Math.max(1000 * (t - now()),0))
                 }
             );
         };
@@ -751,7 +752,7 @@ class MusicalEnvironment {
       * Stops the scheduler for the MusicalEnvironment.
     */
     stopScheduler () {
-        this.timeOfChangeToCurrentTempo = undefined; 
+        this.timeOfChangeToCurrentTempo = undefined;
         this.beatOfChangeToCurrentTempo = undefined;
         //this.lastScheduledTime = 0;
         this.scheduler.stop()
@@ -761,7 +762,7 @@ class MusicalEnvironment {
       * @param {string} player - Player name.
     */
     play (player) {
-        if (this.players[player].status == "playing") 
+        if (this.players[player].status == "playing")
             {console.log("Player " + this.players[player].name + " is already playing!")}
         else {
             this.scheduledPlayers = this.scheduledPlayers.concat(player);
@@ -774,7 +775,7 @@ class MusicalEnvironment {
       * @param {string} player - Player name.
     */
     stop (player) {
-        if (this.players[player].status == "stopped") 
+        if (this.players[player].status == "stopped")
             {console.log("Player " + this.players[player].name + " is not playing!")}
         else {
 //             this.scheduledPlayers = A.removeItem(this.scheduledPlayers,player)
@@ -844,7 +845,163 @@ class MusicalEnvironment {
     togglePlayer (p) {
        if (this.players[p].status == 'playing') {this.stop(p)} else {this.play(p)}
     }
+    checkingAddMapToMusicalEnvironmentArguments (objectName, mapName, keyspan, keys, values){
+        let e = this
+        if (objectName === undefined || typeof objectName !== 'string'){
+            throw new Error('Invalid objectName type. Expected string.')
+        }
+        else if (e[objectName] === undefined){
+            throw new Error('Variable does not exist in MusicalEnvironment. Please fill in one of the variables that exist and uses QuantizedMap(s). To check find all variables, do Object.keys(musicalEnvironment)')
+        }
+        if (mapName === undefined || typeof mapName !== 'string'){
+            throw new Error('Invalid mapName type. Expected string.')
+        }
+        if (keyspan === undefined){
+            console.warn('kepspan is undefined will automatically use last item of the keys array as keyspanb.')
+        }
+        else if (typeof keyspan !== 'number'){
+            throw new Error('Invalid keyspan type. Expected number')
+        }
+        if (keys instanceof Array === false){
+            throw new Error('Invalid keys type. Expected number array')
+        }
+        else if (keys.every(x => typeof x === 'number') === false){
+            throw new Error('Invalid keys type. Expected number array')
+        }
+        if (values instanceof Array === false){
+            throw new Error('Invalid values type. Expected array')
+        }
+        //differentiating between object and array from: https://stackoverflow.com/a/7803271/19515980
+    //     console.info('Preliminary checks have passeed.')
+    }
+    createDefaultRhythmMap (objectName, mapName, keyspan, keys, values){
+        let e = this
+        if (checkAllItemsType(values, 'number')) {
+            e.rhythmMaps[mapName] = new QuantizedMap(1, [1], new QuantizedMap(keyspan, keys, values))
+        }
+        return true
+    }
+    createSubarrayMap (objectName, mapName, keyspan, keys, values){
+        let e = this
+        if (checkAllItemsType(values, 'array')){
+            e[objectName][mapName] = new QuantizedMap(keyspan, keys, values)
+        }
+        return true
+    }
+    createRhythmPatternMap (objectName, mapName, keyspan, keys, values){
+        let e = this
+        if (checkAllItemsType(values, 'boolean')){
+            e.rhythmPatterns[mapName] = new QuantizedMap(keyspan, keys, values)
+        }
+        return true
+    }
+    createDefaultMaskMap (objectName, mapName, keyspan, keys, values){
+        let e = this
+        if (checkAllItemsType(values, 'boolean')){
+            e.maskMaps[mapName] = new QuantizedMap(keyspan, keys, A.flipBooleans(values))
+        }
+        return true
+    }
+    createChordProgressionMap (objectName, mapName, keyspan, keys, values){
+        let e = this
+        if (checkAllItemsType(values, 'object') && checkChordProgressionDataType(values)){
+            e.chordProgressions[mapName] = new QuantizedMap(keyspan, keys, values)
+        }
+    }
+    createSongMap (objectName, mapName, keyspan, keys, values){
+        let e = this
+        if (checkAllItemsType(values, 'string') === false){
+            throw new Error ('Invalid items in values array. Expected an array filled with strings.')
+        }
+        else if (values.every((x, i) => {if (e.chordProgressions[x] === undefined){
+            throw new Error (x + ' is not a property name of musicalEnvironment.chordProgressions. Fix index ' + i)
+            return false
+            }
+            return true
+        }) === false){
+            throw new Error ('Invalid items in values array. Expected name of a property in musicalEnvironment.chordProgressions')
+                }
+        else {
+            e.song[mapName] = new QuantizedMap(keyspan, keys, values)
+        }
+        return true
+    }
+    createDefaultMap (objectName, mapName, keyspan, keys, values){
+        let e = this
+        if (checkAllItemsType(values, 'number')){
+            e[objectName][mapName] = new QuantizedMap(keyspan, keys, values)
+        }
+    }
+    addMap (objectName, mapName, keyspan, keys, values){
+        let e = this
+        this.checkingAddMapToMusicalEnvironmentArguments(objectName, mapName, keyspan, keys, values)
+        switch (objectName){
+            case'rhythmMaps':
+                this.createDefaultRhythmMap(objectName, mapName, keyspan, keys, values)
+                break;
+            case 'noteMaps':
+            case 'octaveMap':
+                this.createSubarrayMap(objectName, mapName, keyspan, keys, values)
+                break;
+            case 'rhythmPatterns':
+                this.createRhythmPatternMap(objectName, mapName, keyspan, keys, values)
+            case 'maskMaps':
+                this.createDefaultMaskMap(objectName, mapName, keyspan, keys, values)
+                break;
+            case 'chordProgressions':
+                this.createChordProgressionMap(objectName, mapName, keyspan, keys, values)
+                break;
+            case 'song':
+                this.createSongMap(objectName, mapName, keyspan, keys, values)
+                break;
+            default:
+                this.createDefaultMap(objectName, mapName, keyspan, keys, values);
+        }
+        console.log('Successfully created ', objectName, ' named ', mapName)
+        return true
+    }
+        convertMusicalEnvironmentToString (){
+        let e = this
+        let env = {}
+        Object.keys(e).forEach(x => {
+            if (e[x] instanceof Object && typeof e[x][Object.keys(e[x])[0]] === 'function'){
+                console.log('Function detected', x)
+                env[x] = {}
+                Object.keys(e[x]).forEach(v => {
+                    env[x][v] = e[x][v].toString()
+                })
+            }
+            else if (e[x] instanceof TaskTimer === false){
+                console.log('string', x)
+                env[x] = JSON.stringify(e[x])
+            }
+            else {
+                env[x] = e[x].toString()
+            }
+        })
+        return env
+    }
+    //helped by chatgpt
+    sendClientEnvInfo (clientIndex, server){
+        if (server !== undefined || typeof wss.address().port !== 'number'){
+            console.log(server + ' is not a websocket server')
+            return false
+        }
+        else if (typeof wss.address().port !== 'number'){
+            console.log('wss is not a websocket server')
+            return false
+        }
+        if (clientIndex === undefined){
+            wss.clients.forEach(x => {
+                x.send(JSON.stringify({action: 'showMusicalEnvInfo', info: this.convertMusicalEnvironmentToString()}))
+            })
+        }
+        else if (clientIndex >= 0 && clientIndex < clients.length - 1){
+            clients[clientIndex].send(JSON.stringify({action: 'showMusicalEnvInfo', info: this.convertMusicalEnvironmentToString()}))
+        }
+    }
 }
+// addMapToMusicalEnvironment(e, 'rhythmMaps', 'chalk', 10, [0, 1, 2, 3], [4, 5, 6, 7])
 
 /**
   * Sets up the scheduler for the MusicalEnvironment.
