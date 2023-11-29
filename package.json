@@ -3,7 +3,7 @@
     "array-toolkit": "^*",
     "easymidi": "^*",
     "http-server": "^*",
-    "konduktiva": "^*",
+    "konduktiva": "^1.8.0",
     "osc": "^*",
     "path": "^*",
     "perf_hooks": "^*",
@@ -15,7 +15,7 @@
     "type-check": "^*"
   },
   "name": "konduktiva",
-  "version": "1.8.0",
+  "version": "1.8.1",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/renickbell/konduktiva.git"
