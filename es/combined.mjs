@@ -952,7 +952,6 @@ export class MusicalEnvironment {
                 this.createDefaultRhythmMap(objectName, mapName, keyspan, keys, values)
                 break;
             case 'noteMaps':
-            case 'octaveMap':
                 this.createSubarrayMap(objectName, mapName, keyspan, keys, values)
                 break;
             case 'rhythmPatterns':
@@ -966,6 +965,7 @@ export class MusicalEnvironment {
             case 'song':
                 this.createSongMap(objectName, mapName, keyspan, keys, values)
                 break;
+            case 'octaveMap':
             default:
                 this.createDefaultMap(objectName, mapName, keyspan, keys, values);
         }
@@ -3069,19 +3069,15 @@ export function filterPolyphany (e, b, player, info){
 
 export function convertRomanNumeralsToMidi (info){
     let stringOctaves = info.octaves
-    if (typeof info.octaves[0] === 'string'){
-        info.octaves = info.octaves.map(x => {
-            return Note.midi(x)
-        })
+    if (typeof info.octaves === 'string'){
+        info.octaves = Note.midi(info.octaves)
     }
     else {
-        stringOctaves = info.octaves.map(x => {
-            return Note.fromMidi(x)
-        })
+        stringOctaves = Note.fromMidi(info.octaves)
     }
 //     console.log('testing for roman numerals', info.noteValues[0])
     if (typeof info.noteValues[0] === 'string'){
-        info.finalValues = Progression.fromRomanNumerals(info.letters[0] + info.octaves[0], info.noteValues)
+        info.finalValues = Progression.fromRomanNumerals(info.letters[0] + info.octaves, info.noteValues)
         info.finalValues = info.finalValues.map(x => {
             return Midi.toMidi(x)
         })
@@ -3096,7 +3092,7 @@ export function calculateFinalNoteValue (info){
     if (info.finalValues === undefined){
         checkIfUseVerboseLogging(e, 'finalNote not detected', info.finalNote)
         info.finalValues = info.noteValues.map(x => {
-            return Note.midi(info.letters[0] + info.octaves[0]) + x
+            return Note.midi(info.letters+ info.octaves) + x
         })
     }
     return info
@@ -3123,15 +3119,13 @@ export function convertLettersToMidi (info, player){
         checkIfUseVerboseLogging(e, 'finalNote already defined')
         return info
     }
-    if (typeof info.octaves[0] === 'string'){
-        info.octaves = info.octaves.map(x => {
-             if (checkIfStringIncluesNumber(x) === false){
-                return Note.midi(x + '-1')
-             }
-            else {
-                return Note.midi(x)
-            }
-        })
+    if (typeof info.octaves === 'string'){
+        if (checkIfStringIncluesNumber(info.octaves) === false){
+            info.octaves = Note.midi(info.octaves + '-1')
+        }
+        else {
+            info.octaves = Note.midi(info.octaves)
+        }
     }
     if (typeof info.noteValues[0] === 'string'){
         info.noteValues = info.noteValues.map(x => {
@@ -3523,9 +3517,7 @@ export let randomMelodyData = {
 //       })
 //   }),
   octave: chordProgressionScarboroughFair.map(x => {
-      return x.map(n => {
-          return n.octave
-      })
+      return x[0].octave
   }),
   total: 16,
   polyphonyMap: [3 ,2 ,3, 2, 3, 2 ,2 ,3, 2, 3, 2 ,2],
@@ -3599,9 +3591,7 @@ export let randomMelody2 = {
   //    return [x.note + ((x.octave + 1) * 12)]
  // })],
   octave: chordProgressionScarboroughFair.map(x => {
-      return x.map(n => {
-          return n.octave
-      })
+      return x[0].octave
   }),
   noteValues: chordProgressionScarboroughFair.map(x => {
       return x.map(n => {
@@ -3644,9 +3634,7 @@ export let melodyData = {
   bools: A.buildArray(48, x => {return true}),
   //noteValuesKeys: A.buildArray(12, x => {return (x * 4)}),
   octave: chordProgressionScarboroughFair.map(x => {
-      return x.map(n => {
-          return 0
-      })
+      return 0
   }),
   noteValues: chordProgressionScarboroughFair.map(x => {
       return x.map(n => {
@@ -3728,9 +3716,7 @@ export let lsystemData = {
 //       })
 //   }),
   octave: chordProgressionScarboroughFair.map(x => {
-      return x.map(n => {
-          return n.octave
-      })
+      return x[0].octave
   }),
   noteValues: chordProgressionScarboroughFair.map(x => {
       return x.map(n => {
@@ -3838,7 +3824,7 @@ export let circleOfFifthChords = {
   modeFilter: A.buildArray(12, x=> x),
   modeFilterKeyspan: 12,
   octave: newChords2.map(x => {
-      return x.octaveNotes
+      return x.octaveNotes[0]
   }),
   noteValues: newChords2.map(x => {
       return x.rootNotes
@@ -3861,7 +3847,7 @@ export let circleOfFifthMelody = {
     noteDurations: A.buildArray(24, x => 0.25),
     bools: boolsData,
     modeFilterKeyspan: 18,
-    octave: circleOfFifthMelodySplitNotes.octaveNotes.map(x => {return [x]}),
+    octave: circleOfFifthMelodySplitNotes.octaveNotes.map(x => {return x}),
 noteValues: circleOfFifthMelodySplitNotes.rootNotes.map(x => {return [x]}),
 // noteValues: ["IIm9", "IIm9", "V", "V", "IIIm7", "IIIm7", "VIm","VIm"].map(x => {return [x]}),
     total: 18,
