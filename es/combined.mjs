@@ -2628,7 +2628,16 @@ export function createSessionPlayer (e, session, velocityMapName, noteMapName = 
     sessionPlayer.rootMap = rootMapName
     let playerName = 'exampleMidiPlayer' + session
     e.rhythmPatterns[rhythmPatternName].add(e, playerName)
-    e.outputs.push(new easymidi.Output(easymidi.getOutputs()[session]))
+    try{
+        e.outputs.push(new easymidi.Output(easymidi.getOutputs()[session]))
+    }
+    catch (e){
+        if (e.toString() === 'Error: No MIDI output found with name: undefined'){
+            console.log("\x1b[31m",'Extra outputs required. Please open more sessions of your music synthesizer',"\x1b[0m")
+            //color logging from: https://stackoverflow.com/questions/9781218/how-to-change-node-jss-console-font-color/41407246#41407246
+        }
+        throw e
+    }
     try{
     sessionPlayer.chordProgressionMap = checkIfAddChordProgressionMapToPlayer(chordProgressionMapName, e)
     }catch{}
@@ -2656,7 +2665,16 @@ export function editSessionPlayer (e, session, velocityMapName, noteMapName = ve
     sessionPlayer.polyphonyMap = polyphonyMapName
     let playerName = 'exampleMidiPlayer' + session
     e.rhythmPatterns[rhythmPatternName].add(e, playerName)
-    e.outputs[session - 1] = (new easymidi.Output(easymidi.getOutputs()[session]))
+    try{
+        e.outputs[session - 1] = (new easymidi.Output(easymidi.getOutputs()[session]))
+    }
+    catch (e){
+        if (e.toString() === 'Error: No MIDI output found with name: undefined'){
+            console.log("\x1b[31m",'Extra outputs required. Please open more sessions of your music synthesizer',"\x1b[0m")
+            //color logging from: https://stackoverflow.com/questions/9781218/how-to-change-node-jss-console-font-color/41407246#41407246
+        }
+        throw e
+    }
     try{
     sessionPlayer.chordProgressionMap = checkIfAddChordProgressionMapToPlayer(chordProgressionMapName, e)
     }catch{}
