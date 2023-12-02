@@ -4395,7 +4395,7 @@ addToModuleExports({
 //     return e
 // }
 
-function setUpDefaultMusicalEnvironment (){
+function setUpMusicalEnvironmentExamples (){
     let e = new MusicalEnvironment()
     setUpDefaultRhythmMapsToMusicalEnvironment(e)
     setUpDefaultActionToMusicalEnvironment(e)
@@ -4405,7 +4405,6 @@ function setUpDefaultMusicalEnvironment (){
     setUpDefaultDensityGraphsForMusicalEnvironment(e)
     setUpDefaultPlayersForMusicalEnvironments(e)
     addToMusicalEnvironment(e)
-    e.addMap('rhythmMaps', 'chalk', 10, [0, 1, 2, 3], [4, 5, 6, 7])
     updateMidiOutputList(e)
     setupScheduler(e)
     e.startScheduler()
@@ -4413,6 +4412,11 @@ function setUpDefaultMusicalEnvironment (){
     e.actions.sendChordMidiInfo = sendChordMidiInfo
     e.actions.sendNotesMidiInfo = sendNotesMidiInfo
     e.actions.sendPlaybackMessage = sendPlaybackMessage
+    return e
+}
+
+function setUpDefaultMusicalEnvironmentFourPlayers (){
+    let e = setUpMusicalEnvironmentExamples()
     recordConfigurationDataIntoMusicalEnvironment(lsystemData, 'p1', e)
     recordConfigurationDataIntoMusicalEnvironment(circleOfFifthChords, 'p4', e)
     recordConfigurationDataIntoMusicalEnvironment(circleOfFifthMelody, 'p3', e)
@@ -4424,24 +4428,104 @@ function setUpDefaultMusicalEnvironment (){
     return e
 }
 
+function setUpVerySimpleMusicalEnvironment (){
+    let e = setUpMusicalEnvironmentExamples()
+    let simpleMelodyData = {
+        velocity : [100, 100, 100, 100],
+        noteDurations: A.buildArray(12, x => {return x}),
+        bools: [true, true, true, true],
+        rhythmMap: [1, 2, 3, 4],
+        octave: [5, 6, 7, 8],
+        total: 4,
+        noteDurationKeyspan: 12,
+        noteDurationValues: [0, 1, 2, 3],
+        noteDurations: [0, 4, 8, 12],
+        noteValues: [[1], [2], [3], [4]],
+        rootMap: [ 'C', 'C', 'C', 'C' ],
+    }
+    recordConfigurationDataIntoMusicalEnvironment(simpleMelodyData, 'p1', e)
+    assignPlayerForMusicSynthesizerSession(e, 1, 'p1')
+    return e
+}
+
+function setUpSimpleMusicalEnvironment (){
+    let e = setUpMusicalEnvironmentExamples()
+    let simpleMelodyData = {
+        velocity : [120, 40, 80, 65],
+        noteDurations: A.buildArray(12, x => {return x}),
+        bools: [true, true, true, true],
+        rhythmMap: [0.5, 1.5, 3,1 ],
+        octave: [5, 6, 7, 8],
+        total: 4,
+        noteDurationKeyspan: 12,
+        noteDurationValues: [1, 2, 3, 4],
+        noteDurations: [0, 4, 8, 12],
+        noteValues: [[10, 4], [6, 4], [8, 7], [3]],
+        rootMap: [ 'C', 'D', 'A', 'G'],
+        polyphonyMap: [10, 10, 10, 10]
+    }
+    recordConfigurationDataIntoMusicalEnvironment(simpleMelodyData, 'p1', e)
+    assignPlayerForMusicSynthesizerSession(e, 1, 'p1', {chordProgressionMapName: 'twelveBars-lsystem-scarbrofair'})
+    return e
+}
+
+function setUpLongMusicalEnvironment (){
+    let e = setUpMusicalEnvironmentExamples()
+    let simpleMelodyData = {
+        velocity : A.buildArray(12, x => {return 100}),
+        noteDurations: A.buildArray(12, x => {return x}),
+        bools: A.buildArray(12, x => {return true}),
+        rhythmMap: A.buildArray(12, x => {return true}),
+        octave: A.buildArray(12, x => {return x}),
+        total: 12,
+        noteDurationKeyspan: 24,
+        noteDurationValues: A.buildArray(12, x => {return x}),
+        noteDurations: A.buildArray(12, x => {return x * 2}),
+        noteValues: [[10, 4], [6, 4], [8, 7], [3], [4], [5], [6], [7], [8,], [9],[10],[11]],
+        rootMap: A.buildArray(12, x => {return 'C'}),
+    }
+    recordConfigurationDataIntoMusicalEnvironment(simpleMelodyData, 'p1', e)
+    assignPlayerForMusicSynthesizerSession(e, 1, 'p1')
+    return e
+}
+
+function setUpTwoPlayerMusicalEnvironment (){
+    let e = setUpMusicalEnvironmentExamples()
+    let simpleMelodyData = {
+        velocity : [100, 100, 100, 100],
+        noteDurations: A.buildArray(12, x => {return x}),
+        bools: [true, true, true, true],
+        rhythmMap: [1, 2, 3, 4],
+        octave: [5, 6, 7, 8],
+        total: 4,
+        noteDurationKeyspan: 12,
+        noteDurationValues: [0, 1, 2, 3],
+        noteDurations: [0, 4, 8, 12],
+        noteValues: [[1], [2], [3], [4]],
+        rootMap: [ 'C', 'C', 'C', 'C' ],
+    }
+    let exampleData = {
+        velocity : [100, 100, 100, 100],
+        noteDurations: A.buildArray(12, x => {return x}),
+        bools: [true, true, true, true],
+        rhythmMap: [1, 2, 3, 4].reverse(),
+        octave: [2, 3, 4, 5].reverse(),
+        total: 4,
+        noteDurationKeyspan: 12,
+        noteDurationValues: [0, 1, 2, 3],
+        noteDurations: [0, 4, 8, 12],
+        noteValues: [[4], [6], [8], [10]].reverse(),
+        rootMap: [ 'C', 'C', 'C', 'C' ],
+    }
+    recordConfigurationDataIntoMusicalEnvironment(simpleMelodyData, 'p1', e)
+    assignPlayerForMusicSynthesizerSession(e, 1, 'p1')
+    recordConfigurationDataIntoMusicalEnvironment(exampleData, 'p2', e)
+    assignPlayerForMusicSynthesizerSession(e, 2, 'p2')
+    return e
+}
+
 function setUpDefaultMusicalEnvironmentOnePlayer (){
-    let e = new MusicalEnvironment()
-    setUpDefaultRhythmMapsToMusicalEnvironment(e)
-    setUpDefaultActionToMusicalEnvironment(e)
-    setUpDefaultMaskMapsForMusicalEnvironment(e)
-    setUpDefaultIOIsForMusicalEnvironment(e)
-    setUpDefaultCurrentDensityGraphsForMusicalEnvironment(e)
-    setUpDefaultDensityGraphsForMusicalEnvironment(e)
-    setUpDefaultPlayersForMusicalEnvironments(e)
-    addToMusicalEnvironment(e)
-    e.addMap('rhythmMaps', 'chalk', 10, [0, 1, 2, 3], [4, 5, 6, 7])
-    updateMidiOutputList(e)
-    setupScheduler(e)
-    e.startScheduler()
-    e.actions.midiSequencedRhythm = musicSynthesizerCaller
-    e.actions.sendPlaybackMessage = sendPlaybackMessage
-    e.actions.sendChordMidiInfo = sendChordMidiInfo
-    e.actions.sendNotesMidiInfo = sendNotesMidiInfo
+    let e = setUpMusicalEnvironmentExamples()
     recordConfigurationDataIntoMusicalEnvironment(lsystemData, 'p1', e)
     assignPlayerForMusicSynthesizerSession(e, 1, 'p1', {rhythmMapName: 'straight', chordProgressionMapName: 'twelveBars-lsystem-scarbrofair'})
     return e
@@ -4465,7 +4549,7 @@ function setUpKonduktiva (){
 
 // export let e = setUpDefaultMusicalEnvironment()
 
-addToModuleExports({setUpDefaultMusicalEnvironment, setUpKonduktiva, setUpDefaultMusicalEnvironmentOnePlayer})
+addToModuleExports({ setUpMusicalEnvironmentExamples,  setUpDefaultMusicalEnvironmentFourPlayers, setUpKonduktiva, setUpDefaultMusicalEnvironmentOnePlayer, setUpVerySimpleMusicalEnvironment, setUpSimpleMusicalEnvironment, setUpLongMusicalEnvironment, setUpTwoPlayerMusicalEnvironment})
 
 //let K = require('./combined.js')
 //let e = K.setUpDefaultMusicalEnvironment()
