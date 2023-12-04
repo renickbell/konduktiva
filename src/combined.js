@@ -3456,6 +3456,9 @@ function convertNoteValuesToMidi (info, e, b, player){
 }
 
 function getRelativeMode (modeName){
+    if (modeName === undefined || modeName === 'chromatic' || modeName === 'none'){
+        return A.buildArray(12, x => {return x})
+    }
     return Mode.get(modeName).intervals.map(x => Interval.semitones(x))
 }
 
