@@ -3089,12 +3089,12 @@ export function filterPolyphany (e, b, player, info){
     if (playerPolyphany === undefined){
         return info
     }
-    let maxNoteSpanLength = playerPolyphany.wrapLookup(b)
-    if (info.noteDuration.length > maxNoteSpanLength){
-//         for (let i = 0; i < maxNoteSpanLength - info.noteDuration.length; i++) {
-        Array.from({length: maxNoteSpanLength - info.noteDuration.length}, () => {
-            info.noteDuration = A.safeSplice(info.noteDuration, 1, randomRange(0, info.noteDuration.length - 1))
-        })
+    let maxPolyphanyAmount = playerPolyphany.wrapLookup(b)
+    checkIfUseVerboseLogging(player, 'POLYPHANY: ', info.noteValues.length, maxPolyphanyAmount, info.noteValues.length > maxPolyphanyAmount)
+    if (info.noteValues.length > maxPolyphanyAmount){
+//         for (let i = 0; i < maxPolyphanyAmount - info.noteDuration.length; i++) {
+        info.noteValues = info.noteValues.slice(0, maxPolyphanyAmount)
+        checkIfUseVerboseLogging(player, 'CUT DOWN notes playing to:' + maxPolyphanyAmount)
     }
     return info
 }
