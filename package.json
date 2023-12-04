@@ -1,13 +1,13 @@
 {
   "dependencies": {
-    "array-toolkit": "^*",
+    "array-toolkit": "^3.4.1",
     "easymidi": "^*",
     "http-server": "^*",
     "konduktiva": "^1.8.2",
     "osc": "^*",
     "path": "^*",
     "perf_hooks": "^*",
-    "ramda": "^*",
+    "ramda": "^0.29.1",
     "socket.io": "^*",
     "socket.io-client": "^*",
     "tasktimer": "^*",
@@ -15,7 +15,7 @@
     "type-check": "^*"
   },
   "name": "konduktiva",
-  "version": "1.8.4",
+  "version": "1.8.5",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/renickbell/konduktiva.git"

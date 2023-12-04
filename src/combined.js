@@ -4567,7 +4567,63 @@ function setUpKonduktiva (){
 
 // export let e = setUpDefaultMusicalEnvironment()
 
-addToModuleExports({ setUpMusicalEnvironmentExamples,  setUpDefaultMusicalEnvironmentFourPlayers, setUpKonduktiva, setUpDefaultMusicalEnvironmentOnePlayer, setUpVerySimpleMusicalEnvironment, setUpSimpleMusicalEnvironment, setUpLongMusicalEnvironment, setUpTwoPlayerMusicalEnvironment})
+function checkNumInputMusicalEnv (param){
+    if (param === 0){
+        return setUpVerySimpleMusicalEnvironment()
+    }
+    else if (param === 1){
+        return setUpDefaultMusicalEnvironmentOnePlayer()
+    }
+    else if (param === 2){
+        return setUpTwoPlayerMusicalEnvironment()
+    }
+    else if (param === 3){
+        return setUpSimpleMusicalEnvironment()
+    }
+    else if (param === 4){
+        return setUpDefaultMusicalEnvironmentFourPlayers()
+    }
+    else if (param === 5){
+        return setUpLongMusicalEnvironment()
+    }
+    return false
+}
+
+function checkStringInputMusicalEnv (param){
+    param = param.toLowerCase()
+    if ((param.includes('very') && param.includes('simple')) || param.includes('vsimple') || param.includes('0')){
+        return setUpVerySimpleMusicalEnvironment()
+    }
+    else if (param.includes('one') || param.includes('1')){
+        return setUpDefaultMusicalEnvironmentOnePlayer()
+    }
+    else if (param.includes('two') || param.includes('2')){
+        return setUpTwoPlayerMusicalEnvironment()
+    }
+    else if (param.includes('simple') || param.includes('3')){
+        return setUpSimpleMusicalEnvironment()
+    }
+    else if (param.includes('four') || param.includes('4')){
+        return setUpDefaultMusicalEnvironmentFourPlayers()
+    }
+    else if (param.includes('long') || param.includes('5')){
+        return 'long'
+    }
+    return false
+
+}
+
+function setUpMusicalEnvironment (param){
+    if (typeof param === 'number'){
+        return checkNumInputMusicalEnv(param)
+    }
+    else if (typeof param === 'string'){
+        return checkStringInputMusicalEnv(param)
+    }
+    return false
+}
+
+addToModuleExports({ setUpMusicalEnvironmentExamples,  setUpDefaultMusicalEnvironmentFourPlayers, setUpKonduktiva, setUpDefaultMusicalEnvironmentOnePlayer, setUpVerySimpleMusicalEnvironment, setUpSimpleMusicalEnvironment, setUpLongMusicalEnvironment, setUpTwoPlayerMusicalEnvironment, setUpMusicalEnvironment})
 
 //let K = require('./combined.js')
 //let e = K.setUpDefaultMusicalEnvironment()

@@ -4245,3 +4245,59 @@ export function setUpKonduktiva (){
     udpPort.open();
     global.samples4 = buildSampleArray (superDirtSamplesPath)
 }
+
+export function checkNumInputMusicalEnv (param){
+    if (param === 0){
+        return setUpVerySimpleMusicalEnvironment()
+    }
+    else if (param === 1){
+        return setUpDefaultMusicalEnvironmentOnePlayer()
+    }
+    else if (param === 2){
+        return setUpTwoPlayerMusicalEnvironment()
+    }
+    else if (param === 3){
+        return setUpSimpleMusicalEnvironment()
+    }
+    else if (param === 4){
+        return setUpDefaultMusicalEnvironmentFourPlayers()
+    }
+    else if (param === 5){
+        return setUpLongMusicalEnvironment()
+    }
+    return false
+}
+
+export function checkStringInputMusicalEnv (param){
+    param = param.toLowerCase()
+    if ((param.includes('very') && param.includes('simple')) || param.includes('vsimple') || param.includes('0')){
+        return setUpVerySimpleMusicalEnvironment()
+    }
+    else if (param.includes('one') || param.includes('1')){
+        return setUpDefaultMusicalEnvironmentOnePlayer()
+    }
+    else if (param.includes('two') || param.includes('2')){
+        return setUpTwoPlayerMusicalEnvironment()
+    }
+    else if (param.includes('simple') || param.includes('3')){
+        return setUpSimpleMusicalEnvironment()
+    }
+    else if (param.includes('four') || param.includes('4')){
+        return setUpDefaultMusicalEnvironmentFourPlayers()
+    }
+    else if (param.includes('long') || param.includes('5')){
+        return 'long'
+    }
+    return false
+
+}
+
+export function setUpMusicalEnvironment (param){
+    if (typeof param === 'number'){
+        return checkNumInputMusicalEnv(param)
+    }
+    else if (typeof param === 'string'){
+        return checkStringInputMusicalEnv(param)
+    }
+    return false
+}
