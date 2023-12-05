@@ -3910,17 +3910,20 @@ export let generationData = countLetterChanges(generativeParseString('aab', {
     "aaaaab": "ab"
 }, 3))
 
-// export let lsystemNoteData = generateChords(0, 4, "7", "major")
+export let lsystemNoteData = generateChords(0, 4, "7", "major")
 export let lsystemData = {
   rootMap: ['C', 'C', 'C', 'C'],
   velocity: velocityData,
-   noteDurationKeyspan: 64,
+   noteDurationKeyspan: 12,
   noteDurationValues: A.buildArray(12, x => {return (x)}),
-  noteDurations: A.buildArray(12, x => {return x * 4}),
+  noteDurations: A.buildArray(12, x => {return x}),
   bools: boolsData,
-  modeFilter: [new QuantizedMap(12,[0, 2, 4, 5, 7, 9, 11] ,[0, 2, 4, 5, 7, 9, 11]), new QuantizedMap(12,getRelativeMode('dorian'), getRelativeMode('dorian')), new QuantizedMap(12, getRelativeMode('locrian'), getRelativeMode('locrian'))],
-  modeFilterKeys: [50, 100, 199],
-  modeFilterKeyspan: 200,
+//   modeFilter: [new QuantizedMap(12,[0, 2, 4, 5, 7, 9, 11] ,[0, 2, 4, 5, 7, 9, 11]), new QuantizedMap(12,getRelativeMode('dorian'), getRelativeMode('dorian')), new QuantizedMap(12, getRelativeMode('locrian'), getRelativeMode('locrian'))],
+//   modeFilterKeys: [50, 100, 199],
+//   modeFilterKeyspan: 200,
+    modeFilter: [new QuantizedMap(12, getRelativeMode('chromatic'),getRelativeMode('chromatic'))],
+    modeFilterKeyspan: 1,
+    modeFilterKeys: [0.5],
   //noteValues: generateLsystemMelody('C', 'bluesPentatonicScale', generationData, 16, 8, 10).map(x => {
     /*
   noteValues: generateLsystemMelody('C', 'minorBluesPentatonicScale', generationData, 10, 8, 10).map(x => {
@@ -3945,10 +3948,11 @@ export let lsystemData = {
           return n.octave
       })
   }),
+  noteValues: [0,1,2,3,4,5,6,7,8,9,10,11].map(x => {return [x]}),
   total: 16,
   polyphonyMap: A.buildArray(12, x => {return 50}),
   //rhythmMap: A.buildArray(40, x => {return randomRange(0.5, 1.5, 2)}),
-  rhythmMap: A.buildArray(12, x => {return x * 4}),
+  rhythmMap: A.buildArray(12, x => {return x}),
 //   octave: A.buildArray(5, x => {return A.buildArray(10, b => {return x + 3})}),
 //   octaveMapKeys: A.buildArray(12, x => {return x * 4}),
 //   octaveMapKeyspan: 20,
@@ -3959,6 +3963,7 @@ export let lsystemData = {
 //       })
 //   }),
 }
+
 
 export function generateChordsv2(root, octave, progression) {
     let letterChords = Progression.fromRomanNumerals(root, progression);
