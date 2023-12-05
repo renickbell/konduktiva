@@ -2689,7 +2689,7 @@ export function createControlChangeMaps (noteValueData, name, e){
 export function createModeFilters (noteValueData, name, e){
     console.log('trying to createModeMap')
     let modeArray = noteValueData.modeFilter
-    if (modeArray === undefined){
+    if (modeArray === undefined || noteValueData.modeFilterKeys === undefined){
         return false
     }
     let keySpan = noteValueData.modeFilterKeyspan
@@ -2698,7 +2698,7 @@ export function createModeFilters (noteValueData, name, e){
         keySpan = modeArray[modeArray.length - 1] + 2
     }
     if (typeof modeArray === 'object'){
-        e.modeFilters[name] = new QuantizedMap(keySpan, modeArray, modeArray)
+        e.modeFilters[name] = new QuantizedMap(keySpan, noteValueData.modeFilterKeys, modeArray)
     }
 }
 
@@ -2867,8 +2867,15 @@ export function findItemType (item){
         //differentiating between object and array from: https://stackoverflow.com/a/7803271/19515980
         return 'Array'
     }
+    else if (item instanceof MusicalEnvironment === true){
+        return 'MusicalEnvironment'
+    }
+    else if (item instanceof QuantizedMap === true){
+        return 'QuantizedMap'
+    }
     return typeof item
 }
+
 
 export function typesOfItemsInArray (inputArray){
     let types = {}
@@ -3071,12 +3078,13 @@ export function musicSynthesizerCaller (p,b) {if ((mask(p, e.maskMaps[e.players[
 
 
 export function filterMode (note, e, b, player){
-    let mode = e.modeFilters[player.modeFilter]
+    let mode = e.modeFilters[player.modeFilter].wrapLookup(b)
     if (mode === undefined){
         return note
     }
     else if (e.notesInputMode === 'relativeSemitone'){
         checkIfUseVerboseLogging(player, 'filtering mode map for', player.modeFilter)
+        checkIfUseVerboseLogging(player, 'originial note: ' + note + 'after: ' + mode.floorWrapLookup(note))
         return mode.floorWrapLookup(note)
     }
     else{
@@ -3180,7 +3188,7 @@ export function convertNoteValuesToMidi (info, e, b, player){
         return info
     }
     if (e.notesInputMode === 'relativeScaleDegree'){
-        let mode = e.modeFilters[player.modeFilter]
+        let mode = e.modeFilters[player.modeFilter].wrapLookup(b)
         info.noteValues = info.noteValues.map(x => {
             return mode.nearestWrapLookup(x)
         })
@@ -3201,28 +3209,39 @@ export function getRelativeMode (modeName){
     return Mode.get(modeName).intervals.map(x => Interval.semitones(x))
 }
 
+// export function checkIfChangeFilteredMode (e, b, player){
+//      let currentModeMap = e.modeMaps[player.modeMap]
+//     if (currentModeMap === undefined){
+//         return false
+//     }
+//     let currentMode = currentModeMap.wrapLookup(b)
+//     let correctMode = getRelativeMode(currentMode)
+//     checkIfUseVerboseLogging(player, 'testing modeFilter', e.modeFilters[player.modeFilter], correctMode)
+//     try{
+//         if (JSON.stringify(e.modeFilters[player.modeFilter].keys) === JSON.stringify(correctMode)){
+//             return false
+//         }
+//         else {
+//             checkIfUseVerboseLogging(player, 'changing mode NOW')
+//             e.modeFilters[player.modeFilter] = new QuantizedMap(correctMode[correctMode.length - 1], correctMode, correctMode)
+//             return true
+//         }
+//     }
+//     catch{
+//             checkIfUseVerboseLogging(player, 'changing mode NOW')
+//             e.modeFilters[player.modeFilter] = new QuantizedMap(correctMode[correctMode.length - 1], correctMode, correctMode)
+//             return true
+//     }
+// }
+
 export function checkIfChangeFilteredMode (e, b, player){
      let currentModeMap = e.modeMaps[player.modeMap]
     if (currentModeMap === undefined){
         return false
     }
     let currentMode = currentModeMap.wrapLookup(b)
-    let correctMode = getRelativeMode(currentMode)
-    checkIfUseVerboseLogging(player, 'testing modeFilter', e.modeFilters[player.modeFilter], correctMode)
-    try{
-        if (JSON.stringify(e.modeFilters[player.modeFilter].keys) === JSON.stringify(correctMode)){
-            return false
-        }
-        else {
-            checkIfUseVerboseLogging(player, 'changing mode NOW')
-            e.modeFilters[player.modeFilter] = new QuantizedMap(correctMode[correctMode.length - 1], correctMode, correctMode)
-            return true
-        }
-    }
-    catch{
-            checkIfUseVerboseLogging(player, 'changing mode NOW')
-            e.modeFilters[player.modeFilter] = new QuantizedMap(correctMode[correctMode.length - 1], correctMode, correctMode)
-            return true
+    if (player.modeFilter !== currentMode){
+        player.modeFilter = currentMode
     }
 }
 
@@ -3891,8 +3910,9 @@ export let lsystemData = {
   noteDurationValues: A.buildArray(12, x => {return (x)}),
   noteDurations: A.buildArray(12, x => {return x * 4}),
   bools: boolsData,
-  modeFilter: [0, 2],
-  modeFilterKeyspan: 2,
+  modeFilter: [new QuantizedMap(12,[0, 2, 4, 5, 7, 9, 11] ,[0, 2, 4, 5, 7, 9, 11]), new QuantizedMap(12,getRelativeMode('dorian'), getRelativeMode('dorian')), new QuantizedMap(12, getRelativeMode('locrian'), getRelativeMode('locrian'))],
+  modeFilterKeys: [50, 100, 199],
+  modeFilterKeyspan: 200,
   //noteValues: generateLsystemMelody('C', 'bluesPentatonicScale', generationData, 16, 8, 10).map(x => {
     /*
   noteValues: generateLsystemMelody('C', 'minorBluesPentatonicScale', generationData, 10, 8, 10).map(x => {
@@ -4015,8 +4035,6 @@ export let circleOfFifthChords = {
 //   noteDurations: [0, 4, 8, 12],
   noteDurations: [4, 4, 4, 4],
   bools: boolsData,
-  modeFilter: A.buildArray(12, x=> x),
-  modeFilterKeyspan: 12,
   octave: newChords2.map(x => {
       return x.octaveNotes[0]
   }),
@@ -4040,7 +4058,6 @@ export let circleOfFifthMelody = {
 //     noteDurations: A.buildArray(24, x => x * 0.25),
     noteDurations: A.buildArray(24, x => 0.25),
     bools: boolsData,
-    modeFilterKeyspan: 18,
     octave: circleOfFifthMelodySplitNotes.octaveNotes.map(x => {return x}),
 noteValues: circleOfFifthMelodySplitNotes.rootNotes.map(x => {return [x]}),
 // noteValues: ["IIm9", "IIm9", "V", "V", "IIIm7", "IIIm7", "VIm","VIm"].map(x => {return [x]}),

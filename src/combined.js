@@ -976,6 +976,12 @@ class MusicalEnvironment {
             e[objectName][mapName] = new QuantizedMap(keyspan, keys, values)
         }
     }
+    createModeFilters (objectName, mapName, keyspan, keys, values){
+        let e = this;
+        if(checkAllItemsType(values, 'QuantizedMap')){
+            e[objectName][mapName] = new QuantizedMap(keyspan, keys, values)
+        }
+    }
     addMap (objectName, mapName, keyspan, keys, values){
         let e = this
         this.checkingAddMapToMusicalEnvironmentArguments(objectName, mapName, keyspan, keys, values)
@@ -996,6 +1002,9 @@ class MusicalEnvironment {
                 break;
             case 'song':
                 this.createSongMap(objectName, mapName, keyspan, keys, values)
+                break;
+            case 'modeFilters':
+                this.createModeFilters(objectName, mapName, keyspan, keys, values)
                 break;
             case 'octaveMap':
             default:
@@ -2918,7 +2927,7 @@ function createControlChangeMaps (noteValueData, name, e){
 function createModeFilters (noteValueData, name, e){
     console.log('trying to createModeMap')
     let modeArray = noteValueData.modeFilter
-    if (modeArray === undefined){
+    if (modeArray === undefined || noteValueData.modeFilterKeys === undefined){
         return false
     }
     let keySpan = noteValueData.modeFilterKeyspan
@@ -2927,7 +2936,7 @@ function createModeFilters (noteValueData, name, e){
         keySpan = modeArray[modeArray.length - 1] + 2
     }
     if (typeof modeArray === 'object'){
-        e.modeFilters[name] = new QuantizedMap(keySpan, modeArray, modeArray)
+        e.modeFilters[name] = new QuantizedMap(keySpan, noteValueData.modeFilterKeys, modeArray)
     }
 }
 
@@ -3094,6 +3103,12 @@ function findItemType (item){
     if (typeof item === 'object' && item instanceof Array){
         //differentiating between object and array from: https://stackoverflow.com/a/7803271/19515980
         return 'Array'
+    }
+    else if (item instanceof MusicalEnvironment === true){
+        return 'MusicalEnvironment'
+    }
+    else if (item instanceof QuantizedMap === true){
+        return 'QuantizedMap'
     }
     return typeof item
 }
@@ -3331,7 +3346,7 @@ function sendPlaybackMessage (p,b) {if ((mask(p, e.maskMaps[e.players[p].maskMap
 
 
 function filterMode (note, e, b, player){
-    let mode = e.modeFilters[player.modeFilter]
+    let mode = e.modeFilters[player.modeFilter].wrapLookup(b)
     if (mode === undefined){
         return note
     }
@@ -3441,7 +3456,7 @@ function convertNoteValuesToMidi (info, e, b, player){
         return info
     }
     if (e.notesInputMode === 'relativeScaleDegree'){
-        let mode = e.modeFilters[player.modeFilter]
+        let mode = e.modeFilters[player.modeFilter].wrapLookup(b)
         info.noteValues = info.noteValues.map(x => {
             return mode.nearestWrapLookup(x)
         })
@@ -3462,28 +3477,39 @@ function getRelativeMode (modeName){
     return Mode.get(modeName).intervals.map(x => Interval.semitones(x))
 }
 
+// function checkIfChangeFilteredMode (e, b, player){
+//      let currentModeMap = e.modeMaps[player.modeMap]
+//     if (currentModeMap === undefined){
+//         return false
+//     }
+//     let currentMode = currentModeMap.wrapLookup(b)
+//     let correctMode = getRelativeMode(currentMode)
+//     checkIfUseVerboseLogging(player, 'testing modeFilter', e.modeFilters[player.modeFilter], correctMode)
+//     try{
+//         if (JSON.stringify(e.modeFilters[player.modeFilter].keys) === JSON.stringify(correctMode)){
+//             return false
+//         }
+//         else {
+//             checkIfUseVerboseLogging(player, 'changing mode NOW')
+//             e.modeFilters[player.modeFilter] = new QuantizedMap(correctMode[correctMode.length - 1], correctMode, correctMode)
+//             return true
+//         }
+//     }
+//     catch{
+//             checkIfUseVerboseLogging(player, 'changing mode NOW')
+//             e.modeFilters[player.modeFilter] = new QuantizedMap(correctMode[correctMode.length - 1], correctMode, correctMode)
+//             return true
+//     }
+// }
+
 function checkIfChangeFilteredMode (e, b, player){
      let currentModeMap = e.modeMaps[player.modeMap]
     if (currentModeMap === undefined){
         return false
     }
     let currentMode = currentModeMap.wrapLookup(b)
-    let correctMode = getRelativeMode(currentMode)
-    checkIfUseVerboseLogging(player, 'testing modeFilter', e.modeFilters[player.modeFilter], correctMode)
-    try{
-        if (JSON.stringify(e.modeFilters[player.modeFilter].keys) === JSON.stringify(correctMode)){
-            return false
-        }
-        else {
-            checkIfUseVerboseLogging(player, 'changing mode NOW')
-            e.modeFilters[player.modeFilter] = new QuantizedMap(correctMode[correctMode.length - 1], correctMode, correctMode)
-            return true
-        }
-    }
-    catch{
-            checkIfUseVerboseLogging(player, 'changing mode NOW')
-            e.modeFilters[player.modeFilter] = new QuantizedMap(correctMode[correctMode.length - 1], correctMode, correctMode)
-            return true
+    if (player.modeFilter !== currentMode){
+        player.modeFilter = currentMode
     }
 }
 
@@ -4196,8 +4222,9 @@ lsystemData = {
   noteDurationValues: A.buildArray(12, x => {return (x)}),
   noteDurations: A.buildArray(12, x => {return x * 4}),
   bools: boolsData,
-  modeFilter: [0, 2],
-  modeFilterKeyspan: 2,
+  modeFilter: [new QuantizedMap(12,[0, 2, 4, 5, 7, 9, 11] ,[0, 2, 4, 5, 7, 9, 11]), new QuantizedMap(12,getRelativeMode('dorian'), getRelativeMode('dorian')), new QuantizedMap(12, getRelativeMode('locrian'), getRelativeMode('locrian'))],
+  modeFilterKeys: [50, 100, 199],
+  modeFilterKeyspan: 200,
   //noteValues: generateLsystemMelody('C', 'bluesPentatonicScale', generationData, 16, 8, 10).map(x => {
     /*
   noteValues: generateLsystemMelody('C', 'minorBluesPentatonicScale', generationData, 10, 8, 10).map(x => {
