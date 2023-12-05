@@ -940,7 +940,11 @@ export class MusicalEnvironment {
     }
     createDefaultMap (objectName, mapName, keyspan, keys, values){
         let e = this
-        if (checkAllItemsType(values, 'number')){
+            e[objectName][mapName] = new QuantizedMap(keyspan, keys, values)
+    }
+    createModeFilters (objectName, mapName, keyspan, keys, values){
+        let e = this;
+        if(checkAllItemsType(values, 'QuantizedMap')){
             e[objectName][mapName] = new QuantizedMap(keyspan, keys, values)
         }
     }
@@ -964,6 +968,9 @@ export class MusicalEnvironment {
                 break;
             case 'song':
                 this.createSongMap(objectName, mapName, keyspan, keys, values)
+                break;
+            case 'modeFilters':
+                this.createModeFilters(objectName, mapName, keyspan, keys, values)
                 break;
             case 'octaveMap':
             default:
@@ -1027,6 +1034,7 @@ export class MusicalEnvironment {
     }
 }
 // addMapToMusicalEnvironment(e, 'rhythmMaps', 'chalk', 10, [0, 1, 2, 3], [4, 5, 6, 7])
+
 
 /**
   * Sets up the scheduler for the MusicalEnvironment.

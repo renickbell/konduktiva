@@ -972,9 +972,7 @@ class MusicalEnvironment {
     }
     createDefaultMap (objectName, mapName, keyspan, keys, values){
         let e = this
-        if (checkAllItemsType(values, 'number')){
             e[objectName][mapName] = new QuantizedMap(keyspan, keys, values)
-        }
     }
     createModeFilters (objectName, mapName, keyspan, keys, values){
         let e = this;
