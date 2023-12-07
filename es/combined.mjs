@@ -969,8 +969,8 @@ export class MusicalEnvironment {
             case 'song':
                 this.createSongMap(objectName, mapName, keyspan, keys, values)
                 break;
-            case 'modeFilters':
-                this.createModeFilters(objectName, mapName, keyspan, keys, values)
+//             case 'modeFilters':
+//                 this.createModeFilters(objectName, mapName, keyspan, keys, values)
                 break;
             case 'octaveMap':
             default:
@@ -985,7 +985,7 @@ export class MusicalEnvironment {
         if (currentMap === undefined){
             return undefined
         }
-        else if (currentMap.keyspan === keyspan && currentMap.keys === keys && currentMap.values == values){
+        else if (currentMap.keyspan === keyspan && R.equals(currentMap.keys, keys) === true && R.equals(currentMap.values, values) === true){
             return true
         }
         else {
@@ -2175,22 +2175,20 @@ export function checkIfChangeChordProgression (e, b, player){
     if (player.song === undefined){
         return true
     }
-    let correctCurrentChordProgression = e.songs[player.song].wrapLookup(b)
-    console.log('correct', correctCurrentChordProgression)
+    let correctCurrentChordProgression = e.song[player.song].wrapLookup(b)
+    checkIfUseVerboseLogging(player, 'changin chord progression to' +  correctCurrentChordProgression)
+//     console.log('correct', correctCurrentChordProgression)
     if (player.currentChordProgression === correctCurrentChordProgression){
         return true
     }
     else {
         let defaultName = A.findMostFrequentItem(Object.values(player))
-        console.log('step1')
     recordConfigurationDataIntoMusicalEnvironment(assignChordProgressionToPlayer(correctCurrentChordProgression, e), defaultName, e)
-        console.log('step2')
         assignPlayerForMusicSynthesizerSession(e, 3, {rhythmMapName: 'straight'}, defaultName)
-        console.log('step3')
         player.currentChordProgression = correctCurrentChordProgression
-        console.log('step4')
     }
 }
+
 
 //Yiler function or Yiler may be able to explain this better:
 export function scaleWithNote (noteLetter, octave, mode){
@@ -3086,7 +3084,7 @@ export function musicSynthesizerCaller (p,b) {if ((mask(p, e.maskMaps[e.players[
 
 
 export function filterMode (note, e, b, player){
-    let mode = e.modeFilters[player.modeFilter].wrapLookup(b)
+    let mode = e.modeFilters[player.modeFilter]
     if (mode === undefined){
         return note
     }
@@ -3242,15 +3240,28 @@ export function getRelativeMode (modeName){
 //     }
 // }
 
+export function createMapsFromMode (variableName, name, e, keyspan, keys, values){
+    let finalName = name
+    let checkConclusion = e.checkMap(variableName, name, keyspan, keys, keys)
+    if (checkConclusion === undefined){
+        e.addMap(variableName, name, keyspan, keys, values)
+    }
+    else if (checkConclusion === false){
+        finalName = generateUniqueString(Object.keys(e[variableName]), name)
+        e.addMap(variableName, finalName , keyspan, keys, values)
+    }
+    return finalName
+}
+
 export function checkIfChangeFilteredMode (e, b, player){
      let currentModeMap = e.modeMaps[player.modeMap]
     if (currentModeMap === undefined){
         return false
     }
     let currentMode = currentModeMap.wrapLookup(b)
-    if (player.modeFilter !== currentMode){
-        player.modeFilter = currentMode
-    }
+    let correctMode = getRelativeMode(currentMode)
+    let newMapName = createMapsFromMode('modeFilters', currentMode, e, correctMode[correctMode.length - 1], correctMode, correctMode)
+    player.modeFilter = newMapName
 }
 
 //Gather and sort information and prepare to send through midi:
@@ -3921,9 +3932,9 @@ export let lsystemData = {
 //   modeFilter: [new QuantizedMap(12,[0, 2, 4, 5, 7, 9, 11] ,[0, 2, 4, 5, 7, 9, 11]), new QuantizedMap(12,getRelativeMode('dorian'), getRelativeMode('dorian')), new QuantizedMap(12, getRelativeMode('locrian'), getRelativeMode('locrian'))],
 //   modeFilterKeys: [50, 100, 199],
 //   modeFilterKeyspan: 200,
-    modeFilter: [new QuantizedMap(12, getRelativeMode('chromatic'),getRelativeMode('chromatic'))],
-    modeFilterKeyspan: 1,
-    modeFilterKeys: [0.5],
+        modeFilter: getRelativeMode('chromatic'),
+    modeFilterKeyspan: 12,
+    modeFilterKeys: getRelativeMode('chromatic'),
   //noteValues: generateLsystemMelody('C', 'bluesPentatonicScale', generationData, 16, 8, 10).map(x => {
     /*
   noteValues: generateLsystemMelody('C', 'minorBluesPentatonicScale', generationData, 10, 8, 10).map(x => {
