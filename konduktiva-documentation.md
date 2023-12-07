@@ -809,7 +809,7 @@ e.createDefaultMap('rhythmMaps', 'chalk', 10, [0, 1, 2, 3], [4, 5, 6, 7])
 
 ### addMap
 
-This function helps add QuantizedMaps into the MusicalEnvironment with correct types. If something is wrong, this function will throw an error. 
+This function helps add QuantizedMaps into the MusicalEnvironment with correct types. If something is wrong, this function will throw an error. It is safer and in some situations easier and quicker to use this method than to create a QuantizedMap manually.
 ##### Syntax
 ```
 e.addMap(objectName, mapName, keyspan, keys, values)
