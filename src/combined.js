@@ -3805,6 +3805,115 @@ function ignoreMessagesFromInput (e, inputIndex){
     currentInput.outputPort.off('message', currentInput.inputFunc)
 }
 
+//Yiler function start here:
+
+let scaleDegreeToNote = Scale.degrees("C major")
+
+let chromaticScale = Scale.get("C chromatic")
+
+//the QuantizedMap that filters notes by chords
+let filterQM = new QuantizedMap(12, [0, 4, 7, 11], [1, 3, 5, 7])
+
+//generated with ChatGPT
+function noteToScaleDegree(note, scale) {
+    // Make sure the note is in uppercase for case-insensitive comparison
+    // Find the index of the note in the scale
+    const scaleDegree = scale.indexOf(note);
+    // If the note is not in the scale, return null
+    if (scaleDegree === -1) {
+        return null;
+    }
+    // Scale degrees usually start from 1, so add 1 to the index
+    return scaleDegree + 1;
+}
+
+let playedNotes = []
+
+//generated with ChatGPT
+function sortArrays(arrayA, arrayB) {
+    // Combine the two arrays into an array of objects with original indices
+    const combinedArray = arrayA.map((element, index) => ({
+        element,
+        index
+    }));
+    // Sort the combined array based on the elements of arrayA
+    combinedArray.sort((a, b) => a.element - b.element);
+    // Extract the sorted arrays from the combined array
+    const sortedArrayA = combinedArray.map(item => item.element);
+    const sortedArrayB = combinedArray.map(item => arrayB[item.index]);
+    // Return the result as an object
+    return {
+        arrayA: sortedArrayA,
+        arrayB: sortedArrayB
+    };
+}
+
+function yilerNoteOnFilter (inputNote){
+        try {
+        let chordCorrespondingScale;
+        let chordRelativeSemitone = e.noteMaps.p4.wrapLookup((e.currentBeat()+ 1)/4)
+        console.log(chordRelativeSemitone)
+        let chordBeingPlayed = K.Chord.detect(chordRelativeSemitone.map(e => K.Note.fromMidi(e)))
+        if (chordBeingPlayed[0].includes("b")) {
+            chromaticScale = K.Scale.get(chordBeingPlayed[0].slice(0, 2) + " chromatic")
+        } else {
+            chromaticScale = K.Scale.get(chordBeingPlayed[0].charAt(0) + " chromatic")
+        }
+        console.log(chromaticScale)
+        if (chordBeingPlayed[0].includes("m") && chordBeingPlayed.length < 4) {
+            if (chordBeingPlayed[0].includes("b")) {
+                scaleDegreeToNote = K.Scale.degrees(`${chordBeingPlayed[0].slice(0,2)} minor`)
+                chordCorrespondingScale = K.Scale.get((`${chordBeingPlayed[0].slice(0,2)} mfs.appendFile('./data.csv',inor`)).notes
+            } else {
+                scaleDegreeToNote = K.Scale.degrees(`${chordBeingPlayed[0].charAt(0)} minor`)
+                chordCorrespondingScale = K.Scale.get((`${chordBeingPlayed[0].charAt(0)} minor`)).notes
+            }
+        } else {
+            if (chordBeingPlayed[0].includes("b")) {
+                scaleDegreeToNote = K.Scale.degrees(`${chordBeingPlayed[0].slice(0,2)} major`)
+                chordCorrespondingScale = K.Scale.get((`${chordBeingPlayed[0].slice(0,2)} major`)).notes
+            } else {
+                scaleDegreeToNote = K.Scale.degrees(`${chordBeingPlayed[0].charAt(0)} major`)
+                chordCorrespondingScale = K.Scale.get((`${chordBeingPlayed[0].charAt(0)} major`)).notes
+            }
+        }
+        filterQM.keys = chordRelativeSemitone;
+        console.log(chordCorrespondingScale)
+        console.log(K.Chord.get(chordBeingPlayed[0]).notes)
+        filterQM.values = K.Chord.get(chordBeingPlayed[0]).notes.map(n => noteToScaleDegree(n, chordCorrespondingScale))
+        console.log(noteToScaleDegree(K.Chord.get(chordBeingPlayed[0]).notes[0], chordCorrespondingScale))
+        let octave = K.Note.fromMidi(inputNote).charAt(K.Note.fromMidi(inputNote).length - 1)
+        let noteBeingPlayed = K.Note.fromMidi(inputNote).slice(0, -1)
+//         console.log("noteBeingPlayed: " + noteBeingPlayed)
+//         console.log("fQM: " + filterQM.values)
+        let filteredNote = scaleDegreeToNote(filterQM.wrapLookup(chromaticScale.notes.indexOf(noteBeingPlayed))) + octave
+        playedNotes.push({originalNote: K.Note.fromMidi(inputNote) ,filtered:filteredNote})
+//         console.log(playedNotes)
+        console.log('before', inputNote, "filteredNote" + filteredNote)
+            return Note.midi(filteredNote)
+    } catch (err) {
+//         console.log(err)
+    }
+}
+
+function yilerNoteOffFilter (inputNote){
+        try {
+        let octave = K.Note.fromMidi(inputNote).charAt(K.Note.fromMidi(inputNote).length - 1)
+        let noteBeingPlayed = K.Note.fromMidi(inputNote).slice(0, -1)
+        let filteredNote = scaleDegreeToNote(filterQM.wrapLookup(chromaticScale.notes.indexOf(noteBeingPlayed))) + octave
+        let noteOffObj = playedNotes.filter(note => note.originalNote == K.Note.fromMidi(inputNote))[0]
+//         console.log(filteredNote)
+        console.log('yo', noteOffObj)
+        let output = Note.midi(noteOffObj.filtered)
+        //playedNotes = A.removeFirstInstance(playedNotes, filteredNote)
+        playedNotes = A.removeFirstInstance(playedNotes, noteOffObj)
+        return output
+    } catch (err) {
+//         console.log(err)
+    }
+}
+//Yiler function ends here
+
 function receiveMessagesFromInput (e, inputIndex, outputIndex, recordMessages){
     let currentInput = e.inputs[inputIndex]
     if (currentInput.recordedMessages === undefined){
@@ -3816,6 +3925,13 @@ function receiveMessagesFromInput (e, inputIndex, outputIndex, recordMessages){
     currentInput.outputIndex = outputIndex
     currentInput.inputFunc = (deltaTime, message) => {
         let currentInput = e.inputs[inputIndex]
+        if (deltaTime._type === 'noteon'){
+            console.log('erge', deltaTime)
+            deltaTime.note = yilerNoteOnFilter(deltaTime.note)
+        }
+        else if (deltaTime._type === 'noteoff'){
+            deltaTime.note = yilerNoteOffFilter(deltaTime.note)
+        }
         if (currentInput.outputIndex !== undefined){
             e.outputs[currentInput.outputIndex].send(deltaTime._type, deltaTime)
         }
