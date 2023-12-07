@@ -1032,6 +1032,11 @@ export class MusicalEnvironment {
             clients[clientIndex].send(JSON.stringify({action: 'showMusicalEnvInfo', info: this.convertMusicalEnvironmentToString()}))
         }
     }
+    changeVerbose (state){
+        Object.keys(this.players).forEach(x => {
+            this.players[x].verbose = state
+        })
+    }
 }
 // addMapToMusicalEnvironment(e, 'rhythmMaps', 'chalk', 10, [0, 1, 2, 3], [4, 5, 6, 7])
 
@@ -2744,26 +2749,31 @@ export function recordConfigurationDataIntoMusicalEnvironment (noteValueData, na
 }
 
 export function addToMusicalEnvironment (e){
-    e.outputs = []
+    e.outputs = updateMidiOutputList(e)
     e.inputs = updateMidiInputList(e)
 //     e.midiDataSets = {}
-    e.velocityMaps = {}
-    e.noteMaps = {}
+    e.velocityMaps = {'default': new QuantizedMap(4, [0, 1, 2, 3], [100, 120, 80, 100])}
+    e.noteMaps = {'default': new QuantizedMap(4, [0, 1, 2, 3], [[0], [1], [2], [3]])}
     e.octaveMaps = {}
 //     e.rootNoteMaps = {}
-    e.maxPolyphonyMaps = {}
+    e.maxPolyphonyMaps = {'default': new QuantizedMap(4, [0, 1, 2, 3], [4, 6, 8, 10])}
 //     e.noteDurationMaps = {}
-    e.rhythmPatterns = {}
-    e.noteDurationMaps = {}
+    e.rhythmPatterns = {'default': new QuantizedMap(4, [0, 1 ,2 , 3], [true, true, true, true])}
+    e.noteDurationMaps = {"default": new QuantizedMap(4, [0, 1, 2, 3], [0, 1, 2, 3])}
 //     e.pattern = undefined
-    e.controlChangeMaps = {}
+    e.controlChangeMaps = {"default": new QuantizedMap(81, [20, 40, 60, 80], A.buildArray(4, x => {return {
+      channel: 0,
+      controller: 25,
+      value: randomRange(0, 159),
+    }}))
+}
     e.chordProgressions = generateChordProgressions()
     e.song = {
         'twelveBars-lsystem-scarbrofair': new QuantizedMap(15000, [1000, 5000, 10000], ['twelveBars', 'lsystem', 'scarboroughFair'])
     }
-    e.modeFilters = {}
-    e.modeMaps = {}
-    e.rootMaps = {} //English alphabets for music
+    e.modeFilters = {'default': new QuantizedMap(4, [0, 1, 2, 3], [0, 1, 2, 3])}
+    e.modeMaps = {'default': new QuantizedMap(400, [0, 100, 200, 300, 400], [ 'ionian', 'phrygian', 'mixolydian' ])}
+    e.rootMaps = {'default': new QuantizedMap(4, [0, 1, 2, 3], ['C', 'C', 'C', 'C'])} //English alphabets for music
      e.notesInputMode = 'relativeSemitone' //OR 'relativeScaleDegree'
 //     e.notesInputMode = 'relativeScaleDegree'
     e.recordedMessages = {}
