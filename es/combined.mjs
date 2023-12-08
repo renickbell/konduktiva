@@ -3314,6 +3314,9 @@ export function checkIfChangeFilteredMode (e, b, player){
         return false
     }
     let currentMode = currentModeMap.wrapLookup(b)
+    if (typeof currentMode !== 'string'){
+        return false
+    }
     let correctMode = getRelativeMode(currentMode)
     let newMapName = createMapsFromMode('modeFilters', currentMode, e, correctMode[correctMode.length - 1], correctMode, correctMode)
     player.modeFilter = newMapName
