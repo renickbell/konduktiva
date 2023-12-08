@@ -4665,6 +4665,11 @@ function setUpDefaultMusicalEnvironmentFourPlayers (){
     assignPlayerForMusicSynthesizerSession(e, 4, 'p4')
     recordConfigurationDataIntoMusicalEnvironment(melodyData, 'p2', e)
     assignPlayerForMusicSynthesizerSession(e, 2, 'p3')
+     e.players.exampleMidiPlayer4.polyphonyMap = 'default'
+     e.players.exampleMidiPlayer4.modeFilter = 'default'
+     e.players.exampleMidiPlayer3.polyphonyMap = 'default'
+     e.players.exampleMidiPlayer3.modeFilter = 'default'
+     e.players.exampleMidiPlayer2.modeFilter = 'default'
     return e
 }
 
@@ -4685,6 +4690,8 @@ function setUpVerySimpleMusicalEnvironment (){
     }
     recordConfigurationDataIntoMusicalEnvironment(simpleMelodyData, 'p1', e)
     assignPlayerForMusicSynthesizerSession(e, 1, 'p1')
+    e.players.exampleMidiPlayer1.polyphonyMap = 'default'
+    e.players.exampleMidiPlayer1.modeFilter = 'default'
     return e
 }
 
@@ -4706,6 +4713,8 @@ function setUpSimpleMusicalEnvironment (){
     }
     recordConfigurationDataIntoMusicalEnvironment(simpleMelodyData, 'p1', e)
     assignPlayerForMusicSynthesizerSession(e, 1, 'p1', {chordProgressionMapName: 'twelveBars-lsystem-scarbrofair'})
+    e.players.exampleMidiPlayer1.polyphonyMap = 'default'
+    e.players.exampleMidiPlayer1.modeFilter = 'default'
     return e
 }
 
@@ -4726,6 +4735,8 @@ function setUpLongMusicalEnvironment (){
     }
     recordConfigurationDataIntoMusicalEnvironment(simpleMelodyData, 'p1', e)
     assignPlayerForMusicSynthesizerSession(e, 1, 'p1')
+    e.players.exampleMidiPlayer1.polyphonyMap = 'default'
+    e.players.exampleMidiPlayer1.modeFilter = 'default'
     return e
 }
 
@@ -4761,6 +4772,10 @@ function setUpTwoPlayerMusicalEnvironment (){
     assignPlayerForMusicSynthesizerSession(e, 1, 'p1')
     recordConfigurationDataIntoMusicalEnvironment(exampleData, 'p2', e)
     assignPlayerForMusicSynthesizerSession(e, 2, 'p2')
+    e.players.exampleMidiPlayer1.polyphonyMap = 'default'
+    e.players.exampleMidiPlayer1.modeFilter = 'default'
+    e.players.exampleMidiPlayer2.polyphonyMap = 'default'
+    e.players.exampleMidiPlayer2.modeFilter = 'default'
     return e
 }
 
@@ -4768,6 +4783,8 @@ function setUpDefaultMusicalEnvironmentOnePlayer (){
     let e = setUpMusicalEnvironmentExamples()
     recordConfigurationDataIntoMusicalEnvironment(lsystemData, 'p1', e)
     assignPlayerForMusicSynthesizerSession(e, 1, 'p1', {rhythmMapName: 'straight', chordProgressionMapName: 'twelveBars-lsystem-scarbrofair'})
+    e.players.exampleMidiPlayer1.polyphonyMap = 'default'
+    e.players.exampleMidiPlayer1.modeFilter = 'default'
     return e
 }
 
@@ -4829,7 +4846,7 @@ function checkStringInputMusicalEnv (param){
         return setUpDefaultMusicalEnvironmentFourPlayers()
     }
     else if (param.includes('long') || param.includes('5')){
-        return 'long'
+        return setUpLongMusicalEnvironment()
     }
     return false
 
