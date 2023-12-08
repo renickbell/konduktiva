@@ -695,7 +695,12 @@ class MusicalEnvironment {
     */
     constructor (){
         this.players = {};
-        this.actions = {};
+        this.actions = {"default": function (session, b, e){
+                console.log('Hi this is the default action function being triggered')
+                console.log('This is the session: ', session)
+                console.log('This is the beat: ', b)
+            }
+        };
         this.IOIs = {};
         this.densityGraphs = {};
         this.rhythmMaps = {};
