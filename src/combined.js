@@ -540,6 +540,17 @@ class QuantizedMap {
     floorWrapLookup (time){
         return this.floorLookup(time % this.keyspan)
     }
+    isEqualTo (otherMap){
+        if (otherMap instanceof QuantizedMap === false){
+            return false
+        }
+        else if (otherMap.keyspan === this.keyspan && R.equals(otherMap.keys, this.keys) === true && R.equals(otherMap.values, this.values) === true){
+            return true
+        }
+        else {
+            return false
+        }
+    }
 }
 
 /**
@@ -1018,20 +1029,28 @@ class MusicalEnvironment {
     }
     checkMap (objectName, mapName, keyspan, keys, values){
         let e = this
-        let currentMap;
-        try{
-            currentMap = e[objectName][mapName]
-        }
-        catch{}
+        let namesToCheck = Object.keys(e[objectName]).map(x => {
+            if (x.includes(mapName) === true){
+                return x
+            }
+        })
+        let correctMap = new QuantizedMap(keyspan, keys, values)
+        let currentMap = e[objectName][mapName]
         if (currentMap === undefined){
             return undefined
         }
-        else if (currentMap.keyspan === keyspan && R.equals(currentMap.keys, keys) === true && R.equals(currentMap.values, values) === true){
+        else if (correctMap.isEqualTo(currentMap) === true){
             return true
         }
-        else {
-            return false
-        }
+        let name = false
+        namesToCheck.every(x => {
+            if (correctMap.isEqualTo(e[objectName][x]) === true){
+                name = x
+                return false
+            }
+            return true
+        })
+        return name
     }
     convertMusicalEnvironmentToString (){
         let e = this
@@ -2239,7 +2258,7 @@ function createRootMap (noteValueData, name, e){
 
 //Generates that chord progression that are placed in the chordProgressions variable in the musical environment:
 function generateChordProgressions (){
-    let twelveBarsProgression = generateRandomMelody('C', 'bluesScale', 18, 6, 10)
+    let twelveBarsProgression = generateRandomMelody('C', 'blues', 18, 6, 10)
     return {
         twelveBars: new QuantizedMap(18, A.buildArray(12, x => {return 4}), twelveBarsProgression.map(x => {x.velocity = 100; return {data: [x], bool: true}})),
         lsystem: generateRandomLsystemChordProgression(),
@@ -3010,7 +3029,22 @@ function addToMusicalEnvironment (e){
     e.song = {
         'twelveBars-lsystem-scarbrofair': new QuantizedMap(15000, [1000, 5000, 10000], ['twelveBars', 'lsystem', 'scarboroughFair'])
     }
+    let modes = {
+      ionian: [0, 2, 4, 5, 7, 9, 11],
+      dorian: [0, 2, 3, 5, 7, 9, 10],
+      phrygian: [0, 1, 3, 5, 7, 8, 10],
+      lydian: [0, 2, 4, 6, 7, 9, 11],
+      mixolydian: [0, 2, 4, 5, 7, 9, 10],
+      aeolian: [0, 2, 3, 5, 7, 8, 10],
+      locrian: [0, 1, 3, 5, 6, 8, 10],
+      blues: [0, 3, 5, 6, 7, 10],
+      bluesPentatonic: [0, 3, 5, 6, 7, 10],
+      minorBluesPentatonicScale: [0, 3, 5, 7, 10],
+    };
     e.modeFilters = {'default': new QuantizedMap(4, [0, 1, 2, 3], [0, 1, 2, 3])}
+    Object.keys(modes).forEach(x => {
+        e.modeFilters[x] = new QuantizedMap(12, modes[x], modes[x])
+    })
     e.modeMaps = {'default': new QuantizedMap(400, [0, 100, 200, 300, 400], [ 'ionian', 'phrygian', 'mixolydian' ])}
     e.rootMaps = {'default': new QuantizedMap(4, [0, 1, 2, 3], ['C', 'C', 'C', 'C'])} //English alphabets for music
      e.notesInputMode = 'relativeSemitone' //OR 'relativeScaleDegree'
@@ -3193,8 +3227,8 @@ function generateRandomMelody (rootNote, mode, melodyLength, octaveMin = 1, octa
       mixolydian: [0, 2, 4, 5, 7, 9, 10],
       aeolian: [0, 2, 3, 5, 7, 8, 10],
       locrian: [0, 1, 3, 5, 6, 8, 10],
-      bluesScale: [0, 3, 5, 6, 7, 10],
-      bluesPentatonicScale: [0, 3, 5, 6, 7, 10],
+      blues: [0, 3, 5, 6, 7, 10],
+      bluesPentatonic: [0, 3, 5, 6, 7, 10],
       minorBluesPentatonicScale: [0, 3, 5, 7, 10],
     };
     let modeMap = new QuantizedMap(12, modes[mode], modes[mode])
@@ -3529,6 +3563,9 @@ function createMapsFromMode (variableName, name, e, keyspan, keys, values){
         finalName = generateUniqueString(Object.keys(e[variableName]), name)
         e.addMap(variableName, finalName , keyspan, keys, values)
     }
+    else if (checkConclusion !== true){
+        return checkConclusion
+    }
     return finalName
 }
 
@@ -3538,6 +3575,9 @@ function checkIfChangeFilteredMode (e, b, player){
         return false
     }
     let currentMode = currentModeMap.wrapLookup(b)
+    if (typeof currentMode !== 'string'){
+        return false
+    }
     let correctMode = getRelativeMode(currentMode)
     let newMapName = createMapsFromMode('modeFilters', currentMode, e, correctMode[correctMode.length - 1], correctMode, correctMode)
     player.modeFilter = newMapName
@@ -3656,6 +3696,9 @@ function createMapsFromChordProgressions (variableName, mapInfo, name, e, keys, 
         finalName = generateUniqueString(Object.keys(e[variableName]), name)
         e.addMap(variableName, finalName , keyspan, keys, values)
     }
+    else if (checkConclusion !== true){
+        return checkConclusion
+    }
     return finalName
 }
 
@@ -3697,7 +3740,6 @@ function checkChangeChordProgressionAndCreateNewMaps (e, b, player){
 }
 
 function sendChordMidiInfo (session, b, e){
-    console.log
     let player = e.players[session]
     checkChangeChordProgressionAndCreateNewMaps(e, b, player)
     let info = getNoteInfoToSend(player, b, session)
@@ -4218,7 +4260,7 @@ randomMelodyData = {
     })
 }
 
-//noteData2 = generateRandomMelody('C', 'bluesPentatonicScale', 40, 4, 6)
+//noteData2 = generateRandomMelody('C', 'bluesPentatonic', 40, 4, 6)
 noteData2 = chordProgressionScarboroughFair
 randomMelody1 = {
   velocity: A.buildArray(40, x => {return randomRange(30, 50)}),
@@ -4374,7 +4416,7 @@ lsystemData = {
     modeFilter: getRelativeMode('chromatic'),
     modeFilterKeyspan: 12,
     modeFilterKeys: getRelativeMode('chromatic'),
-  //noteValues: generateLsystemMelody('C', 'bluesPentatonicScale', generationData, 16, 8, 10).map(x => {
+  //noteValues: generateLsystemMelody('C', 'bluesPentatonic', generationData, 16, 8, 10).map(x => {
     /*
   noteValues: generateLsystemMelody('C', 'minorBluesPentatonicScale', generationData, 10, 8, 10).map(x => {
       return [x.note * x.octave]
