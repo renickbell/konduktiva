@@ -1092,7 +1092,7 @@ class MusicalEnvironment {
             clients[clientIndex].send(JSON.stringify({action: 'showMusicalEnvInfo', info: this.convertMusicalEnvironmentToString()}))
         }
     }
-    changeVerbose (state){
+    changeVerbose (state = true){
         Object.keys(this.players).forEach(x => {
             this.players[x].verbose = state
         })
@@ -3579,7 +3579,18 @@ function checkIfChangeFilteredMode (e, b, player){
         return false
     }
     let correctMode = getRelativeMode(currentMode)
-    let newMapName = createMapsFromMode('modeFilters', currentMode, e, correctMode[correctMode.length - 1], correctMode, correctMode)
+//     let newMapName = createMapsFromMode('modeFilters', currentMode, e, 12, correctMode, correctMode)
+    let newMapName = currentMode
+    try{
+        if (e.modeFilters[newMapName] === undefined){
+            newMapName = 'default'
+            checkIfUseVerboseLogging(player, player.name, 'cannot find requested modeFilter using default modeFilter')
+        }
+    }
+    catch{
+        newMapName = 'default'
+        checkIfUseVerboseLogging(player, player.name, 'cannot find requested modeFilter using default modeFilter')
+    }
     player.modeFilter = newMapName
 }
 
@@ -4670,6 +4681,9 @@ function setUpDefaultMusicalEnvironmentFourPlayers (){
      e.players.exampleMidiPlayer3.polyphonyMap = 'default'
      e.players.exampleMidiPlayer3.modeFilter = 'default'
      e.players.exampleMidiPlayer2.modeFilter = 'default'
+     e.players.exampleMidiPlayer1.modeMap = 'default'
+     e.players.exampleMidiPlayer2.modeMap = 'default'
+     e.players.exampleMidiPlayer4.modeMap = 'default'
     return e
 }
 
@@ -4692,6 +4706,7 @@ function setUpVerySimpleMusicalEnvironment (){
     assignPlayerForMusicSynthesizerSession(e, 1, 'p1')
     e.players.exampleMidiPlayer1.polyphonyMap = 'default'
     e.players.exampleMidiPlayer1.modeFilter = 'default'
+    e.players.exampleMidiPlayer1.modeMap = 'default'
     return e
 }
 
@@ -4715,6 +4730,7 @@ function setUpSimpleMusicalEnvironment (){
     assignPlayerForMusicSynthesizerSession(e, 1, 'p1', {chordProgressionMapName: 'twelveBars-lsystem-scarbrofair'})
     e.players.exampleMidiPlayer1.polyphonyMap = 'default'
     e.players.exampleMidiPlayer1.modeFilter = 'default'
+    e.players.exampleMidiPlayer2.modeMap = 'default'
     return e
 }
 
@@ -4737,6 +4753,7 @@ function setUpLongMusicalEnvironment (){
     assignPlayerForMusicSynthesizerSession(e, 1, 'p1')
     e.players.exampleMidiPlayer1.polyphonyMap = 'default'
     e.players.exampleMidiPlayer1.modeFilter = 'default'
+    e.players.exampleMidiPlayer1.modeMap = 'default'
     return e
 }
 
@@ -4776,6 +4793,8 @@ function setUpTwoPlayerMusicalEnvironment (){
     e.players.exampleMidiPlayer1.modeFilter = 'default'
     e.players.exampleMidiPlayer2.polyphonyMap = 'default'
     e.players.exampleMidiPlayer2.modeFilter = 'default'
+    e.players.exampleMidiPlayer1.modeMap = 'default'
+    e.players.exampleMidiPlayer2.modeMap = 'default'
     return e
 }
 
@@ -4785,6 +4804,7 @@ function setUpDefaultMusicalEnvironmentOnePlayer (){
     assignPlayerForMusicSynthesizerSession(e, 1, 'p1', {rhythmMapName: 'straight', chordProgressionMapName: 'twelveBars-lsystem-scarbrofair'})
     e.players.exampleMidiPlayer1.polyphonyMap = 'default'
     e.players.exampleMidiPlayer1.modeFilter = 'default'
+     e.players.exampleMidiPlayer1.modeMap = 'default'
     return e
 }
 
