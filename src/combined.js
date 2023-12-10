@@ -20,6 +20,7 @@ const osc = require("osc");
 const v8 = require('v8');
 const A = require('array-toolkit')
 const R = require('ramda')
+const { Worker, isMainThread, parentPort } = require('worker_threads');
 // const A = require('./github-array-toolkit-package/array-toolkit/array-toolkit.mjs')
 
 
@@ -61,6 +62,9 @@ mergedFunctions.Progression = Progression
 mergedFunctions.Midi = Midi
 mergedFunctions.RomanNumeral = RomanNumeral
 mergedFunctions.Mode = Mode
+mergedFunctions.Worker = Worker
+mergedFunctions.isMainThread = isMainThread
+mergedFunctions.parentPort = parentPort
 
 module.exports = mergedFunctions
 // --------------------------------------------------------------------------
@@ -1965,12 +1969,14 @@ function generativeParseString (inputString,rules,generations) {
   ]
 }
 */
-function generateRandomLsystemChordProgression (){
-    let velocityData = countLetterChanges(generateRandomLsystemString(20))
-    let boolsData = generateLsystemBoolsData()
-    let octaveData = countLetterChanges(generateRandomLsystemString(20))
-    let notesData = generateLsystemNoteData()
-    let noteDurationData = generateLsystemNoteData()
+async function generateRandomLsystemChordProgression (){
+    let velocityString = await generateRandomLsystemString(20)
+    let velocityData = countLetterChanges(velocityString)
+    let boolsData = await generateLsystemBoolsData()
+    let octaveString = await generateRandomLsystemString(20) 
+    let octaveData = countLetterChanges(octaveString)
+    let notesData = await generateLsystemNoteData()
+    let noteDurationData = await generateLsystemNoteData()
     boolsData = A.resizeArray(notesData.length, boolsData)
     noteDurationData = A.resizeArray(notesData.length, noteDurationData)
     octaveData = A.resizeArray(notesData.length, octaveData).map(x => {return x * 2})
@@ -1978,6 +1984,7 @@ function generateRandomLsystemChordProgression (){
     return new QuantizedMap(notesData.length, noteDurationData, notesData.map((x, i) => {return {data: [{note: x, octave: octaveData[i], velocity: velocityData[i]}], bool: boolsData[i]}}))
 }
 
+// let lDataWorker = K.generateRandomLsystemString(4, ['a', 'b'])
 //Generates lsystem in string for for for the lsystem chord progression:
 /**
   * Generates an L-system of a specific length based on the pickedAlphabets.
@@ -1989,16 +1996,27 @@ function generateRandomLsystemChordProgression (){
   * console.log(generateRandomLsystemString(2, ['a'])) //'aaaaaaaaaaaaaaaa'
   * console.log(generateRandomLsystemString(2, ['a', 'b'])) //'bbbbbbaababbaababbbaababbbbaababbaababbbaababbbbbaababbaababbbaababbbbbbbaababbaababbbaababbbbaababbaababbbaababbbbbaababbaababbbaababb'
 */
-function generateRandomLsystemString (length = 30, pickedAlphabets){
-    let configuration = generateRandomLSystemConfiguration(pickedAlphabets)
-    console.log('configuration', configuration)
-    let finalLsystem = ''
-    let failedAttemps = 0
-    while (finalLsystem.length < length){
-        failedAttemps += 1
-        finalLsystem = generativeParseString(configuration.startingLetters, configuration.conditions, 3 ** failedAttemps)
-    }
-    return finalLsystem
+function generateRandomLsystemString(length = 30, pickedAlphabets){
+    return new Promise((resolve, reject) => {
+        if (isMainThread) {
+          let inputData = {length: length, pickedAlphabets};
+            let worker = new Worker('./worker.js', {workerData: inputData} )
+            console.log('worker created',inputData)
+          // Listen for messages from the worker thread
+          worker.on('message', result => {
+              console.log('worker done', result)
+               resolve(result)
+               worker.terminate()
+          });
+          worker.on('error', err => {
+              console.log('worker crashed', err)
+              // Reject the Promise with the error if something goes wrong
+              reject(err);
+              worker.terminate()
+          });
+          worker.postMessage(inputData);
+        }
+    })
 }
 
 //Generates bools data for the lsystem chord progression:
@@ -2014,20 +2032,23 @@ function generateRandomLsystemString (length = 30, pickedAlphabets){
   true
 ]
 */
-function generateLsystemBoolsData (){
-    return generateRandomLsystemString(30, ['a', 'b']).split('').map(x => {
-            if (x === 'a'){
-                return true
-            }
-            else {
-                return false
-            }
-        })
+async function generateLsystemBoolsData (){
+    let data = await generateRandomLsystemString(30, ['a', 'b'])
+    data.split('').map(x => {
+        if (x === 'a'){
+            return true
+        }
+        else {
+            return false
+        }
+    })
+    return data
 }
 
 //generates note data for the lsystem chord progression:
-function generateLsystemNoteData (){
-    let noteData = countLetterChanges(generateRandomLsystemString(20))
+async function generateLsystemNoteData (){
+    let noteData = countLetterChanges(await generateRandomLsystemString(20))
+    console.log('noteData', noteData)
     let addedNotesData = []
     let tenLengthArray = Array.from({length: 10})
     Array.from({length: Math.floor(noteData.length / 10)}).forEach((x, i) =>{
@@ -2085,12 +2106,12 @@ function convertLsystemStringToNumbersViaAssignedLetters (chosenAlphabets, lsyst
     })
 }
 
-function generateLsystemByAssigningNumberToLetter (mode, octaves,length) {
+async function generateLsystemByAssigningNumberToLetter (mode, octaves,length) {
     let alphabets = Array.from({ length: 26 }, (_, i) => String.fromCharCode(97 + i));
     let modeAlphabets = A.safeSplice(alphabets, alphabets.length, mode.length)
-    let modeData = convertLsystemStringToNumbersViaAssignedLetters(modeAlphabets, generateRandomLsystemString(length, modeAlphabets), mode)
+    let modeData = convertLsystemStringToNumbersViaAssignedLetters(modeAlphabets, await generateRandomLsystemString(length, modeAlphabets), mode)
     let octavesAlphabets = A.safeSplice(alphabets, alphabets.length, octaves.length)
-    let octavesData = convertLsystemStringToNumbersViaAssignedLetters(octavesAlphabets,  generateRandomLsystemString(length, octavesAlphabets), octaves)
+    let octavesData = convertLsystemStringToNumbersViaAssignedLetters(octavesAlphabets,  await generateRandomLsystemString(length, octavesAlphabets), octaves)
     return modeData.map((x, i) =>{
         return {note: x, octave: octavesData[i]}
     })
@@ -2108,8 +2129,20 @@ addToModuleExports({
   generateRandomLSystemConfiguration,
   generateRandomLsystemChordProgression,
   generateRandomLsystemString,
-  generativeParseString
+  generativeParseString,
 })
+
+// K.generateRandomLsystemString = function (length = 30, pickedAlphabets){
+//     let configuration = K.generateRandomLSystemConfiguration(pickedAlphabets)
+//     console.log('configuration', configuration)
+//     let finalLsystem = ''
+//     let failedAttemps = 0
+//     while (finalLsystem.length < length){
+//         failedAttemps += 1
+//         finalLsystem = K.generativeParseString(configuration.startingLetters, configuration.conditions, 3 ** failedAttemps)
+//     }
+//     return finalLsystem
+// }
 
 // --------------------------------------------------------------------------
 //chords.js:
@@ -3039,7 +3072,7 @@ function addToMusicalEnvironment (e){
       locrian: [0, 1, 3, 5, 6, 8, 10],
       blues: [0, 3, 5, 6, 7, 10],
       bluesPentatonic: [0, 3, 5, 6, 7, 10],
-      minorBluesPentatonicScale: [0, 3, 5, 7, 10],
+      minorBluesPentatonic: [0, 3, 5, 7, 10],
     };
     e.modeFilters = {'default': new QuantizedMap(4, [0, 1, 2, 3], [0, 1, 2, 3])}
     Object.keys(modes).forEach(x => {
