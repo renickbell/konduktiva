@@ -1846,7 +1846,7 @@ function generateRandomLsystemString(length = 30, pickedAlphabets){
     return new Promise((resolve, reject) => {
         if (isMainThread) {
           let inputData = {length: length, pickedAlphabets};
-            let worker = new Worker('./worker.js', {workerData: inputData} )
+            let worker = new Worker('./es/worker.js', {workerData: inputData} )
             console.log('worker created',inputData)
           // Listen for messages from the worker thread
           worker.on('message', result => {

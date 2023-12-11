@@ -421,7 +421,7 @@ function decreaseDensity (inputArray) {
   * @param {number} minVal - The minimum value the the highest value number in the first item of the stack array can be.
   * @param {array} ratio - Array of numbers to pick from that will increase density 
   * @example
-  * console.log(recursiveIncreaseDensity (0.25, [0.5], [[1, 1, 2, 3, 5]])
+  * console.log(recursiveIncreaseDensity (0.25, [0.5], [[1, 1, 2, 3, 5]]))
 */
 function recursiveIncreaseDensity (minVal, ratios, stack) {
     if (A.getMaxIndex(stack[0])[0][1] > minVal) {
@@ -2028,7 +2028,7 @@ function generateRandomLsystemString(length = 30, pickedAlphabets){
     return new Promise((resolve, reject) => {
         if (isMainThread) {
           let inputData = {length: length, pickedAlphabets};
-            let worker = new Worker('./worker.js', {workerData: inputData} )
+            let worker = new Worker('./src/worker.js', {workerData: inputData} )
             console.log('worker created',inputData)
           // Listen for messages from the worker thread
           worker.on('message', result => {
