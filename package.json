@@ -15,7 +15,7 @@
     "type-check": "^*"
   },
   "name": "konduktiva",
-  "version": "1.9.7",
+  "version": "1.9.8",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/renickbell/konduktiva.git"
@@ -30,19 +30,15 @@
   "exports": {
     ".": {
       "require": "./src/combined.js",
-      "import": "./es/combined.mjs",
-      "./worker.js": "./src/worker.js"
+      "import": "./es/combined.mjs"
     },
     "./src/*": "./src/*.js",
     "./src/": "./src/",
     "./es/*": "./es/*.js",
-    "./es/": "./es/",
-    "./worker.js": "./src/worker.js"
+    "./es/": "./es/"
   },
   "files": [
     "src",
-    "es",
-    "src/worker.js",
-    "es/combined.mjs"
+    "es"
   ]
 }
