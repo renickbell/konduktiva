@@ -69,7 +69,7 @@ mergedFunctions.parentPort = parentPort
 module.exports = mergedFunctions
 // --------------------------------------------------------------------------
 //Konduktiva-revised-2.js
-/** 
+/**
   * Returns the current year, month, and day (yyMMdd)
   * @example console.log(ymd()) //'230821'
 */
@@ -100,12 +100,12 @@ const structuredClone = obj => {
 */
 function addLog (x) {
     let d = new Date ();
-    fs.appendFile('test.log', 
-//"--------------------------------------------------------------------------" 
+    fs.appendFile('test.log',
+//"--------------------------------------------------------------------------"
 //       + "\nbegin: "+d+"\n\n"+x+"\n" +
          "\n"+x+"\n" +
 //       + "\n-- end. " + d + "\n" +
-"--------------------------------------------------------------------------" 
+"--------------------------------------------------------------------------"
        + "\n"
         , function (err) { if (err) throw err; /*console.log('Saved!');*/ })
 }
@@ -113,7 +113,7 @@ function addLog (x) {
 /**
  * Adds the item and the item type to the file test.log
  * @param {*} x - Item to add.
- * @example 
+ * @example
  * console.log(addLog2([0, 1, 2, 3])) //will add: [ 0, 1, 2, 3 ]
  * console.log(addLog2('hi')) //will add: 'hi'
 */
@@ -192,7 +192,7 @@ class Point {
   moveByAngle (angle, distance) {
             let r = angle * Math.PI / 180;
             return new Point(this.x + distance*Math.sin(r), this.y + distance*Math.cos(r))
-            }    
+            }
 }
 
 /**
@@ -203,7 +203,7 @@ class Point {
 function linearFunctionFromPoints(p1,p2) {
     let rise = p2.y - p1.y;
     let run = p2.x - p1.x;
-    let slope = rise/run; 
+    let slope = rise/run;
     // y = mx + b
     let b = p1.y - (slope * p1.x);
     //console.log('the linear function is: y = ' + slope + 'x + ' + b);
@@ -223,14 +223,14 @@ function linearFunctionArrayFromPoints (pointArray) {
 //partially helped by chatgpt
 
 /**
-  * Calculates all the slope intercepts in an array of points and returns them in form of a QuantizedMap. The keyspan will be the final X value. The keys will will be all the X values in the array. 
+  * Calculates all the slope intercepts in an array of points and returns them in form of a QuantizedMap. The keyspan will be the final X value. The keys will will be all the X values in the array.
   * @param {array} pointArray - The array of Points to sort through.
   * @example
   * linearFunctionQuantizedMap([new Point(0, 10), new Point(5, 20), new Point(10, 30)]) //QuantizedMap { keyspan: 10, keys: [ 0, 5, 10 ], values: [ { func: [Function: func], note: 'y = 2x + 10' }, { func: [Function: func], note: 'y = 2x + 10' } ] }
 */
 function linearFunctionQuantizedMap (pointArray) {
     let times = pointArray.map(t => t.x);
-    return new QuantizedMap(times[times.length-1], times, linearFunctionArrayFromPoints(pointArray)) 
+    return new QuantizedMap(times[times.length-1], times, linearFunctionArrayFromPoints(pointArray))
 }
 
 //------------------------------------------------------------------------------
@@ -419,7 +419,7 @@ function decreaseDensity (inputArray) {
 /**
   * If conditions are met, will uses the increaseDensity function on multiple arrays and picking randomly from an array of ratios.
   * @param {number} minVal - The minimum value the the highest value number in the first item of the stack array can be.
-  * @param {array} ratio - Array of numbers to pick from that will increase density 
+  * @param {array} ratio - Array of numbers to pick from that will increase density
   * @example
   * console.log(recursiveIncreaseDensity (0.25, [0.5], [[1, 1, 2, 3, 5]]))
 */
@@ -435,7 +435,7 @@ function recursiveIncreaseDensity (minVal, ratios, stack) {
 /**
   * If conditions are met, will uses the decreaseDensity function on multiple arrays and picking randomly from an array of ratios.
   * @param {number} minVal - The minimum value the the highest value number in the first item of the stack array can be.
-  * @param {array} ratio - Array of numbers to pick from that will decrease density 
+  * @param {array} ratio - Array of numbers to pick from that will decrease density
   * @example
   * console.log(recursiveDecreaseDensity ([[1, 1, 2, 3, 5]]))
 */
@@ -470,18 +470,18 @@ function densityFromDeltas (inputDeltas) {
     return inputDeltas.length/A.sum(inputDeltas)
 }
 
-//  keyspan is max value, keys is an array of absolutes (increasing values), values is an array of anything of the same length as keys 
+//  keyspan is max value, keys is an array of absolutes (increasing values), values is an array of anything of the same length as keys
 
 /** A QuantizedMap is a discreet function.
  * @see {@link https://www.sparknotes.com/math/algebra2/discretefunctions/summary/}
 */
 class QuantizedMap {
-    /** 
+    /**
       * Creates the QuantizedMap. The methods provide different ways to look for things in the quantized map.
       * @param {number} limitValue - The keyspan/total of the QuantizedMap.
       * @param {array} keys - The keys of the QuantizedMap which will be a number array in ascending order.
       * @param {array} vals - The values of the QuantizedMap which will be an array.
-      * @example 
+      * @example
       * let qMap = new QuantizedMap(10, [0, 2, 4, 6, 8], ['A', 'B', 'C', 'D']) //QuantizedMap { keyspan: 10, keys: [ 0, 2, 4, 6, 8 ], values: [ 'A', 'B', 'C', 'D' ] }
     */
     constructor(limitValue,keys,vals) {
@@ -552,7 +552,7 @@ class QuantizedMap {
             if (filteredTime[0] == undefined) {filteredTime = [0]};
             let lower = filteredTime[filteredTime.length - 1];
             let higher = this.keys[filteredTime.length]
-            if ((lookupTime - lower) < (higher - lookupTime)) 
+            if ((lookupTime - lower) < (higher - lookupTime))
                 {output = this.values[(filteredTime.length - 1)]}
             else {output = this.values[(filteredTime.length)]}
             }
@@ -732,8 +732,8 @@ function mask (player, maskMap, beat, probability) {
 
 /** Class representing MusicalEnvironments */
 class MusicalEnvironment {
-    /** 
-      * Creates MusicalEnvironments. Remember to call setupScheduler(e) 
+    /**
+      * Creates MusicalEnvironments. Remember to call setupScheduler(e)
       * @example let e = new MusicalEnvironment()
     */
     constructor (){
@@ -764,7 +764,7 @@ class MusicalEnvironment {
         this.scheduledPlayers = [];
         this.root = "A";
     }
-    /** 
+    /**
       * Returns the current beat of the MusicalEnvironment.
     */
     currentBeat () {
@@ -844,7 +844,7 @@ class MusicalEnvironment {
       * Stops the scheduler for the MusicalEnvironment.
     */
     stopScheduler () {
-        this.timeOfChangeToCurrentTempo = undefined; 
+        this.timeOfChangeToCurrentTempo = undefined;
         this.beatOfChangeToCurrentTempo = undefined;
         //this.lastScheduledTime = 0;
         this.scheduler.stop()
@@ -854,7 +854,7 @@ class MusicalEnvironment {
       * @param {string} player - Player name.
     */
     play (player) {
-        if (this.players[player].status == "playing") 
+        if (this.players[player].status == "playing")
             {console.log("Player " + this.players[player].name + " is already playing!")}
         else {
             this.scheduledPlayers = this.scheduledPlayers.concat(player);
@@ -867,7 +867,7 @@ class MusicalEnvironment {
       * @param {string} player - Player name.
     */
     stop (player) {
-        if (this.players[player].status == "stopped") 
+        if (this.players[player].status == "stopped")
             {console.log("Player " + this.players[player].name + " is not playing!")}
         else {
 //             this.scheduledPlayers = A.removeItem(this.scheduledPlayers,player)
@@ -1140,8 +1140,8 @@ function setupScheduler (musicalEnv) {
         musicalEnv.scheduler.add([
             {
                 id: 'schedulePlayers',       // unique ID of the task
-                //tickInterval: musicalEnv.lookahead * 1000/20,    
-                tickInterval: 1,    
+                //tickInterval: musicalEnv.lookahead * 1000/20,
+                tickInterval: 1,
                 totalRuns: 0,      // (set to 0 for unlimited times)
                 callback(task) {
                     // code to be executed on each run
@@ -2001,7 +2001,7 @@ async function generateRandomLsystemChordProgression (){
     let velocityString = await generateRandomLsystemString(20)
     let velocityData = countLetterChanges(velocityString)
     let boolsData = await generateLsystemBoolsData()
-    let octaveString = await generateRandomLsystemString(20) 
+    let octaveString = await generateRandomLsystemString(20)
     let octaveData = countLetterChanges(octaveString)
     let notesData = await generateLsystemNoteData()
     let noteDurationData = await generateLsystemNoteData()
@@ -3878,7 +3878,7 @@ function getAllInfoFromChordProgression (progression){
 }
 
 function checkIfMapExistsAndMapContents (e, variableName, mapName,keyspan, keys, values){
-    let currentMap = e[variableName][mapName] 
+    let currentMap = e[variableName][mapName]
     if (currentMap === undefined){
             currentMap = e.addMap(variableName, mapName, keyspan, keys, values)
     }
@@ -3945,7 +3945,7 @@ function createMapsFromChordProgressions (variableName, mapInfo, name, e, keys, 
 
 function checkAndCreateChordProgressionMaps (mapInfo, name, e){
     return {
-        rhythmMap: createMapsFromChordProgressions('rhythmMaps', name, mapInfo, name, e, mapInfo.keys, mapInfo.keys), 
+        rhythmMap: createMapsFromChordProgressions('rhythmMaps', name, mapInfo, name, e, mapInfo.keys, mapInfo.keys),
     noteMap: createMapsFromChordProgressions('noteMaps', name, mapInfo, name, e, mapInfo.keys, mapInfo.notes),
     rhythmPattern: createMapsFromChordProgressions('rhythmPatterns', name, mapInfo, name, e, mapInfo.keys, mapInfo.bools),
     maskMap: createMapsFromChordProgressions('maskMaps', mapInfo, name, e, mapInfo.keys, mapInfo.bools),

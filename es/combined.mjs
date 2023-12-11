@@ -2009,6 +2009,7 @@ function generateRandomLSystemConfiguration (pickedAlphabets){
   // Exit the worker thread (optional)
   process.exit();
 `
+//worker stuff helped by Chatgpt
 
 function generateRandomLsystemString(length = 30, pickedAlphabets){
     return new Promise((resolve, reject) => {
