@@ -353,6 +353,17 @@ function simpleRhythm (env, rhythmName, deltas) {
 //--------------------------------------------------------------------------
 // rhythm pattern with density
 
+function getMaxIndex (inputArray) {
+    let currentMax = [];
+    for (let i = 0; i< inputArray.length; i++){
+        if (currentMax[0] == undefined) {currentMax[0] = [0,inputArray[i]]}
+        else if (inputArray[i] > currentMax[0][1]) {currentMax = [[i,inputArray[i]]]}
+        else if (inputArray[i] == currentMax[0][1]) {currentMax.push([i,inputArray[i]])}
+    }
+    return currentMax
+}
+
+A.getMaxIndex = getMaxIndex
 // increase density
 
 // revise these so that the algorithm is swappable
@@ -368,7 +379,7 @@ function simpleRhythm (env, rhythmName, deltas) {
 */
 function increaseDensity (minVal,ratio,inputArray) {
     let max = A.getMaxIndex(inputArray);
-    if (max[0][1] <= minVal) {console.log("max is already at minVal");return inputArray} 
+    if (max[0][1] <= minVal) {console.log("max is already at minVal");return inputArray}
     else {
         let toIncrease = A.pick(max);
         console.log("this is the max: " + toIncrease);
@@ -380,6 +391,12 @@ function increaseDensity (minVal,ratio,inputArray) {
     }
 }
 
+// function numArray (start,end) {
+//     let output = [];
+//     for(let i = start; i <= end; i++) {output.push(i)};
+//     return output
+// }
+
 /**
   * Returns an array that has the same total value and the same length but the numbers in the array will be different.
   * @param {array} inputArray - Number array.
@@ -387,33 +404,44 @@ function increaseDensity (minVal,ratio,inputArray) {
   * console.log(decreaseDensity([0, 1, 2, 3, 10])) //[ 0, 1, 5, 10 ] //[ 0, 3, 3, 10 ] //[ 1, 2, 3, 10 ]
 */
 function decreaseDensity (inputArray) {
-    let target = (A.pick(A.integerArray(0,inputArray.length - 2)));
-    let outputA = inputArray.slice(0,target);
-    let outputB = [inputArray[target] + inputArray[target+1]].concat(inputArray.slice(target+2))
-    return outputA.concat(outputB)
+    if (inputArray.length == 1) {return inputArray}
+    else if (inputArray.length ==2) {
+        return [inputArray[0] + inputArray[1]]
+    }
+    else {
+        let target = (K.randomRangeInt(0,inputArray.length - 2));
+        let outputA = inputArray.slice(0,target);
+        let outputB = [inputArray[target] + inputArray[target+1]].concat(inputArray.slice(target+2))
+        return outputA.concat(outputB)
+    }
 }
 
 /**
-  * Uses the increaseDensity function on multiple arrays and picking randomly from an array of ratios.
+  * If conditions are met, will uses the increaseDensity function on multiple arrays and picking randomly from an array of ratios.
   * @param {number} minVal - The minimum value the the highest value number in the first item of the stack array can be.
-  * @param {array} ratio - 
+  * @param {array} ratio - Array of numbers to pick from that will increase density 
+  * @example
+  * console.log(recursiveIncreaseDensity (0.25, [0.5], [[1, 1, 2, 3, 5]])
 */
 function recursiveIncreaseDensity (minVal, ratios, stack) {
-    console.log(minVal, stack)
     if (A.getMaxIndex(stack[0])[0][1] > minVal) {
         let r = A.pick(ratios);
         let addToStack = increaseDensity(minVal,r,stack[0]);
         return recursiveIncreaseDensity(minVal, ratios, [addToStack].concat(stack))
-        return [addToStack].concat(stack)
     }
     return stack
 }
 
+/**
+  * If conditions are met, will uses the decreaseDensity function on multiple arrays and picking randomly from an array of ratios.
+  * @param {number} minVal - The minimum value the the highest value number in the first item of the stack array can be.
+  * @param {array} ratio - Array of numbers to pick from that will decrease density 
+  * @example
+  * console.log(recursiveDecreaseDensity ([[1, 1, 2, 3, 5]]))
+*/
 function recursiveDecreaseDensity (stack) {
-   console.log(stack);
    let targetArray = stack[(stack.length -1)];
    if (targetArray.length > 1) {
-       console.log("this is the target array");
        return recursiveDecreaseDensity(stack.concat([decreaseDensity(stack[stack.length -1])]))
    }
     return stack

@@ -352,16 +352,24 @@ export function increaseDensity (minVal,ratio,inputArray) {
   * console.log(decreaseDensity([0, 1, 2, 3, 10])) //[ 0, 1, 5, 10 ] //[ 0, 3, 3, 10 ] //[ 1, 2, 3, 10 ]
 */
 export function decreaseDensity (inputArray) {
-    let target = (A.pick(A.integerArray(0,inputArray.length - 2)));
-    let outputA = inputArray.slice(0,target);
-    let outputB = [inputArray[target] + inputArray[target+1]].concat(inputArray.slice(target+2))
-    return outputA.concat(outputB)
+    if (inputArray.length == 1) {return inputArray}
+    else if (inputArray.length ==2) {
+        return [inputArray[0] + inputArray[1]]
+    }
+    else {
+        let target = (K.randomRangeInt(0,inputArray.length - 2));
+        let outputA = inputArray.slice(0,target);
+        let outputB = [inputArray[target] + inputArray[target+1]].concat(inputArray.slice(target+2))
+        return outputA.concat(outputB)
+    }
 }
 
 /**
   * Uses the increaseDensity function on multiple arrays and picking randomly from an array of ratios.
   * @param {number} minVal - The minimum value the the highest value number in the first item of the stack array can be.
-  * @param {array} ratio -
+  * @param {array} ratio - Array of numbers to pick from that will increase density
+  * @example
+  * console.log(recursiveIncreaseDensity (0.25, [0.5], [[1, 1, 2, 3, 5]]))
 */
 export function recursiveIncreaseDensity (minVal, ratios, stack) {
     console.log(minVal, stack)
@@ -374,11 +382,16 @@ export function recursiveIncreaseDensity (minVal, ratios, stack) {
     return stack
 }
 
+/**
+  * If conditions are met, will uses the decreaseDensity function on multiple arrays and picking randomly from an array of ratios.
+  * @param {number} minVal - The minimum value the the highest value number in the first item of the stack array can be.
+  * @param {array} ratio - Array of numbers to pick from that will decrease density
+  * @example
+  * console.log(recursiveDecreaseDensity ([[1, 1, 2, 3, 5]]))
+*/
 export function recursiveDecreaseDensity (stack) {
-   console.log(stack);
    let targetArray = stack[(stack.length -1)];
    if (targetArray.length > 1) {
-       console.log("this is the target array");
        return recursiveDecreaseDensity(stack.concat([decreaseDensity(stack[stack.length -1])]))
    }
     return stack

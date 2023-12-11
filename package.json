@@ -7,7 +7,7 @@
     "osc": "^*",
     "path": "^*",
     "perf_hooks": "^*",
-    "ramda": "^",
+    "ramda": "^*",
     "socket.io": "^*",
     "socket.io-client": "^*",
     "tasktimer": "^*",
