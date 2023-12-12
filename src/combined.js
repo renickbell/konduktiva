@@ -3805,6 +3805,7 @@ function sendNotesMidiInfo (playerName, b, e){
 
 //Collect sound information to play:
 function getNoteInfoToSend (player, b, session){
+    checkIfUseVerboseLogging(player, player.name ,' using this noteMap: ', player.noteMap)
     return {
         noteDuration: e.rhythmMaps[player.rhythmMap].values[0].wrapLookup(b),
         velocity: convertVelocityToMidiValues(e.velocityMaps[player.velocityMap].wrapLookup(b)),
