@@ -2102,9 +2102,9 @@ export function createRootMap (noteValueData, name, e){
 export function generateChordProgressions (){
     let twelveBarsProgression = generateRandomMelody('C', 'blues', 18, 6, 10)
     return {
-        twelveBars: new QuantizedMap(18, A.buildArray(12, x => {return 4}), twelveBarsProgression.map(x => {x.velocity = 100; return {data: [x], bool: true}})),
+//         twelveBars: new QuantizedMap(18, A.buildArray(12, x => {return 4}), twelveBarsProgression.map(x => {x.velocity = 100; return {data: [x], bool: true}})),
 //         lsystem: generateRandomLsystemChordProgression(),
-        scarboroughFair: new QuantizedMap(48, A.buildArray(12, x => {return 4}), generateScarboroughFairValues())
+//         scarboroughFair: new QuantizedMap(48, A.buildArray(12, x => {return 4}), generateScarboroughFairValues())
     }
 }
 
