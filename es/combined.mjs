@@ -3155,7 +3155,15 @@ export function musicSynthesizerCaller (p,b) {if ((mask(p, e.maskMaps[e.players[
 
 
 export function filterMode (note, e, b, player){
-    let mode = e.modeFilters[player.modeFilter]
+     let currentModeMap = e.modeMaps[player.modeMap]
+    if (currentModeMap === undefined){
+        return false
+    }
+    let currentMode = currentModeMap.wrapLookup(b)
+    if (typeof currentMode !== 'string'){
+        return false
+    }
+     let mode = e.modeFilters[currentMode]
     if (mode === undefined){
         return note
     }
@@ -3327,31 +3335,6 @@ export function createMapsFromMode (variableName, name, e, keyspan, keys, values
     return finalName
 }
 
-export function checkIfChangeFilteredMode (e, b, player){
-     let currentModeMap = e.modeMaps[player.modeMap]
-    if (currentModeMap === undefined){
-        return false
-    }
-    let currentMode = currentModeMap.wrapLookup(b)
-    if (typeof currentMode !== 'string'){
-        return false
-    }
-    let correctMode = getRelativeMode(currentMode)
-//     let newMapName = createMapsFromMode('modeFilters', currentMode, e, 12, correctMode, correctMode)
-    let newMapName = currentMode
-    try{
-        if (e.modeFilters[newMapName] === undefined){
-            newMapName = 'default'
-            checkIfUseVerboseLogging(player, player.name, 'cannot find requested modeFilter using default modeFilter')
-        }
-    }
-    catch{
-        newMapName = 'default'
-        checkIfUseVerboseLogging(player, player.name, 'cannot find requested modeFilter using default modeFilter')
-    }
-    player.modeFilter = newMapName
-}
-
 //Gather and sort information and prepare to send through midi:
 export function callMusicSynthesizerRhythm (e, b, session){
     let player = e.players[session]
@@ -3369,7 +3352,6 @@ export function callMusicSynthesizerRhythm (e, b, session){
     visualizeVolume(info)
     checkIfChangeChordProgression(e, b, player)
     checkIfSendMidiControlChange(e, b, player)
-    checkIfChangeFilteredMode(e, b, player)
     info = convertNoteValuesToMidi(info, e, b, player)
     info = calculateFinalNoteValue(info, player)
 //     console.log('FINAL playing finaValues', info.finalValues)
@@ -3508,18 +3490,22 @@ export function checkChangeChordProgressionAndCreateNewMaps (e, b, player){
     applyNewMapNamesToPlayer(e, player, newMapNames)
 }
 
-export function sendChordMidiInfo (session, b, e){
-    let player = e.players[session]
-    checkChangeChordProgressionAndCreateNewMaps(e, b, player)
-    let info = getNoteInfoToSend(player, b, session)
-//     info = filterPolyphany(e, b, player, info)
+export function sendChordMidiInfo (playerName, b, e){
+    let player = e.players[playerName];
+    let info = getNoteInfoToSend(player, b, playerName);
+    info.noteValues = undefined;
+    let chordMap = player.chordProgressionMap;
+    let chord = e.chordMaps[chordMap].wrapLookup(b);
+    info.noteValues = Chord.getChord(chord).intervals.map(x => Interval.semitones(x));
+    info = filterPolyphany(e, b, player, info);
+    console.log(info)
     info.noteValues = info.noteValues.map(x => {
         return filterMode(x, e, b, player)
-    })
-    info = calculateFinalNoteValue(info, player)
+    });
+    info = calculateFinalNoteValue(info, player);
     info.finalValues.forEach((x, i) => {
         sendMidiData(info, player, x)
-    })
+    });
     return true
 }
 

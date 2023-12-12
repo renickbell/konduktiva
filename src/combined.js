@@ -3062,8 +3062,7 @@ function addToMusicalEnvironment (e){
       bluesPentatonic: [0, 3, 5, 6, 7, 10],
       minorBluesPentatonicScale: [0, 3, 5, 7, 10],
     };
-    e.modeFilters = {'default': new QuantizedMap(4, [0, 1, 2, 3], [0, 1, 2, 3]),
-    'chromatic': new QuantizedMap(12, A.buildArray(12,i=>i), A.buildArray(12,i=>i))}
+    e.modeFilters = {'default': new QuantizedMap(4, [0, 1, 2, 3], [0, 1, 2, 3]), 'chromatic': new QuantizedMap(12, A.buildArray(12,i=>i), A.buildArray(12,i=>i))}
     Object.keys(modes).forEach(x => {
         e.modeFilters[x] = new QuantizedMap(12, modes[x], modes[x])
     })
@@ -3419,7 +3418,15 @@ function sendPlaybackMessage (p,b) {if ((mask(p, e.maskMaps[e.players[p].maskMap
 
 
 function filterMode (note, e, b, player){
-     let mode = e.modeFilters[player.modeFilter]
+     let currentModeMap = e.modeMaps[player.modeMap]
+    if (currentModeMap === undefined){
+        return false
+    }
+    let currentMode = currentModeMap.wrapLookup(b)
+    if (typeof currentMode !== 'string'){
+        return false
+    }
+     let mode = e.modeFilters[currentMode]
     if (mode === undefined){
         return note
     }
@@ -3591,31 +3598,6 @@ function createMapsFromMode (variableName, name, e, keyspan, keys, values){
     return finalName
 }
 
-function checkIfChangeFilteredMode (e, b, player){
-     let currentModeMap = e.modeMaps[player.modeMap]
-    if (currentModeMap === undefined){
-        return false
-    }
-    let currentMode = currentModeMap.wrapLookup(b)
-    if (typeof currentMode !== 'string'){
-        return false
-    }
-    let correctMode = getRelativeMode(currentMode)
-//     let newMapName = createMapsFromMode('modeFilters', currentMode, e, 12, correctMode, correctMode)
-    let newMapName = currentMode
-    try{
-        if (e.modeFilters[newMapName] === undefined){
-            newMapName = 'default'
-            checkIfUseVerboseLogging(player, player.name, 'cannot find requested modeFilter using default modeFilter')
-        }
-    }
-    catch{
-        newMapName = 'default'
-        checkIfUseVerboseLogging(player, player.name, 'cannot find requested modeFilter using default modeFilter')
-    }
-    player.modeFilter = newMapName
-}
-
 //Gather and sort information and prepare to send through midi:
 function callMusicSynthesizerRhythm (e, b, session){
     let player = e.players[session]
@@ -3633,7 +3615,6 @@ function callMusicSynthesizerRhythm (e, b, session){
     visualizeVolume(info)
     checkIfChangeChordProgression(e, b, player)
     checkIfSendMidiControlChange(e, b, player)
-    checkIfChangeFilteredMode(e, b, player)
     info = convertNoteValuesToMidi(info, e, b, player)
     info = calculateFinalNoteValue(info, player)
 //     console.log('FINAL playing finaValues', info.finalValues)
@@ -3778,7 +3759,7 @@ function sendChordMidiInfo (playerName, b, e){
     info.noteValues = undefined;
     let chordMap = player.chordProgressionMap;
     let chord = e.chordMaps[chordMap].wrapLookup(b);
-    info.noteValues = Chord.getChord(chord,info.root).notes.map(n => Note.chroma(n));
+    info.noteValues = Chord.getChord(chord).intervals.map(x => Interval.semitones(x));
     info = filterPolyphany(e, b, player, info);
     console.log(info)
     info.noteValues = info.noteValues.map(x => {
@@ -4135,7 +4116,6 @@ addToModuleExports({
   addInputMessageToRecordedMessages,
   calculateFinalNoteValue,
   callMusicSynthesizerRhythm,
-  checkIfChangeFilteredMode,
   checkIfSendMidiControlChange,
   checkIfStringIncluesNumber,
   convertLettersToMidi,
