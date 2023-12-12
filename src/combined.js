@@ -87,7 +87,10 @@ const structuredClone = obj => {
 //--------------------------------------------------------------------------
 // utility
 
-let all = x => Object.keys(x)
+// let all = x => Object.keys(x)
+function all (x){
+    return Object.keys(x)
+}
 
 /**
   * Adds the input of the function to a file called test.log
@@ -1277,6 +1280,7 @@ function simpleRhythmPattern (env, rhythmPatternArgObj) {
 
 
 addToModuleExports({
+  all,
   MusicalEnvironment,
   Player,
   Point,
@@ -3453,7 +3457,7 @@ function convertRomanNumeralsToMidi (info){
     }
 //     console.log('testing for roman numerals', info.noteValues[0])
     if (typeof info.noteValues[0] === 'string'){
-        info.finalValues = Progression.fromRomanNumerals(info.letters[0] + info.octaves, info.noteValues)
+        info.finalValues = Progression.fromRomanNumerals(info.root[0] + info.octaves, info.noteValues)
         info.finalValues = info.finalValues.map(x => {
             return Midi.toMidi(x)
         })
@@ -3468,7 +3472,7 @@ function calculateFinalNoteValue (info){
     if (info.finalValues === undefined){
         checkIfUseVerboseLogging(e, 'finalNote not detected', info.finalNote)
         info.finalValues = info.noteValues.map(x => {
-            return Note.midi(info.letters + info.octaves) + x
+            return Note.midi(info.root + info.octaves) + x
         })
     }
     return info
@@ -3773,7 +3777,7 @@ function sendChordMidiInfo (playerName, b, e){
     info.noteValues = undefined;
     let chordMap = player.chordProgressionMap;
     let chord = e.chordMaps[chordMap].wrapLookup(b);
-    info.noteValues = Chord.getChord(chord,info.letters).notes.map(n => Note.chroma(n));
+    info.noteValues = Chord.getChord(chord,info.root).notes.map(n => Note.chroma(n));
     info = filterPolyphany(e, b, player, info);
     console.log(info)
     info.noteValues = info.noteValues.map(x => {
@@ -3813,7 +3817,7 @@ function getNoteInfoToSend (player, b, session){
         noteValues:  e.noteMaps[player.noteMap].wrapLookup(e.noteDurationMaps[player.noteDurationMapName].wrapLookup(b)),
 //         noteValues: (e.octaveMaps[player.noteMap].wrapLookup(e.noteDurationMaps[player.noteDurationMapName].wrapLookup(b)) * 12) + e.rootNoteMaps[player.noteMap].wrapLookup(e.noteDurationMaps[player.noteDurationMapName].wrapLookup(b)),
         octaves: e.octaveMaps[player.octaveMap].wrapLookup(b),
-        letters: e.rootMaps[player.rootMap].wrapLookup(b),
+        root: e.rootMaps[player.rootMap].wrapLookup(b),
     }
 }
 

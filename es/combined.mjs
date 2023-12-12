@@ -53,6 +53,10 @@ export const structuredClone = obj => {
 //--------------------------------------------------------------------------
 // utility
 
+export function all (x){
+    return Object.keys(x)
+}
+
 /**
   * Adds the input of the function to a file called test.log
   * @param {*} x - The item to add to test.log file.
@@ -3190,7 +3194,7 @@ export function convertRomanNumeralsToMidi (info){
     }
 //     console.log('testing for roman numerals', info.noteValues[0])
     if (typeof info.noteValues[0] === 'string'){
-        info.finalValues = Progression.fromRomanNumerals(info.letters[0] + info.octaves, info.noteValues)
+        info.finalValues = Progression.fromRomanNumerals(info.root[0] + info.octaves, info.noteValues)
         info.finalValues = info.finalValues.map(x => {
             return Midi.toMidi(x)
         })
@@ -3205,7 +3209,7 @@ export function calculateFinalNoteValue (info){
     if (info.finalValues === undefined){
         checkIfUseVerboseLogging(e, 'finalNote not detected', info.finalNote)
         info.finalValues = info.noteValues.map(x => {
-            return Note.midi(info.letters+ info.octaves) + x
+            return Note.midi(info.root+ info.octaves) + x
         })
     }
     return info
@@ -3546,7 +3550,7 @@ export function getNoteInfoToSend (player, b, session){
         noteValues:  e.noteMaps[player.noteMap].wrapLookup(e.noteDurationMaps[player.noteDurationMapName].wrapLookup(b)),
 //         noteValues: (e.octaveMaps[player.noteMap].wrapLookup(e.noteDurationMaps[player.noteDurationMapName].wrapLookup(b)) * 12) + e.rootNoteMaps[player.noteMap].wrapLookup(e.noteDurationMaps[player.noteDurationMapName].wrapLookup(b)),
         octaves: e.octaveMaps[player.octaveMap].wrapLookup(b),
-        letters: e.rootMaps[player.rootMap].wrapLookup(b),
+        root: e.rootMaps[player.rootMap].wrapLookup(b),
     }
 }
 
