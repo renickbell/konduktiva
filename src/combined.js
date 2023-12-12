@@ -65,7 +65,7 @@ mergedFunctions.Mode = Mode
 module.exports = mergedFunctions
 // --------------------------------------------------------------------------
 //Konduktiva-revised-2.js
-/** 
+/**
   * Returns the current year, month, and day (yyMMdd)
   * @example console.log(ymd()) //'230821'
 */
@@ -87,6 +87,8 @@ const structuredClone = obj => {
 //--------------------------------------------------------------------------
 // utility
 
+let all = x => Object.keys(x)
+
 /**
   * Adds the input of the function to a file called test.log
   * @param {*} x - The item to add to test.log file.
@@ -96,12 +98,12 @@ const structuredClone = obj => {
 */
 function addLog (x) {
     let d = new Date ();
-    fs.appendFile('test.log', 
-//"--------------------------------------------------------------------------" 
+    fs.appendFile('test.log',
+//"--------------------------------------------------------------------------"
 //       + "\nbegin: "+d+"\n\n"+x+"\n" +
          "\n"+x+"\n" +
 //       + "\n-- end. " + d + "\n" +
-"--------------------------------------------------------------------------" 
+"--------------------------------------------------------------------------"
        + "\n"
         , function (err) { if (err) throw err; /*console.log('Saved!');*/ })
 }
@@ -109,7 +111,7 @@ function addLog (x) {
 /**
  * Adds the item and the item type to the file test.log
  * @param {*} x - Item to add.
- * @example 
+ * @example
  * console.log(addLog2([0, 1, 2, 3])) //will add: [ 0, 1, 2, 3 ]
  * console.log(addLog2('hi')) //will add: 'hi'
 */
@@ -188,7 +190,7 @@ class Point {
   moveByAngle (angle, distance) {
             let r = angle * Math.PI / 180;
             return new Point(this.x + distance*Math.sin(r), this.y + distance*Math.cos(r))
-            }    
+            }
 }
 
 /**
@@ -199,7 +201,7 @@ class Point {
 function linearFunctionFromPoints(p1,p2) {
     let rise = p2.y - p1.y;
     let run = p2.x - p1.x;
-    let slope = rise/run; 
+    let slope = rise/run;
     // y = mx + b
     let b = p1.y - (slope * p1.x);
     //console.log('the linear function is: y = ' + slope + 'x + ' + b);
@@ -219,14 +221,14 @@ function linearFunctionArrayFromPoints (pointArray) {
 //partially helped by chatgpt
 
 /**
-  * Calculates all the slope intercepts in an array of points and returns them in form of a QuantizedMap. The keyspan will be the final X value. The keys will will be all the X values in the array. 
+  * Calculates all the slope intercepts in an array of points and returns them in form of a QuantizedMap. The keyspan will be the final X value. The keys will will be all the X values in the array.
   * @param {array} pointArray - The array of Points to sort through.
   * @example
   * linearFunctionQuantizedMap([new Point(0, 10), new Point(5, 20), new Point(10, 30)]) //QuantizedMap { keyspan: 10, keys: [ 0, 5, 10 ], values: [ { func: [Function: func], note: 'y = 2x + 10' }, { func: [Function: func], note: 'y = 2x + 10' } ] }
 */
 function linearFunctionQuantizedMap (pointArray) {
     let times = pointArray.map(t => t.x);
-    return new QuantizedMap(times[times.length-1], times, linearFunctionArrayFromPoints(pointArray)) 
+    return new QuantizedMap(times[times.length-1], times, linearFunctionArrayFromPoints(pointArray))
 }
 
 //------------------------------------------------------------------------------
@@ -364,7 +366,7 @@ function simpleRhythm (env, rhythmName, deltas) {
 */
 function increaseDensity (minVal,ratio,inputArray) {
     let max = A.getMaxIndex(inputArray);
-    if (max[0][1] <= minVal) {console.log("max is already at minVal");return inputArray} 
+    if (max[0][1] <= minVal) {console.log("max is already at minVal");return inputArray}
     else {
         let toIncrease = A.pick(max);
         console.log("this is the max: " + toIncrease);
@@ -383,16 +385,31 @@ function increaseDensity (minVal,ratio,inputArray) {
   * console.log(decreaseDensity([0, 1, 2, 3, 10])) //[ 0, 1, 5, 10 ] //[ 0, 3, 3, 10 ] //[ 1, 2, 3, 10 ]
 */
 function decreaseDensity (inputArray) {
-    let target = (A.pick(A.integerArray(0,inputArray.length - 2)));
-    let outputA = inputArray.slice(0,target);
-    let outputB = [inputArray[target] + inputArray[target+1]].concat(inputArray.slice(target+2))
-    return outputA.concat(outputB)
+    if (inputArray.length == 1) {return inputArray}
+    else if (inputArray.length ==2) {
+        return [inputArray[0] + inputArray[1]]
+    }
+    else {
+        let target = (K.randomRangeInt(0,inputArray.length - 2));
+        let outputA = inputArray.slice(0,target);
+        let outputB = [inputArray[target] + inputArray[target+1]].concat(inputArray.slice(target+2))
+        return outputA.concat(outputB)
+    }
 }
+
+function recursiveDecreaseDensity (stack) {
+   let targetArray = stack[(stack.length -1)];
+   if (targetArray.length > 1) {
+       return recursiveDecreaseDensity(stack.concat([decreaseDensity(stack[stack.length -1])]))
+   }
+    return stack
+}
+
 
 /**
   * Uses the increaseDensity function on multiple arrays and picking randomly from an array of ratios.
   * @param {number} minVal - The minimum value the the highest value number in the first item of the stack array can be.
-  * @param {array} ratio - 
+  * @param {array} ratio -
 */
 function recursiveIncreaseDensity (minVal, ratios, stack) {
     console.log(minVal, stack)
@@ -405,15 +422,15 @@ function recursiveIncreaseDensity (minVal, ratios, stack) {
     return stack
 }
 
-function recursiveDecreaseDensity (stack) {
-   console.log(stack);
-   let targetArray = stack[(stack.length -1)];
-   if (targetArray.length > 1) {
-       console.log("this is the target array");
-       return recursiveDecreaseDensity(stack.concat([decreaseDensity(stack[stack.length -1])]))
-   }
-    return stack
-}
+// function recursiveDecreaseDensity (stack) {
+//    console.log(stack);
+//    let targetArray = stack[(stack.length -1)];
+//    if (targetArray.length > 1) {
+//        console.log("this is the target array");
+//        return recursiveDecreaseDensity(stack.concat([decreaseDensity(stack[stack.length -1])]))
+//    }
+//     return stack
+// }
 
 function densityStack (minVal, ratios, inputArray) {
     return recursiveDecreaseDensity(recursiveIncreaseDensity(minVal, ratios, [inputArray]))
@@ -438,18 +455,18 @@ function densityFromDeltas (inputDeltas) {
     return inputDeltas.length/A.sum(inputDeltas)
 }
 
-//  keyspan is max value, keys is an array of absolutes (increasing values), values is an array of anything of the same length as keys 
+//  keyspan is max value, keys is an array of absolutes (increasing values), values is an array of anything of the same length as keys
 
 /** A QuantizedMap is a discreet function.
  * @see {@link https://www.sparknotes.com/math/algebra2/discretefunctions/summary/}
 */
 class QuantizedMap {
-    /** 
+    /**
       * Creates the QuantizedMap. The methods provide different ways to look for things in the quantized map.
       * @param {number} limitValue - The keyspan/total of the QuantizedMap.
       * @param {array} keys - The keys of the QuantizedMap which will be a number array in ascending order.
       * @param {array} vals - The values of the QuantizedMap which will be an array.
-      * @example 
+      * @example
       * let qMap = new QuantizedMap(10, [0, 2, 4, 6, 8], ['A', 'B', 'C', 'D']) //QuantizedMap { keyspan: 10, keys: [ 0, 2, 4, 6, 8 ], values: [ 'A', 'B', 'C', 'D' ] }
     */
     constructor(limitValue,keys,vals) {
@@ -520,7 +537,7 @@ class QuantizedMap {
             if (filteredTime[0] == undefined) {filteredTime = [0]};
             let lower = filteredTime[filteredTime.length - 1];
             let higher = this.keys[filteredTime.length]
-            if ((lookupTime - lower) < (higher - lookupTime)) 
+            if ((lookupTime - lower) < (higher - lookupTime))
                 {output = this.values[(filteredTime.length - 1)]}
             else {output = this.values[(filteredTime.length)]}
             }
@@ -700,8 +717,8 @@ function mask (player, maskMap, beat, probability) {
 
 /** Class representing MusicalEnvironments */
 class MusicalEnvironment {
-    /** 
-      * Creates MusicalEnvironments. Remember to call setupScheduler(e) 
+    /**
+      * Creates MusicalEnvironments. Remember to call setupScheduler(e)
       * @example let e = new MusicalEnvironment()
     */
     constructor (){
@@ -732,7 +749,7 @@ class MusicalEnvironment {
         this.scheduledPlayers = [];
         this.root = "A";
     }
-    /** 
+    /**
       * Returns the current beat of the MusicalEnvironment.
     */
     currentBeat () {
@@ -812,7 +829,7 @@ class MusicalEnvironment {
       * Stops the scheduler for the MusicalEnvironment.
     */
     stopScheduler () {
-        this.timeOfChangeToCurrentTempo = undefined; 
+        this.timeOfChangeToCurrentTempo = undefined;
         this.beatOfChangeToCurrentTempo = undefined;
         //this.lastScheduledTime = 0;
         this.scheduler.stop()
@@ -822,7 +839,7 @@ class MusicalEnvironment {
       * @param {string} player - Player name.
     */
     play (player) {
-        if (this.players[player].status == "playing") 
+        if (this.players[player].status == "playing")
             {console.log("Player " + this.players[player].name + " is already playing!")}
         else {
             this.scheduledPlayers = this.scheduledPlayers.concat(player);
@@ -835,7 +852,7 @@ class MusicalEnvironment {
       * @param {string} player - Player name.
     */
     stop (player) {
-        if (this.players[player].status == "stopped") 
+        if (this.players[player].status == "stopped")
             {console.log("Player " + this.players[player].name + " is not playing!")}
         else {
 //             this.scheduledPlayers = A.removeItem(this.scheduledPlayers,player)
@@ -965,7 +982,7 @@ class MusicalEnvironment {
     createChordProgressionMap (objectName, mapName, keyspan, keys, values){
         let e = this
         if (checkAllItemsType(values, 'object') && checkChordProgressionDataType(values)){
-            e.chordProgressions[mapName] = new QuantizedMap(keyspan, keys, values)
+            e.chordMaps[mapName] = new QuantizedMap(keyspan, keys, values)
         }
     }
     createSongMap (objectName, mapName, keyspan, keys, values){
@@ -973,7 +990,7 @@ class MusicalEnvironment {
         if (checkAllItemsType(values, 'string') === false){
             throw new Error ('Invalid items in values array. Expected an array filled with strings.')
         }
-        else if (values.every((x, i) => {if (e.chordProgressions[x] === undefined){
+        else if (values.every((x, i) => {if (e.chordMaps[x] === undefined){
             throw new Error (x + ' is not a property name of musicalEnvironment.chordProgressions. Fix index ' + i)
             return false
             }
@@ -982,7 +999,7 @@ class MusicalEnvironment {
             throw new Error ('Invalid items in values array. Expected name of a property in musicalEnvironment.chordProgressions')
                 }
         else {
-            e.song[mapName] = new QuantizedMap(keyspan, keys, values)
+            e.songMaps[mapName] = new QuantizedMap(keyspan, keys, values)
         }
         return true
     }
@@ -1014,7 +1031,7 @@ class MusicalEnvironment {
             case 'chordProgressions':
                 this.createChordProgressionMap(objectName, mapName, keyspan, keys, values)
                 break;
-            case 'song':
+            case 'songMaps':
                 this.createSongMap(objectName, mapName, keyspan, keys, values)
                 break;
 //             case 'modeFilters':
@@ -1108,8 +1125,8 @@ function setupScheduler (musicalEnv) {
         musicalEnv.scheduler.add([
             {
                 id: 'schedulePlayers',       // unique ID of the task
-                //tickInterval: musicalEnv.lookahead * 1000/20,    
-                tickInterval: 1,    
+                //tickInterval: musicalEnv.lookahead * 1000/20,
+                tickInterval: 1,
                 totalRuns: 0,      // (set to 0 for unlimited times)
                 callback(task) {
                     // code to be executed on each run
@@ -2261,7 +2278,7 @@ function generateChordProgressions (){
     let twelveBarsProgression = generateRandomMelody('C', 'blues', 18, 6, 10)
     return {
         twelveBars: new QuantizedMap(18, A.buildArray(12, x => {return 4}), twelveBarsProgression.map(x => {x.velocity = 100; return {data: [x], bool: true}})),
-        lsystem: generateRandomLsystemChordProgression(),
+//         lsystem: generateRandomLsystemChordProgression(),
         scarboroughFair: new QuantizedMap(48, A.buildArray(12, x => {return 4}), generateScarboroughFairValues())
     }
 }
@@ -2328,7 +2345,7 @@ function conditionalNoteConfigurations (chosenProgression, configurationObj){
 
 // //Generate configuration obj from chord progression:
 // function assignChordProgressionToPlayer (playerName, chosenChordProgression){
-//     let chosenProgression = e.chordProgressions[chosenChordProgression]
+//     let chosenProgression = e.chordMaps[chosenChordProgression]
 //     let configurationObj = necessaryConfigurations(chosenProgression)
 //     configurationObj = conditionalNoteConfigurations (chosenProgression, configurationObj)
 //     if (chosenProgression.values[0].data[0].velocity === undefined){
@@ -2354,7 +2371,7 @@ function conditionalNoteConfigurations (chosenProgression, configurationObj){
 // }
 
 function assignChordProgressionToPlayer (chosenChordProgression, e){
-    let chosenProgression = e.chordProgressions[chosenChordProgression]
+    let chosenProgression = e.chordMaps[chosenChordProgression]
     let configurationObj = sortIntoConfigurationObj(chosenProgression)
     configurationObj = inputOtherNecessaryConfigurationVariables(configurationObj)
     return configurationObj
@@ -2381,20 +2398,20 @@ function inputOtherNecessaryConfigurationVariables (chosenProgression){
 //Check current if it is time to change chord progressions
 function checkIfChangeChordProgression (e, b, player){
 //     console.log('song', player.song)
-    if (player.song === undefined){
+    if (player.songMap === undefined){
         return true
     }
-    let correctCurrentChordProgression = e.song[player.song].wrapLookup(b)
+    let correctCurrentChordProgression = e.songMaps[player.songMap].wrapLookup(b)
     checkIfUseVerboseLogging(player, 'changin chord progression to' +  correctCurrentChordProgression)
 //     console.log('correct', correctCurrentChordProgression)
-    if (player.currentChordProgression === correctCurrentChordProgression){
+    if (player.chordMap === correctCurrentChordProgression){
         return true
     }
     else {
         let defaultName = A.findMostFrequentItem(Object.values(player))
     recordConfigurationDataIntoMusicalEnvironment(assignChordProgressionToPlayer(correctCurrentChordProgression, e), defaultName, e)
         assignPlayerForMusicSynthesizerSession(e, 3, {rhythmMapName: 'straight'}, defaultName)
-        player.currentChordProgression = correctCurrentChordProgression
+        player.chordMap = correctCurrentChordProgression
     }
 }
 
@@ -2469,10 +2486,10 @@ function makeChordProgression (name, total, iois, notes, octaves, e){
         octaves = A.resizeArray(notes.length, octaves)
     }
     if (typeof notes[0] === 'object'){
-    e.chordProgressions[name] = new QuantizedMap(total, reformatIoisToRelative(iois), notes.map((x, i) => { return x.map((d, n) => {return {note: d, octave: octaves[i][n]}})}))
+    e.chordMaps[name] = new QuantizedMap(total, reformatIoisToRelative(iois), notes.map((x, i) => { return x.map((d, n) => {return {note: d, octave: octaves[i][n]}})}))
     }
     else {
-    e.chordProgressions[name] = new QuantizedMap(total, reformatIoisToRelative(iois), notes.map((x, i) => { return {note: x, octave: octaves[i]}}))
+    e.chordMaps[name] = new QuantizedMap(total, reformatIoisToRelative(iois), notes.map((x, i) => { return {note: x, octave: octaves[i]}}))
     }
 }
 
@@ -2864,7 +2881,7 @@ function checkIfSessionPlayerExist (session, e){
 
 function checkIfAddChordProgressionMapToPlayer (chordProgressionMapName, e){
     try{
-        if (e.song[chordProgressionMapName] === undefined){
+        if (e.songMaps[chordProgressionMapName] === undefined){
             return;
         }
         else {
@@ -3025,8 +3042,8 @@ function addToMusicalEnvironment (e){
       value: randomRange(0, 159),
     }}))
 }
-    e.chordProgressions = generateChordProgressions()
-    e.song = {
+    e.chordMaps = generateChordProgressions()
+    e.songMaps = {
         'twelveBars-lsystem-scarbrofair': new QuantizedMap(15000, [1000, 5000, 10000], ['twelveBars', 'lsystem', 'scarboroughFair'])
     }
     let modes = {
@@ -3648,7 +3665,7 @@ function getAllInfoFromChordProgression (progression){
 }
 
 function checkIfMapExistsAndMapContents (e, variableName, mapName,keyspan, keys, values){
-    let currentMap = e[variableName][mapName] 
+    let currentMap = e[variableName][mapName]
     if (currentMap === undefined){
             currentMap = e.addMap(variableName, mapName, keyspan, keys, values)
     }
@@ -3715,7 +3732,7 @@ function createMapsFromChordProgressions (variableName, mapInfo, name, e, keys, 
 
 function checkAndCreateChordProgressionMaps (mapInfo, name, e){
     return {
-        rhythmMap: createMapsFromChordProgressions('rhythmMaps', name, mapInfo, name, e, mapInfo.keys, mapInfo.keys), 
+        rhythmMap: createMapsFromChordProgressions('rhythmMaps', name, mapInfo, name, e, mapInfo.keys, mapInfo.keys),
     noteMap: createMapsFromChordProgressions('noteMaps', name, mapInfo, name, e, mapInfo.keys, mapInfo.notes),
     rhythmPattern: createMapsFromChordProgressions('rhythmPatterns', name, mapInfo, name, e, mapInfo.keys, mapInfo.bools),
     maskMap: createMapsFromChordProgressions('maskMaps', mapInfo, name, e, mapInfo.keys, mapInfo.bools),
@@ -3736,39 +3753,43 @@ function applyNewMapNamesToPlayer (e, player, newMapNames){
 //HERE
 //If it is time to change chordProgressions, will check if the chordProgression exitst in noteMaps. If no create a noteMap. Change player to use the correct noteMap.
 function checkChangeChordProgressionAndCreateNewMaps (e, b, player){
-    if (player.song === undefined){
+    if (player.songMap === undefined){
         return true
     }
-    let correctCurrentChordProgression = e.song[player.song].wrapLookup(b)
+    let correctCurrentChordProgression = e.songMaps[player.songMap].wrapLookup(b)
     checkIfUseVerboseLogging(player, 'changin chord progression to' +  correctCurrentChordProgression)
 //     console.log('correct', correctCurrentChordProgression)
-    if (player.currentChordProgression === correctCurrentChordProgression){
+    if (player.chordMap === correctCurrentChordProgression){
         return true
     }
-    let mapInfos = getAllInfoFromChordProgression(e.chordProgressions[correctCurrentChordProgression])
+    let mapInfos = getAllInfoFromChordProgression(e.chordMaps[correctCurrentChordProgression])
     let newMapNames = checkAndCreateChordProgressionMaps(mapInfos, correctCurrentChordProgression, e)
     applyNewMapNamesToPlayer(e, player, newMapNames)
 }
 
-function sendChordMidiInfo (session, b, e){
-    let player = e.players[session]
-    checkChangeChordProgressionAndCreateNewMaps(e, b, player)
-    let info = getNoteInfoToSend(player, b, session)
-//     info = filterPolyphany(e, b, player, info)
+function sendChordMidiInfo (playerName, b, e){
+    let player = e.players[playerName];
+    let info = getNoteInfoToSend(player, b, playerName);
+    info.noteValues = undefined;
+    let chordMap = player.chordProgressionMap;
+    let chord = e.chordMaps[chordMap].wrapLookup(b);
+    info.noteValues = Chord.getChord(chord,info.letters).notes.map(n => Note.chroma(n));
+    info = filterPolyphany(e, b, player, info);
+    console.log(info)
     info.noteValues = info.noteValues.map(x => {
         return filterMode(x, e, b, player)
-    })
-    info = calculateFinalNoteValue(info, player)
+    });
+    info = calculateFinalNoteValue(info, player);
     info.finalValues.forEach((x, i) => {
         sendMidiData(info, player, x)
-    })
+    });
     return true
 }
 
 //only thing diffferent is I am getting all the info at once.
-function sendNotesMidiInfo (session, b, e){
-    let player = e.players[session]
-    let info = getNoteInfoToSend(player, b, session)
+function sendNotesMidiInfo (playerName, b, e){
+    let player = e.players[playerName]
+    let info = getNoteInfoToSend(player, b, playerName)
     info = filterPolyphany(e, b, player, info)
     info.noteValues = info.noteValues.map(x => {
         return filterMode(x, e, b, player)
@@ -4889,3 +4910,4 @@ addToModuleExports({ setUpMusicalEnvironmentExamples,  setUpDefaultMusicalEnviro
 
 //REPLACE the whole midi.js for await import version for verbose to work. Also replace musicSynthesizerSession with exampleMidiPlayer.
 //Remove related addMapToMusicalEnvironment function and replace musicalEnvironment class.
+

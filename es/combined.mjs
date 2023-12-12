@@ -351,11 +351,26 @@ export function increaseDensity (minVal,ratio,inputArray) {
   * console.log(decreaseDensity([0, 1, 2, 3, 10])) //[ 0, 1, 5, 10 ] //[ 0, 3, 3, 10 ] //[ 1, 2, 3, 10 ]
 */
 export function decreaseDensity (inputArray) {
-    let target = (A.pick(A.integerArray(0,inputArray.length - 2)));
-    let outputA = inputArray.slice(0,target);
-    let outputB = [inputArray[target] + inputArray[target+1]].concat(inputArray.slice(target+2))
-    return outputA.concat(outputB)
+    if (inputArray.length == 1) {return inputArray}
+    else if (inputArray.length ==2) {
+        return [inputArray[0] + inputArray[1]]
+    }
+    else {
+        let target = (K.randomRangeInt(0,inputArray.length - 2));
+        let outputA = inputArray.slice(0,target);
+        let outputB = [inputArray[target] + inputArray[target+1]].concat(inputArray.slice(target+2))
+        return outputA.concat(outputB)
+    }
 }
+
+export function recursiveDecreaseDensity (stack) {
+   let targetArray = stack[(stack.length -1)];
+   if (targetArray.length > 1) {
+       return recursiveDecreaseDensity(stack.concat([decreaseDensity(stack[stack.length -1])]))
+   }
+    return stack
+}
+
 
 /**
   * Uses the increaseDensity function on multiple arrays and picking randomly from an array of ratios.
@@ -373,15 +388,15 @@ export function recursiveIncreaseDensity (minVal, ratios, stack) {
     return stack
 }
 
-export function recursiveDecreaseDensity (stack) {
-   console.log(stack);
-   let targetArray = stack[(stack.length -1)];
-   if (targetArray.length > 1) {
-       console.log("this is the target array");
-       return recursiveDecreaseDensity(stack.concat([decreaseDensity(stack[stack.length -1])]))
-   }
-    return stack
-}
+// export function recursiveDecreaseDensity (stack) {
+//    console.log(stack);
+//    let targetArray = stack[(stack.length -1)];
+//    if (targetArray.length > 1) {
+//        console.log("this is the target array");
+//        return recursiveDecreaseDensity(stack.concat([decreaseDensity(stack[stack.length -1])]))
+//    }
+//     return stack
+// }
 
 export function densityStack (minVal, ratios, inputArray) {
     return recursiveDecreaseDensity(recursiveIncreaseDensity(minVal, ratios, [inputArray]))
@@ -668,8 +683,8 @@ export function mask (player, maskMap, beat, probability) {
 
 /** Class representing MusicalEnvironments */
 export class MusicalEnvironment {
-    /** 
-      * Creates MusicalEnvironments. Remember to call setupScheduler(e) 
+    /**
+      * Creates MusicalEnvironments. Remember to call setupScheduler(e)
       * @example let e = new MusicalEnvironment()
     */
     constructor (){
@@ -700,7 +715,7 @@ export class MusicalEnvironment {
         this.scheduledPlayers = [];
         this.root = "A";
     }
-    /** 
+    /**
       * Returns the current beat of the MusicalEnvironment.
     */
     currentBeat () {
@@ -780,7 +795,7 @@ export class MusicalEnvironment {
       * Stops the scheduler for the MusicalEnvironment.
     */
     stopScheduler () {
-        this.timeOfChangeToCurrentTempo = undefined; 
+        this.timeOfChangeToCurrentTempo = undefined;
         this.beatOfChangeToCurrentTempo = undefined;
         //this.lastScheduledTime = 0;
         this.scheduler.stop()
@@ -790,7 +805,7 @@ export class MusicalEnvironment {
       * @param {string} player - Player name.
     */
     play (player) {
-        if (this.players[player].status == "playing") 
+        if (this.players[player].status == "playing")
             {console.log("Player " + this.players[player].name + " is already playing!")}
         else {
             this.scheduledPlayers = this.scheduledPlayers.concat(player);
@@ -803,7 +818,7 @@ export class MusicalEnvironment {
       * @param {string} player - Player name.
     */
     stop (player) {
-        if (this.players[player].status == "stopped") 
+        if (this.players[player].status == "stopped")
             {console.log("Player " + this.players[player].name + " is not playing!")}
         else {
 //             this.scheduledPlayers = A.removeItem(this.scheduledPlayers,player)
@@ -933,7 +948,7 @@ export class MusicalEnvironment {
     createChordProgressionMap (objectName, mapName, keyspan, keys, values){
         let e = this
         if (checkAllItemsType(values, 'object') && checkChordProgressionDataType(values)){
-            e.chordProgressions[mapName] = new QuantizedMap(keyspan, keys, values)
+            e.chordMaps[mapName] = new QuantizedMap(keyspan, keys, values)
         }
     }
     createSongMap (objectName, mapName, keyspan, keys, values){
@@ -941,7 +956,7 @@ export class MusicalEnvironment {
         if (checkAllItemsType(values, 'string') === false){
             throw new Error ('Invalid items in values array. Expected an array filled with strings.')
         }
-        else if (values.every((x, i) => {if (e.chordProgressions[x] === undefined){
+        else if (values.every((x, i) => {if (e.chordMaps[x] === undefined){
             throw new Error (x + ' is not a property name of musicalEnvironment.chordProgressions. Fix index ' + i)
             return false
             }
@@ -950,7 +965,7 @@ export class MusicalEnvironment {
             throw new Error ('Invalid items in values array. Expected name of a property in musicalEnvironment.chordProgressions')
                 }
         else {
-            e.song[mapName] = new QuantizedMap(keyspan, keys, values)
+            e.songMaps[mapName] = new QuantizedMap(keyspan, keys, values)
         }
         return true
     }
@@ -2079,12 +2094,12 @@ export function createRootMap (noteValueData, name, e){
 //     return Note.get(modifiedNote + octave)
 // }
 
-//Generates that chord progression that are placed in the chordProgressions variable in the musical environment:
+//Generates that chord progression that are placed in the.chordMaps variable in the musical environment:
 export function generateChordProgressions (){
     let twelveBarsProgression = generateRandomMelody('C', 'blues', 18, 6, 10)
     return {
         twelveBars: new QuantizedMap(18, A.buildArray(12, x => {return 4}), twelveBarsProgression.map(x => {x.velocity = 100; return {data: [x], bool: true}})),
-        lsystem: generateRandomLsystemChordProgression(),
+//         lsystem: generateRandomLsystemChordProgression(),
         scarboroughFair: new QuantizedMap(48, A.buildArray(12, x => {return 4}), generateScarboroughFairValues())
     }
 }
@@ -2151,7 +2166,7 @@ export function conditionalNoteConfigurations (chosenProgression, configurationO
 
 // //Generate configuration obj from chord progression:
 // function assignChordProgressionToPlayer (playerName, chosenChordProgression){
-//     let chosenProgression = e.chordProgressions[chosenChordProgression]
+//     let chosenProgression = e.chordMaps[chosenChordProgression]
 //     let configurationObj = necessaryConfigurations(chosenProgression)
 //     configurationObj = conditionalNoteConfigurations (chosenProgression, configurationObj)
 //     if (chosenProgression.values[0].data[0].velocity === undefined){
@@ -2177,7 +2192,7 @@ export function conditionalNoteConfigurations (chosenProgression, configurationO
 // }
 
 export function assignChordProgressionToPlayer (chosenChordProgression, e){
-    let chosenProgression = e.chordProgressions[chosenChordProgression]
+    let chosenProgression = e.chordMaps[chosenChordProgression]
     let configurationObj = sortIntoConfigurationObj(chosenProgression)
     configurationObj = inputOtherNecessaryConfigurationVariables(configurationObj)
     return configurationObj
@@ -2203,21 +2218,21 @@ export function inputOtherNecessaryConfigurationVariables (chosenProgression){
 
 //Check current if it is time to change chord progressions
 export function checkIfChangeChordProgression (e, b, player){
-//     console.log('song', player.song)
-    if (player.song === undefined){
+//     console.log('song', player.songMap)
+    if (player.songMap === undefined){
         return true
     }
-    let correctCurrentChordProgression = e.song[player.song].wrapLookup(b)
+    let correctCurrentChordProgression = e.songMaps[player.songMap].wrapLookup(b)
     checkIfUseVerboseLogging(player, 'changin chord progression to' +  correctCurrentChordProgression)
 //     console.log('correct', correctCurrentChordProgression)
-    if (player.currentChordProgression === correctCurrentChordProgression){
+    if (player.chordMap === correctCurrentChordProgression){
         return true
     }
     else {
         let defaultName = A.findMostFrequentItem(Object.values(player))
     recordConfigurationDataIntoMusicalEnvironment(assignChordProgressionToPlayer(correctCurrentChordProgression, e), defaultName, e)
         assignPlayerForMusicSynthesizerSession(e, 3, {rhythmMapName: 'straight'}, defaultName)
-        player.currentChordProgression = correctCurrentChordProgression
+        player.chordMap = correctCurrentChordProgression
     }
 }
 
@@ -2293,10 +2308,10 @@ export function makeChordProgression (name, total, iois, notes, octaves, e){
         octaves = A.resizeArray(notes.length, octaves)
     }
     if (typeof notes[0] === 'object'){
-    e.chordProgressions[name] = new QuantizedMap(total, reformatIoisToRelative(iois), notes.map((x, i) => { return x.map((d, n) => {return {note: d, octave: octaves[i][n]}})}))
+    e.chordMaps[name] = new QuantizedMap(total, reformatIoisToRelative(iois), notes.map((x, i) => { return x.map((d, n) => {return {note: d, octave: octaves[i][n]}})}))
     }
     else {
-    e.chordProgressions[name] = new QuantizedMap(total, reformatIoisToRelative(iois), notes.map((x, i) => { return {note: x, octave: octaves[i]}}))
+    e.chordMaps[name] = new QuantizedMap(total, reformatIoisToRelative(iois), notes.map((x, i) => { return {note: x, octave: octaves[i]}}))
     }
 }
 
@@ -2633,7 +2648,7 @@ export function checkIfSessionPlayerExist (session, e){
 
 export function checkIfAddChordProgressionMapToPlayer (chordProgressionMapName, e){
     try{
-        if (e.song[chordProgressionMapName] === undefined){
+        if (e.songMaps[chordProgressionMapName] === undefined){
             return;
         }
         else {
@@ -2794,8 +2809,8 @@ export function addToMusicalEnvironment (e){
       value: randomRange(0, 159),
     }}))
 }
-    e.chordProgressions = generateChordProgressions()
-    e.song = {
+    e.chordMaps = generateChordProgressions()
+    e.songMaps = {
         'twelveBars-lsystem-scarbrofair': new QuantizedMap(15000, [1000, 5000, 10000], ['twelveBars', 'lsystem', 'scarboroughFair'])
     }
     let modes = {
@@ -3473,18 +3488,18 @@ export function applyNewMapNamesToPlayer (e, player, newMapNames){
 }
 
 //HERE
-//If it is time to change chordProgressions, will check if the chordProgression exitst in noteMaps. If no create a noteMap. Change player to use the correct noteMap.
+//If it is time to change.chordMaps, will check if the chordProgression exitst in noteMaps. If no create a noteMap. Change player to use the correct noteMap.
 export function checkChangeChordProgressionAndCreateNewMaps (e, b, player){
-    if (player.song === undefined){
+    if (player.songMap === undefined){
         return true
     }
-    let correctCurrentChordProgression = e.song[player.song].wrapLookup(b)
+    let correctCurrentChordProgression = e.songMaps[player.songMap].wrapLookup(b)
     checkIfUseVerboseLogging(player, 'changin chord progression to' +  correctCurrentChordProgression)
 //     console.log('correct', correctCurrentChordProgression)
-    if (player.currentChordProgression === correctCurrentChordProgression){
+    if (player.chordMap === correctCurrentChordProgression){
         return true
     }
-    let mapInfos = getAllInfoFromChordProgression(e.chordProgressions[correctCurrentChordProgression])
+    let mapInfos = getAllInfoFromChordProgression(e.chordMaps[correctCurrentChordProgression])
     let newMapNames = checkAndCreateChordProgressionMaps(mapInfos, correctCurrentChordProgression, e)
     applyNewMapNamesToPlayer(e, player, newMapNames)
 }
@@ -4557,3 +4572,4 @@ export function setUpMusicalEnvironment (param){
     }
     return false
 }
+
