@@ -2829,7 +2829,7 @@ export function addToMusicalEnvironment (e){
       bluesPentatonic: [0, 3, 5, 6, 7, 10],
       minorBluesPentatonicScale: [0, 3, 5, 7, 10],
     };
-    e.modeFilters = {'default': new QuantizedMap(4, [0, 1, 2, 3], [0, 1, 2, 3])}
+    e.modeFilters = {'default': new QuantizedMap(4, [0, 1, 2, 3], [0, 1, 2, 3]), 'chromatic': new QuantizedMap(12, A.buildArray(12,i=>i), A.buildArray(12,i=>i))}
     Object.keys(modes).forEach(x => {
         e.modeFilters[x] = new QuantizedMap(12, modes[x], modes[x])
     })
