@@ -3168,7 +3168,6 @@ export function filterMode (note, e, b, player){
         return note
     }
     else if (e.notesInputMode === 'relativeSemitone'){
-        checkIfUseVerboseLogging(player, 'filtering mode map for', player.modeFilter)
         checkIfUseVerboseLogging(player, 'originial note: ' + note + 'after: ' + mode.floorWrapLookup(note))
         return mode.floorWrapLookup(note)
     }
@@ -3273,7 +3272,15 @@ export function convertNoteValuesToMidi (info, e, b, player){
         return info
     }
     if (e.notesInputMode === 'relativeScaleDegree'){
-        let mode = e.modeFilters[player.modeFilter].wrapLookup(b)
+         let currentModeMap = e.modeMaps[player.modeMap]
+        if (currentModeMap === undefined){
+            return false
+        }
+        let currentMode = currentModeMap.wrapLookup(b)
+        if (typeof currentMode !== 'string'){
+            return false
+        }
+         let mode = e.modeFilters[currentMode]
         info.noteValues = info.noteValues.map(x => {
             return mode.nearestWrapLookup(x)
         })
@@ -3498,7 +3505,8 @@ export function sendChordMidiInfo (playerName, b, e){
     let chord = e.chordMaps[chordMap].wrapLookup(b);
     info.noteValues = Chord.getChord(chord).intervals.map(x => Interval.semitones(x));
     info = filterPolyphany(e, b, player, info);
-    console.log(info)
+//     console.log(info)
+    checkIfUseVerboseLogging(player, 'sendChordMidiInfo: ' + info)
     info.noteValues = info.noteValues.map(x => {
         return filterMode(x, e, b, player)
     });
