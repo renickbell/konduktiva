@@ -2991,7 +2991,7 @@ export function addToMusicalEnvironment (e){
 //     e.midiDataSets = {}
     e.velocityMaps = {'default': new QuantizedMap(4, [0, 1, 2, 3], [100, 120, 80, 100])}
     e.noteMaps = {'default': new QuantizedMap(4, [0, 1, 2, 3], [[0], [1], [2], [3]])}
-    e.octaveMaps = {}
+    e.octaveMaps = {'default': new QuantizedMap(4, [0, 1, 2, 3], [2, 4, 6, 8])},
 //     e.rootNoteMaps = {}
     e.maxPolyphonyMaps = {'default': new QuantizedMap(4, [0, 1, 2, 3], [4, 6, 8, 10])}
 //     e.noteDurationMaps = {}
