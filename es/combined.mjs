@@ -682,8 +682,8 @@ export function mask (player, maskMap, beat, probability) {
 
 /** Class representing MusicalEnvironments */
 export class MusicalEnvironment {
-    /** 
-      * Creates MusicalEnvironments. Remember to call setupScheduler(e) 
+    /**
+      * Creates MusicalEnvironments. Remember to call setupScheduler(e)
       * @example let e = new MusicalEnvironment()
     */
     constructor (){
@@ -714,7 +714,7 @@ export class MusicalEnvironment {
         this.scheduledPlayers = [];
         this.root = "A";
     }
-    /** 
+    /**
       * Returns the current beat of the MusicalEnvironment.
     */
     currentBeat () {
@@ -794,7 +794,7 @@ export class MusicalEnvironment {
       * Stops the scheduler for the MusicalEnvironment.
     */
     stopScheduler () {
-        this.timeOfChangeToCurrentTempo = undefined; 
+        this.timeOfChangeToCurrentTempo = undefined;
         this.beatOfChangeToCurrentTempo = undefined;
         //this.lastScheduledTime = 0;
         this.scheduler.stop()
@@ -804,7 +804,7 @@ export class MusicalEnvironment {
       * @param {string} player - Player name.
     */
     play (player) {
-        if (this.players[player].status == "playing") 
+        if (this.players[player].status == "playing")
             {console.log("Player " + this.players[player].name + " is already playing!")}
         else {
             this.scheduledPlayers = this.scheduledPlayers.concat(player);
@@ -817,7 +817,7 @@ export class MusicalEnvironment {
       * @param {string} player - Player name.
     */
     stop (player) {
-        if (this.players[player].status == "stopped") 
+        if (this.players[player].status == "stopped")
             {console.log("Player " + this.players[player].name + " is not playing!")}
         else {
 //             this.scheduledPlayers = A.removeItem(this.scheduledPlayers,player)
@@ -1057,22 +1057,32 @@ export class MusicalEnvironment {
     }
     //helped by chatgpt
     sendClientEnvInfo (clientIndex, server){
-        if (server !== undefined || typeof wss.address().port !== 'number'){
-            console.log(server + ' is not a websocket server')
-            return false
+        if (server !== undefined && server instanceof WebSocketServer.Server && clientIndex === undefined){
+            server.clients.forEach(x => {
+                x.send(JSON.stringify({action: 'showMusicalEnvInfo', info: this.convertMusicalEnvironmentToString()}))
+            })
+            return true
         }
-        else if (typeof wss.address().port !== 'number'){
+        else if (server instanceof WebSocketServer.Server && clientIndex !== undefined){
+            console.log('correction option chosen');
+            [...server.clients.values()][clientIndex].send(JSON.stringify({action: 'showMusicalEnvInfo', info: this.convertMusicalEnvironmentToString()}))
+            return true
+        }
+        else if (wss instanceof WebSocketServer.Server === false){
             console.log('wss is not a websocket server')
             return false
         }
-        if (clientIndex === undefined){
+        else if (clientIndex === undefined){
             wss.clients.forEach(x => {
                 x.send(JSON.stringify({action: 'showMusicalEnvInfo', info: this.convertMusicalEnvironmentToString()}))
             })
+            return true
         }
-        else if (clientIndex >= 0 && clientIndex < clients.length - 1){
+        else {
             clients[clientIndex].send(JSON.stringify({action: 'showMusicalEnvInfo', info: this.convertMusicalEnvironmentToString()}))
+            return true
         }
+        return false
     }
     changeVerbose (state = true){
         Object.keys(this.players).forEach(x => {
@@ -1081,6 +1091,7 @@ export class MusicalEnvironment {
     }
 }
 // addMapToMusicalEnvironment(e, 'rhythmMaps', 'chalk', 10, [0, 1, 2, 3], [4, 5, 6, 7])
+
 
 /**
   * Sets up the scheduler for the MusicalEnvironment.

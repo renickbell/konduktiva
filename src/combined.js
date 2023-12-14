@@ -1107,22 +1107,32 @@ class MusicalEnvironment {
     }
     //helped by chatgpt
     sendClientEnvInfo (clientIndex, server){
-        if (server !== undefined || typeof wss.address().port !== 'number'){
-            console.log(server + ' is not a websocket server')
-            return false
+        if (server !== undefined && server instanceof WebSocketServer.Server && clientIndex === undefined){
+            server.clients.forEach(x => {
+                x.send(JSON.stringify({action: 'showMusicalEnvInfo', info: this.convertMusicalEnvironmentToString()}))
+            })
+            return true
         }
-        else if (typeof wss.address().port !== 'number'){
+        else if (server instanceof WebSocketServer.Server && clientIndex !== undefined){
+            console.log('correction option chosen');
+            [...server.clients.values()][clientIndex].send(JSON.stringify({action: 'showMusicalEnvInfo', info: this.convertMusicalEnvironmentToString()}))
+            return true
+        }
+        else if (wss instanceof WebSocketServer.Server === false){
             console.log('wss is not a websocket server')
             return false
         }
-        if (clientIndex === undefined){
+        else if (clientIndex === undefined){
             wss.clients.forEach(x => {
                 x.send(JSON.stringify({action: 'showMusicalEnvInfo', info: this.convertMusicalEnvironmentToString()}))
             })
+            return true
         }
-        else if (clientIndex >= 0 && clientIndex < clients.length - 1){
+        else {
             clients[clientIndex].send(JSON.stringify({action: 'showMusicalEnvInfo', info: this.convertMusicalEnvironmentToString()}))
+            return true
         }
+        return false
     }
     changeVerbose (state = true){
         Object.keys(this.players).forEach(x => {
@@ -2991,7 +3001,8 @@ addToModuleExports({
   removeClient,
   sendMessageToClients,
   visualizeVolume,
-  wipeClientData
+  wipeClientData,
+    addNewClients
 })
 
 // --------------------------------------------------------------------------
@@ -4401,7 +4412,7 @@ let commands = [
     }
 ];
 
-    const wss = new WebSocketServer.Server({ port: 8080});
+const wss = new WebSocketServer.Server({ port: 8080});
 function createDefaultWebsocketServer () {
     wss.on("connection", (ws) => {
         console.log("new client connected");
@@ -4428,7 +4439,7 @@ function createDefaultWebsocketServer () {
 }
 
 addToModuleExports({
-clients, commands, newResponseTimes, createDefaultWebsocketServer
+clients, commands, newResponseTimes, createDefaultWebsocketServer, wss, clients
 })
 
 // --------------------------------------------------------------------------
@@ -4893,6 +4904,7 @@ function setUpMusicalEnvironmentExamples (){
     e.actions.sendChordMidiInfo = sendChordMidiInfo
     e.actions.sendNotesMidiInfo = sendNotesMidiInfo
     e.actions.sendPlaybackMessage = sendPlaybackMessage
+    createDefaultWebsocketServer()
     return e
 }
 
