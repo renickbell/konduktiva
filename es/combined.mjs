@@ -2979,6 +2979,18 @@ export function checkAllItemsType (inputArray, type){
     }
 }
 
+export function addChordProgression (e, mapName, keyspan, keys, values){
+    let roots = []
+    let chords = []
+    values.forEach(x => {
+        let both = Chord.tokenize(x)
+        roots.push(both[0])
+        chords.push(both[1])
+    })
+    e.rootMaps[mapName] = new QuantizedMap(keyspan, keys, roots)
+    e.chordMaps[mapName] = new QuantizedMap(keyspan, keys, chords)
+}
+
 //--------------------------------------------------------------------------
 //generate-melody.mjs:
 
