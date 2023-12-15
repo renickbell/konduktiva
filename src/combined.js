@@ -2871,10 +2871,10 @@ function assignPlayerForMusicSynthesizerSession (e, session, defaultName, player
         playerData.velocityMapName = defaultName
     }
     if (checkIfSessionPlayerExist(session, e) === undefined){
-    createSessionPlayer(e, session, playerData.velocityMapName, playerData.noteMapName, playerData.octaveMapName, playerData.rhythmMapName, playerData.polyphonyMapName, playerData.noteDurationMap, playerData.maskMapName, playerData.rhythmPatternName, playerData.chordProgressionMapName, playerData.controlChangeMapName, playerData.modeFilterName, playerData.rootMapName, playerData.modeMapName, playerData.channel)
+    createSessionPlayer(e, session, playerData.velocityMapName, playerData.noteMapName, playerData.octaveMapName, playerData.rhythmMapName, playerData.polyphonyMapName, playerData.noteDurationMap, playerData.maskMapName, playerData.rhythmPatternName, playerData.chordMapName, playerData.controlChangeMapName, playerData.modeFilterName, playerData.rootMapName, playerData.modeMapName, playerData.channel)
     }
     else{
-        editSessionPlayer(e, session, playerData.velocityMapName, playerData.noteMapName, playerData.octaveMapName, playerData.rhythmMapName, playerData.polyphonyMapName, playerData.noteDurationMap, playerData.maskMapName, playerData.rhythmPatternName, playerData.chordProgressionMapName, playerData.controlChangeMapName, playerData.modeFilterName, playerData.rootMapName, playerData.modeMapName, playerData.channel)
+        editSessionPlayer(e, session, playerData.velocityMapName, playerData.noteMapName, playerData.octaveMapName, playerData.rhythmMapName, playerData.polyphonyMapName, playerData.noteDurationMap, playerData.maskMapName, playerData.rhythmPatternName, playerData.chordMapName, playerData.controlChangeMapName, playerData.modeFilterName, playerData.rootMapName, playerData.modeMapName, playerData.channel)
     }
 }
 
@@ -2883,13 +2883,13 @@ function checkIfSessionPlayerExist (session, e){
     return Object.keys(e.players).find(x => x === 'exampleMidiPlayer' + session)
 }
 
-function checkIfAddChordProgressionMapToPlayer (chordProgressionMapName, e){
+function checkIfAddChordProgressionMapToPlayer (chordMapName, e){
     try{
-        if (e.songMaps[chordProgressionMapName] === undefined){
+        if (e.songMaps[chordMapName] === undefined){
             return;
         }
         else {
-            return chordProgressionMapName
+            return chordMapName
         }
     }
     catch(e){
@@ -2898,7 +2898,7 @@ function checkIfAddChordProgressionMapToPlayer (chordProgressionMapName, e){
 }
 
 //Create Player:
-function createSessionPlayer (e, session, velocityMapName, noteMapName = velocityMapName, octaveMapName = velocityMapName, rhythmMapName = velocityMapName, polyphonyMapName = velocityMapName, noteDurationMap = velocityMapName, maskMapName = velocityMapName, rhythmPatternName = velocityMapName, chordProgressionMapName = velocityMapName, controlChangeMapName = velocityMapName, modeFilterName = velocityMapName, rootMapName = velocityMapName, modeMapName = velocityMapName, channel = 1){
+function createSessionPlayer (e, session, velocityMapName, noteMapName = velocityMapName, octaveMapName = velocityMapName, rhythmMapName = velocityMapName, polyphonyMapName = velocityMapName, noteDurationMap = velocityMapName, maskMapName = velocityMapName, rhythmPatternName = velocityMapName, chordMapName = velocityMapName, controlChangeMapName = velocityMapName, modeFilterName = velocityMapName, rootMapName = velocityMapName, modeMapName = velocityMapName, channel = 1){
     let name = 'exampleMidiPlayer' + JSON.stringify(session)
     setupMidiRhythm(e, name, rhythmMapName)
     let sessionPlayer = e.players['exampleMidiPlayer' + session]
@@ -2928,14 +2928,14 @@ function createSessionPlayer (e, session, velocityMapName, noteMapName = velocit
         throw e
     }
     try{
-    sessionPlayer.chordProgressionMap = checkIfAddChordProgressionMapToPlayer(chordProgressionMapName, e)
+    sessionPlayer.chordMap = checkIfAddChordProgressionMapToPlayer(chordMapName, e)
     }catch{}
 }
 
 //https://stackoverflow.com/a/43363105/19515980
 
 //Edit Player:
-function editSessionPlayer (e, session, velocityMapName, noteMapName = velocityMapName, octaveMapName = velocityMapName, rhythmMapName = velocityMapName, polyphonyMapName = velocityMapName, noteDurationMap = velocityMapName, maskMapName = velocityMapName, rhythmPatternName = velocityMapName, chordProgressionMapName = velocityMapName, controlChangeMapName = velocityMapName, modeFilterName = velocityMapName, rootMapName = velocityMapName, modeMapName = velocityMapName, channel = 1){
+function editSessionPlayer (e, session, velocityMapName, noteMapName = velocityMapName, octaveMapName = velocityMapName, rhythmMapName = velocityMapName, polyphonyMapName = velocityMapName, noteDurationMap = velocityMapName, maskMapName = velocityMapName, rhythmPatternName = velocityMapName, chordMapName = velocityMapName, controlChangeMapName = velocityMapName, modeFilterName = velocityMapName, rootMapName = velocityMapName, modeMapName = velocityMapName, channel = 1){
     console.log('chose to edit')
     let sessionPlayer = e.players['exampleMidiPlayer' + session]
     sessionPlayer.velocityMap = velocityMapName
@@ -2964,7 +2964,7 @@ function editSessionPlayer (e, session, velocityMapName, noteMapName = velocityM
         throw e
     }
     try{
-    sessionPlayer.chordProgressionMap = checkIfAddChordProgressionMapToPlayer(chordProgressionMapName, e)
+    sessionPlayer.chordMap = checkIfAddChordProgressionMapToPlayer(chordMapName, e)
     }catch{}
 }
 
@@ -3779,7 +3779,7 @@ function sendChordMidiInfo (playerName, b, e){
     let player = e.players[playerName];
     let info = getNoteInfoToSend(player, b, playerName);
     info.noteValues = undefined;
-    let chordMap = player.chordProgressionMap;
+    let chordMap = player.chordMap;
     let chord = e.chordMaps[chordMap].wrapLookup(b);
     info.noteValues = Chord.getChord(chord).intervals.map(x => Interval.semitones(x));
     info = filterPolyphany(e, b, player, info);
@@ -4670,7 +4670,7 @@ addToModuleExports({
 //     recordConfigurationDataIntoMusicalEnvironment(lsystemData, 'p1', e)
 //     recordConfigurationDataIntoMusicalEnvironment(circleOfFifthChords, 'p4', e)
 //     recordConfigurationDataIntoMusicalEnvironment(circleOfFifthMelody, 'p3', e)
-//      assignPlayerForMusicSynthesizerSession(e, 1, 'p1', {rhythmMapName: 'straight', chordProgressionMapName: 'twelveBars-lsystem-scarbrofair'})
+//      assignPlayerForMusicSynthesizerSession(e, 1, 'p1', {rhythmMapName: 'straight', chordMapName: 'twelveBars-lsystem-scarbrofair'})
 //      assignPlayerForMusicSynthesizerSession(e, 3, 'p3', {rhythmMapName: 'straight'})
 //      assignPlayerForMusicSynthesizerSession(e, 4, 'p4')
 //     recordConfigurationDataIntoMusicalEnvironment(melodyData, 'p2', e)
@@ -4703,7 +4703,7 @@ function setUpDefaultMusicalEnvironmentFourPlayers (){
     recordConfigurationDataIntoMusicalEnvironment(lsystemData, 'p1', e)
     recordConfigurationDataIntoMusicalEnvironment(circleOfFifthChords, 'p4', e)
     recordConfigurationDataIntoMusicalEnvironment(circleOfFifthMelody, 'p3', e)
-    assignPlayerForMusicSynthesizerSession(e, 1, 'p1', {rhythmMapName: 'straight', chordProgressionMapName: 'twelveBars-lsystem-scarbrofair'})
+    assignPlayerForMusicSynthesizerSession(e, 1, 'p1', {rhythmMapName: 'straight', chordMapName: 'twelveBars-lsystem-scarbrofair'})
     assignPlayerForMusicSynthesizerSession(e, 3, 'p3', {rhythmMapName: 'straight'})
     assignPlayerForMusicSynthesizerSession(e, 4, 'p4')
     recordConfigurationDataIntoMusicalEnvironment(melodyData, 'p2', e)
@@ -4759,7 +4759,7 @@ function setUpSimpleMusicalEnvironment (){
         polyphonyMap: [10, 10, 10, 10]
     }
     recordConfigurationDataIntoMusicalEnvironment(simpleMelodyData, 'p1', e)
-    assignPlayerForMusicSynthesizerSession(e, 1, 'p1', {chordProgressionMapName: 'twelveBars-lsystem-scarbrofair'})
+    assignPlayerForMusicSynthesizerSession(e, 1, 'p1', {chordMapName: 'twelveBars-lsystem-scarbrofair'})
     e.players.exampleMidiPlayer1.polyphonyMap = 'default'
     e.players.exampleMidiPlayer1.modeFilter = 'default'
     e.players.exampleMidiPlayer2.modeMap = 'default'
@@ -4833,7 +4833,7 @@ function setUpTwoPlayerMusicalEnvironment (){
 function setUpDefaultMusicalEnvironmentOnePlayer (){
     let e = setUpMusicalEnvironmentExamples()
     recordConfigurationDataIntoMusicalEnvironment(lsystemData, 'p1', e)
-    assignPlayerForMusicSynthesizerSession(e, 1, 'p1', {rhythmMapName: 'straight', chordProgressionMapName: 'twelveBars-lsystem-scarbrofair'})
+    assignPlayerForMusicSynthesizerSession(e, 1, 'p1', {rhythmMapName: 'straight', chordMapName: 'twelveBars-lsystem-scarbrofair'})
     e.players.exampleMidiPlayer1.polyphonyMap = 'default'
     e.players.exampleMidiPlayer1.modeFilter = 'default'
      e.players.exampleMidiPlayer1.modeMap = 'default'
