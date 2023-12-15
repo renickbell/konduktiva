@@ -3142,7 +3142,8 @@ export function setupMidiRhythm (env, sequenceName, rhythmPatternName = 'default
     env.players[sequenceName] = new Player(sequenceName);
     env.players[sequenceName].maskMap = 'default'
     //env.players[playerName].samplePattern = playerName;
-    env.players[sequenceName].action = 'midiSequencedRhythm';
+//     env.players[sequenceName].action = 'midiSequencedRhythm';
+    env.players[sequenceName].action = 'sendNotesMidiInfo';
     env.players[sequenceName].rhythmMap = rhythmPatternName
     return sequenceName
 }
@@ -3523,6 +3524,7 @@ export function sendChordMidiInfo (playerName, b, e){
         return filterMode(x, e, b, player)
     });
     info = calculateFinalNoteValue(info, player);
+    checkIfSendMidiControlChange(e, b, player)
     info.finalValues.forEach((x, i) => {
         sendMidiData(info, player, x)
     });
@@ -3538,6 +3540,7 @@ export function sendNotesMidiInfo (session, b, e){
         return filterMode(x, e, b, player)
     })
     info = calculateFinalNoteValue(info, player)
+    checkIfSendMidiControlChange(e, b, player)
     info.finalValues.forEach((x, i) => {
         sendMidiData(info, player, x)
     })

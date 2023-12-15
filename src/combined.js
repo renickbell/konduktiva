@@ -3402,11 +3402,13 @@ function convertVelocityToMidiValues (inputVelocity){
 }
 
 //This function is modified to set action as sequenceSize instead of superDirt
+//HERE CHANGE ACTION
 function setupMidiRhythm (env, sequenceName, rhythmPatternName = 'default') {
     env.players[sequenceName] = new Player(sequenceName);
     env.players[sequenceName].maskMap = 'default'
     //env.players[playerName].samplePattern = playerName;
-    env.players[sequenceName].action = 'midiSequencedRhythm';
+    env.players[sequenceName].action = 'sendNotesMidiInfo';
+//     env.players[sequenceName].action = 'midiSequencedRhythm';
     env.players[sequenceName].rhythmMap = rhythmPatternName
     return sequenceName
 }
@@ -3787,6 +3789,7 @@ function sendChordMidiInfo (playerName, b, e){
         return filterMode(x, e, b, player)
     });
     info = calculateFinalNoteValue(info, player);
+    checkIfSendMidiControlChange(e, b, player)
     info.finalValues.forEach((x, i) => {
         sendMidiData(info, player, x)
     });
@@ -3802,6 +3805,7 @@ function sendNotesMidiInfo (playerName, b, e){
         return filterMode(x, e, b, player)
     })
     info = calculateFinalNoteValue(info, player)
+    checkIfSendMidiControlChange(e, b, player)
     info.finalValues.forEach((x, i) => {
         sendMidiData(info, player, x)
     })
