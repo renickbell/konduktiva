@@ -2638,10 +2638,10 @@ export function assignPlayerForMusicSynthesizerSession (e, session, defaultName,
         playerData.velocityMapName = defaultName
     }
     if (checkIfSessionPlayerExist(session, e) === undefined){
-    createSessionPlayer(e, session, playerData.velocityMapName, playerData.noteMapName, playerData.octaveMapName, playerData.rhythmMapName, playerData.polyphonyMapName, playerData.noteDurationMapName, playerData.maskMapName, playerData.rhythmPatternName, playerData.chordProgressionMapName, playerData.controlChangeMapName, playerData.modeFilterName, playerData.rootMapName, playerData.modeMapName, playerData.channel)
+    createSessionPlayer(e, session, playerData.velocityMapName, playerData.noteMapName, playerData.octaveMapName, playerData.rhythmMapName, playerData.polyphonyMapName, playerData.noteDurationMap, playerData.maskMapName, playerData.rhythmPatternName, playerData.chordProgressionMapName, playerData.controlChangeMapName, playerData.modeFilterName, playerData.rootMapName, playerData.modeMapName, playerData.channel)
     }
     else{
-        editSessionPlayer(e, session, playerData.velocityMapName, playerData.noteMapName, playerData.octaveMapName, playerData.rhythmMapName, playerData.polyphonyMapName, playerData.noteDurationMapName, playerData.maskMapName, playerData.rhythmPatternName, playerData.chordProgressionMapName, playerData.controlChangeMapName, playerData.modeFilterName, playerData.rootMapName, playerData.modeMapName, playerData.channel)
+        editSessionPlayer(e, session, playerData.velocityMapName, playerData.noteMapName, playerData.octaveMapName, playerData.rhythmMapName, playerData.polyphonyMapName, playerData.noteDurationMap, playerData.maskMapName, playerData.rhythmPatternName, playerData.chordProgressionMapName, playerData.controlChangeMapName, playerData.modeFilterName, playerData.rootMapName, playerData.modeMapName, playerData.channel)
     }
 }
 
@@ -2665,7 +2665,7 @@ export function checkIfAddChordProgressionMapToPlayer (chordProgressionMapName, 
 }
 
 //Create Player:
-export function createSessionPlayer (e, session, velocityMapName, noteMapName = velocityMapName, octaveMapName = velocityMapName, rhythmMapName = velocityMapName, polyphonyMapName = velocityMapName, noteDurationMapName = velocityMapName, maskMapName = velocityMapName, rhythmPatternName = velocityMapName, chordProgressionMapName = velocityMapName, controlChangeMapName = velocityMapName, modeFilterName = velocityMapName, rootMapName = velocityMapName, modeMapName = velocityMapName, channel = 1){
+export function createSessionPlayer (e, session, velocityMapName, noteMapName = velocityMapName, octaveMapName = velocityMapName, rhythmMapName = velocityMapName, polyphonyMapName = velocityMapName, noteDurationMap = velocityMapName, maskMapName = velocityMapName, rhythmPatternName = velocityMapName, chordProgressionMapName = velocityMapName, controlChangeMapName = velocityMapName, modeFilterName = velocityMapName, rootMapName = velocityMapName, modeMapName = velocityMapName, channel = 1){
     let name = 'exampleMidiPlayer' + JSON.stringify(session)
     setupMidiRhythm(e, name, rhythmMapName)
     let sessionPlayer = e.players['exampleMidiPlayer' + session]
@@ -2678,7 +2678,7 @@ export function createSessionPlayer (e, session, velocityMapName, noteMapName = 
     sessionPlayer.session = session
     sessionPlayer.channel = channel
     sessionPlayer.polyphonyMap = polyphonyMapName
-    sessionPlayer.noteDurationMapName = noteDurationMapName
+    sessionPlayer.noteDurationMap = noteDurationMap
     sessionPlayer.controlChangeMap = controlChangeMapName
     sessionPlayer.modeMap = modeMapName
     sessionPlayer.rootMap = rootMapName
@@ -2702,7 +2702,7 @@ export function createSessionPlayer (e, session, velocityMapName, noteMapName = 
 //https://stackoverflow.com/a/43363105/19515980
 
 //Edit Player:
-export function editSessionPlayer (e, session, velocityMapName, noteMapName = velocityMapName, octaveMapName = velocityMapName, rhythmMapName = velocityMapName, polyphonyMapName = velocityMapName, noteDurationMapName = velocityMapName, maskMapName = velocityMapName, rhythmPatternName = velocityMapName, chordProgressionMapName = velocityMapName, controlChangeMapName = velocityMapName, modeFilterName = velocityMapName, rootMapName = velocityMapName, modeMapName = velocityMapName, channel = 1){
+export function editSessionPlayer (e, session, velocityMapName, noteMapName = velocityMapName, octaveMapName = velocityMapName, rhythmMapName = velocityMapName, polyphonyMapName = velocityMapName, noteDurationMap = velocityMapName, maskMapName = velocityMapName, rhythmPatternName = velocityMapName, chordProgressionMapName = velocityMapName, controlChangeMapName = velocityMapName, modeFilterName = velocityMapName, rootMapName = velocityMapName, modeMapName = velocityMapName, channel = 1){
     console.log('chose to edit')
     let sessionPlayer = e.players['exampleMidiPlayer' + session]
     sessionPlayer.velocityMap = velocityMapName
@@ -2713,7 +2713,7 @@ export function editSessionPlayer (e, session, velocityMapName, noteMapName = ve
     //e.rhythmMap[rhythmMapName].add(e)
     sessionPlayer.session = session
     sessionPlayer.channel = channel
-    sessionPlayer.noteDurationMapName = noteDurationMapName
+    sessionPlayer.noteDurationMap = noteDurationMap
     sessionPlayer.controlChangeMap = controlChangeMapName
     sessionPlayer.modeMap = modeMapName
     sessionPlayer.rootMap = rootMapName
@@ -2812,6 +2812,8 @@ export function addToMusicalEnvironment (e){
     }}))
 }
     e.chordMaps = generateChordProgressions()
+    e.chordMaps['default'] = new QuantizedMap(16, [0,4,8,12],['M','m7','m9','maj9'])
+    e.chordMaps['exampleChords'] = e.chordMaps['default']
     e.songMaps = {
         'twelveBars-lsystem-scarbrofair': new QuantizedMap(15000, [1000, 5000, 10000], ['twelveBars', 'lsystem', 'scarboroughFair'])
     }
@@ -2831,7 +2833,7 @@ export function addToMusicalEnvironment (e){
     Object.keys(modes).forEach(x => {
         e.modeFilters[x] = new QuantizedMap(12, modes[x], modes[x])
     })
-    e.modeMaps = {'default': new QuantizedMap(400, [0, 100, 200, 300, 400], [ 'ionian', 'phrygian', 'mixolydian' ])}
+    e.modeMaps = {'default': new QuantizedMap(400, [0, 100, 200, 300, 400], [ 'ionian', 'phrygian', 'mixolydian' ]), 'chromatic': new QuantizedMap(400, [0, 100, 200, 300, 400], [ 'ionian', 'phrygian', 'mixolydian' ])}
     e.rootMaps = {'default': new QuantizedMap(4, [0, 1, 2, 3], ['C', 'C', 'C', 'C'])} //English alphabets for music
      e.notesInputMode = 'relativeSemitone' //OR 'relativeScaleDegree'
 //     e.notesInputMode = 'relativeScaleDegree'
@@ -3358,7 +3360,7 @@ export function callMusicSynthesizerRhythm (e, b, session){
     let info = getNoteInfoToSend(player, b, session)
     info = filterPolyphany(e, b, player, info)
     /*
-    console.log('first step look up', e.noteDurationMaps[player.noteDurationMapName].wrapLookup(b))
+    console.log('first step look up', e.noteDurationMaps[player.noteDurationMap].wrapLookup(b))
     console.log('b', b)
     console.log('noteValues', info.noteValues)
     console.log('music notes', midiToMusicNotes(info.noteValues))
@@ -3550,9 +3552,9 @@ export function getNoteInfoToSend (player, b, session){
     return {
         noteDuration: e.rhythmMaps[player.rhythmMap].values[0].wrapLookup(b),
         velocity: convertVelocityToMidiValues(e.velocityMaps[player.velocityMap].wrapLookup(b)),
-//         noteValues:  e.noteMaps[player.noteMap].wrapLookup(e.noteDurationMaps[player.noteDurationMapName].wrapLookup(b)),
-        noteValues:  e.noteMaps[player.noteMap].wrapLookup(e.noteDurationMaps[player.noteDurationMapName].wrapLookup(b)),
-//         noteValues: (e.octaveMaps[player.noteMap].wrapLookup(e.noteDurationMaps[player.noteDurationMapName].wrapLookup(b)) * 12) + e.rootNoteMaps[player.noteMap].wrapLookup(e.noteDurationMaps[player.noteDurationMapName].wrapLookup(b)),
+//         noteValues:  e.noteMaps[player.noteMap].wrapLookup(e.noteDurationMaps[player.noteDurationMap].wrapLookup(b)),
+        noteValues:  e.noteMaps[player.noteMap].wrapLookup(e.noteDurationMaps[player.noteDurationMap].wrapLookup(b)),
+//         noteValues: (e.octaveMaps[player.noteMap].wrapLookup(e.noteDurationMaps[player.noteDurationMap].wrapLookup(b)) * 12) + e.rootNoteMaps[player.noteMap].wrapLookup(e.noteDurationMaps[player.noteDurationMap].wrapLookup(b)),
         octaves: e.octaveMaps[player.octaveMap].wrapLookup(b),
         root: e.rootMaps[player.rootMap].wrapLookup(b),
     }
