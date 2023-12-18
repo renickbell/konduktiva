@@ -4379,7 +4379,7 @@ export function setUpDefaultMusicalEnvironmentFourPlayers (){
     recordConfigurationDataIntoMusicalEnvironment(lsystemData, 'p1', e)
     recordConfigurationDataIntoMusicalEnvironment(circleOfFifthChords, 'p4', e)
     recordConfigurationDataIntoMusicalEnvironment(circleOfFifthMelody, 'p3', e)
-    assignPlayerForMusicSynthesizerSession(e, 1, 'p1', {rhythmMapName: 'straight', chordMapName: 'twelveBars-lsystem-scarbrofair'})
+    assignPlayerForMusicSynthesizerSession(e, 1, 'p1', {rhythmMapName: 'straight'})
     assignPlayerForMusicSynthesizerSession(e, 3, 'p3', {rhythmMapName: 'straight'})
     assignPlayerForMusicSynthesizerSession(e, 4, 'p4')
     recordConfigurationDataIntoMusicalEnvironment(melodyData, 'p2', e)
@@ -4435,7 +4435,7 @@ export function setUpSimpleMusicalEnvironment (){
         polyphonyMap: [10, 10, 10, 10]
     }
     recordConfigurationDataIntoMusicalEnvironment(simpleMelodyData, 'p1', e)
-    assignPlayerForMusicSynthesizerSession(e, 1, 'p1', {chordMapName: 'twelveBars-lsystem-scarbrofair'})
+    assignPlayerForMusicSynthesizerSession(e, 1, 'p1')
     e.players.exampleMidiPlayer1.polyphonyMap = 'default'
     e.players.exampleMidiPlayer1.modeFilter = 'default'
      e.players.exampleMidiPlayer1.modeMap = 'default'
@@ -4509,7 +4509,7 @@ export function setUpTwoPlayerMusicalEnvironment (){
 export function setUpDefaultMusicalEnvironmentOnePlayer (){
     let e = setUpMusicalEnvironmentExamples()
     recordConfigurationDataIntoMusicalEnvironment(lsystemData, 'p1', e)
-    assignPlayerForMusicSynthesizerSession(e, 1, 'p1', {rhythmMapName: 'straight', chordMapName: 'twelveBars-lsystem-scarbrofair'})
+    assignPlayerForMusicSynthesizerSession(e, 1, 'p1', {rhythmMapName: 'straight'})
     e.players.exampleMidiPlayer1.polyphonyMap = 'default'
     e.players.exampleMidiPlayer1.modeFilter = 'default'
      e.players.exampleMidiPlayer1.modeMap = 'default'

@@ -3066,7 +3066,7 @@ function addToMusicalEnvironment (e){
     Object.keys(modes).forEach(x => {
         e.modeFilters[x] = new QuantizedMap(12, modes[x], modes[x])
     })
-    e.modeMaps = {'default': new QuantizedMap(400, [0, 100, 200, 300, 400], [ 'ionian', 'phrygian', 'mixolydian' ]), 'chromatic': new QuantizedMap(400, [0, 100, 200, 300, 400], [ 'ionian', 'phrygian', 'mixolydian' ])}
+    e.modeMaps = {'default': new QuantizedMap(400, [0], [ 'chromatic']), 'chromatic': new QuantizedMap(400, [0], [ 'chromatic'])}
     e.rootMaps = {'default': new QuantizedMap(4, [0, 1, 2, 3], ['C', 'C', 'C', 'C'])} //English alphabets for music
      e.notesInputMode = 'relativeSemitone' //OR 'relativeScaleDegree'
 //     e.notesInputMode = 'relativeScaleDegree'
@@ -4703,7 +4703,7 @@ function setUpDefaultMusicalEnvironmentFourPlayers (){
     recordConfigurationDataIntoMusicalEnvironment(lsystemData, 'p1', e)
     recordConfigurationDataIntoMusicalEnvironment(circleOfFifthChords, 'p4', e)
     recordConfigurationDataIntoMusicalEnvironment(circleOfFifthMelody, 'p3', e)
-    assignPlayerForMusicSynthesizerSession(e, 1, 'p1', {rhythmMapName: 'straight', chordMapName: 'twelveBars-lsystem-scarbrofair'})
+    assignPlayerForMusicSynthesizerSession(e, 1, 'p1', {rhythmMapName: 'straight'})
     assignPlayerForMusicSynthesizerSession(e, 3, 'p3', {rhythmMapName: 'straight'})
     assignPlayerForMusicSynthesizerSession(e, 4, 'p4')
     recordConfigurationDataIntoMusicalEnvironment(melodyData, 'p2', e)
@@ -4759,7 +4759,7 @@ function setUpSimpleMusicalEnvironment (){
         polyphonyMap: [10, 10, 10, 10]
     }
     recordConfigurationDataIntoMusicalEnvironment(simpleMelodyData, 'p1', e)
-    assignPlayerForMusicSynthesizerSession(e, 1, 'p1', {chordMapName: 'twelveBars-lsystem-scarbrofair'})
+    assignPlayerForMusicSynthesizerSession(e, 1, 'p1')
     e.players.exampleMidiPlayer1.polyphonyMap = 'default'
     e.players.exampleMidiPlayer1.modeFilter = 'default'
     e.players.exampleMidiPlayer2.modeMap = 'default'
@@ -4833,7 +4833,7 @@ function setUpTwoPlayerMusicalEnvironment (){
 function setUpDefaultMusicalEnvironmentOnePlayer (){
     let e = setUpMusicalEnvironmentExamples()
     recordConfigurationDataIntoMusicalEnvironment(lsystemData, 'p1', e)
-    assignPlayerForMusicSynthesizerSession(e, 1, 'p1', {rhythmMapName: 'straight', chordMapName: 'twelveBars-lsystem-scarbrofair'})
+    assignPlayerForMusicSynthesizerSession(e, 1, 'p1', {rhythmMapName: 'straight'})
     e.players.exampleMidiPlayer1.polyphonyMap = 'default'
     e.players.exampleMidiPlayer1.modeFilter = 'default'
      e.players.exampleMidiPlayer1.modeMap = 'default'
