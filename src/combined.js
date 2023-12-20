@@ -1638,7 +1638,7 @@ addToModuleExports({
 //konduktiva-superdirt-revised.js
 
 // change this path to the path on your computer
-// let superDirtSamplesPath = "/home/steve/.local/share/SuperCollider/downloaded-quarks/"
+let superDirtSamplesPath = "/home/steve/.local/share/SuperCollider/downloaded-quarks/"
 
 // let osc= require("osc");
 
@@ -1693,7 +1693,7 @@ function samplePattern (allSamples, patternLength, substringArray, poolSize, ste
 }
 
 function playSuperDirtSample (env, player, beat, e) {
-    let currentSample = env.samplePatterns[e.players[player].samplePattern].wrapLookup(beat);
+    let currentSample = env.samplePatterns[env.players[player].samplePattern].wrapLookup(beat);
     var msg = {
             address: '/play2',
             args: [
@@ -1723,11 +1723,11 @@ function playSuperDirtSample (env, player, beat, e) {
               { type: 'f', value: 1 },
               { type: 's', value: 'cut' },
               //{ type: 'f', value: pick([0,1,1,2]) }
-              { type: 'f', value: e.players[player].cut}
+              { type: 'f', value: env.players[player].cut}
               //{ type: 'f', value: 1 }
             ]
     };
-    //console.log("Sending message", msg.address, msg.args, "to", udpPort.options.remoteAddress + ":" + udpPort.options.remotePort);
+    checkIfUseVerboseLogging(player, "Sending message", msg.address, msg.args, "to", udpPort.options.remoteAddress + ":" + udpPort.options.remotePort);
     udpPort.send(msg);
 }
 

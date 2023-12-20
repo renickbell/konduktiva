@@ -1531,6 +1531,24 @@ export function setUpDefaultRhythmMapsToMusicalEnvironment (e) {
 // --------------------------------------------------------------------------
 //konduktiva-superdirt-revised.mjs:
 
+// change this path to the path on your computer
+let superDirtSamplesPath = "/home/steve/.local/share/SuperCollider/downloaded-quarks/"
+
+// let osc= require("osc");
+
+export var udpPort = new osc.UDPPort({
+    // This is the port we're listening on.
+    localAddress: "127.0.0.1",
+    localPort: 57121,
+    // This is where sclang is listening for OSC messages.
+    remoteAddress: "127.0.0.1",
+    remotePort: 57120,
+    metadata: true
+});
+
+// Open the socket.
+udpPort.open();
+
 export function gatherBySubstring (inputArray, substringArray) {
     return inputArray.filter(x => substringArray.some(y => x.includes(y)))
 }
@@ -1569,7 +1587,7 @@ export function samplePattern (allSamples, patternLength, substringArray, poolSi
 }
 
 export function playSuperDirtSample (env, player, beat, e) {
-    let currentSample = env.samplePatterns[e.players[player].samplePattern].wrapLookup(beat);
+    let currentSample = env.samplePatterns[env.players[player].samplePattern].wrapLookup(beat);
     var msg = {
             address: '/play2',
             args: [
@@ -1599,11 +1617,11 @@ export function playSuperDirtSample (env, player, beat, e) {
               { type: 'f', value: 1 },
               { type: 's', value: 'cut' },
               //{ type: 'f', value: pick([0,1,1,2]) }
-              { type: 'f', value: e.players[player].cut}
+              { type: 'f', value: env.players[player].cut}
               //{ type: 'f', value: 1 }
             ]
     };
-    //console.log("Sending message", msg.address, msg.args, "to", udpPort.options.remoteAddress + ":" + udpPort.options.remotePort);
+    checkIfUseVerboseLogging(player, "Sending message", msg.address, msg.args, "to", udpPort.options.remoteAddress + ":" + udpPort.options.remotePort);
     udpPort.send(msg);
 }
 
