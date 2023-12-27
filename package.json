@@ -1,9 +1,10 @@
 {
   "dependencies": {
-    "array-toolkit": "^3.4.1",
+    "array-toolkit": "^3.4.2",
     "easymidi": "^*",
     "http-server": "^*",
-    "konduktiva": "^1.8.2",
+    "konduktiva": "^1.8.3",
+    "midi-parser-js": "^4.0.4",
     "osc": "^*",
     "path": "^*",
     "perf_hooks": "^*",
@@ -15,7 +16,7 @@
     "type-check": "^*"
   },
   "name": "konduktiva",
-  "version": "2.1.3",
+  "version": "2.1.4",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/renickbell/konduktiva.git"

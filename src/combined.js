@@ -1738,6 +1738,7 @@ function addSamplePattern (env, patternName, sp) {
 }
 
 addToModuleExports({
+    udpPort,
   addSamplePattern,
   buildSampleArray,
   gatherBySubstring,
@@ -2871,10 +2872,10 @@ function assignPlayerForMusicSynthesizerSession (e, session, defaultName, player
         playerData.velocityMapName = defaultName
     }
     if (checkIfSessionPlayerExist(session, e) === undefined){
-    createSessionPlayer(e, session, playerData.velocityMapName, playerData.noteMapName, playerData.octaveMapName, playerData.rhythmMapName, playerData.polyphonyMapName, playerData.noteDurationMap, playerData.maskMapName, playerData.rhythmPatternName, playerData.chordMapName, playerData.controlChangeMapName, playerData.modeFilterName, playerData.rootMapName, playerData.modeMapName, playerData.channel)
+    createSessionPlayer(e, session, playerData.velocityMapName, playerData.noteMapName, playerData.octaveMapName, playerData.rhythmMapName, playerData.polyphonyMapName, playerData.noteDurationMap, playerData.maskMapName, playerData.rhythmPatternName, playerData.chordMapName, playerData.controlChangeMapName, playerData.rootMapName, playerData.modeMapName, playerData.channel)
     }
     else{
-        editSessionPlayer(e, session, playerData.velocityMapName, playerData.noteMapName, playerData.octaveMapName, playerData.rhythmMapName, playerData.polyphonyMapName, playerData.noteDurationMap, playerData.maskMapName, playerData.rhythmPatternName, playerData.chordMapName, playerData.controlChangeMapName, playerData.modeFilterName, playerData.rootMapName, playerData.modeMapName, playerData.channel)
+        editSessionPlayer(e, session, playerData.velocityMapName, playerData.noteMapName, playerData.octaveMapName, playerData.rhythmMapName, playerData.polyphonyMapName, playerData.noteDurationMap, playerData.maskMapName, playerData.rhythmPatternName, playerData.chordMapName, playerData.controlChangeMapName, playerData.rootMapName, playerData.modeMapName, playerData.channel)
     }
 }
 
@@ -2898,7 +2899,7 @@ function checkIfAddChordProgressionMapToPlayer (chordMapName, e){
 }
 
 //Create Player:
-function createSessionPlayer (e, session, velocityMapName, noteMapName = velocityMapName, octaveMapName = velocityMapName, rhythmMapName = velocityMapName, polyphonyMapName = velocityMapName, noteDurationMap = velocityMapName, maskMapName = velocityMapName, rhythmPatternName = velocityMapName, chordMapName = velocityMapName, controlChangeMapName = velocityMapName, modeFilterName = velocityMapName, rootMapName = velocityMapName, modeMapName = velocityMapName, channel = 1){
+function createSessionPlayer (e, session, velocityMapName, noteMapName = velocityMapName, octaveMapName = velocityMapName, rhythmMapName = velocityMapName, polyphonyMapName = velocityMapName, noteDurationMap = velocityMapName, maskMapName = velocityMapName, rhythmPatternName = velocityMapName, chordMapName = "default", controlChangeMapName = 'default', rootMapName = velocityMapName, modeMapName = velocityMapName, channel = 1){
     let name = 'exampleMidiPlayer' + JSON.stringify(session)
     setupMidiRhythm(e, name, rhythmMapName)
     let sessionPlayer = e.players['exampleMidiPlayer' + session]
@@ -2915,6 +2916,7 @@ function createSessionPlayer (e, session, velocityMapName, noteMapName = velocit
     sessionPlayer.controlChangeMap = controlChangeMapName
     sessionPlayer.modeMap = modeMapName
     sessionPlayer.rootMap = rootMapName
+    sessionPlayer.chordMap = chordMapName
     let playerName = 'exampleMidiPlayer' + session
     e.rhythmPatterns[rhythmPatternName].add(e, playerName)
     try{
@@ -2927,15 +2929,15 @@ function createSessionPlayer (e, session, velocityMapName, noteMapName = velocit
         }
         throw e
     }
-    try{
-    sessionPlayer.chordMap = checkIfAddChordProgressionMapToPlayer(chordMapName, e)
-    }catch{}
+//     try{
+//     sessionPlayer.chordMap = checkIfAddChordProgressionMapToPlayer(chordMapName, e)
+//     }catch{}
 }
 
 //https://stackoverflow.com/a/43363105/19515980
 
 //Edit Player:
-function editSessionPlayer (e, session, velocityMapName, noteMapName = velocityMapName, octaveMapName = velocityMapName, rhythmMapName = velocityMapName, polyphonyMapName = velocityMapName, noteDurationMap = velocityMapName, maskMapName = velocityMapName, rhythmPatternName = velocityMapName, chordMapName = velocityMapName, controlChangeMapName = velocityMapName, modeFilterName = velocityMapName, rootMapName = velocityMapName, modeMapName = velocityMapName, channel = 1){
+function editSessionPlayer (e, session, velocityMapName, noteMapName = velocityMapName, octaveMapName = velocityMapName, rhythmMapName = velocityMapName, polyphonyMapName = velocityMapName, noteDurationMap = velocityMapName, maskMapName = velocityMapName, rhythmPatternName = velocityMapName, chordMapName = 'default', controlChangeMapName = 'default', rootMapName = velocityMapName, modeMapName = velocityMapName, channel = 1){
     console.log('chose to edit')
     let sessionPlayer = e.players['exampleMidiPlayer' + session]
     sessionPlayer.velocityMap = velocityMapName
@@ -2951,6 +2953,7 @@ function editSessionPlayer (e, session, velocityMapName, noteMapName = velocityM
     sessionPlayer.modeMap = modeMapName
     sessionPlayer.rootMap = rootMapName
     sessionPlayer.polyphonyMap = polyphonyMapName
+    sessionPlayer.chordMap = chordMapName
     let playerName = 'exampleMidiPlayer' + session
     e.rhythmPatterns[rhythmPatternName].add(e, playerName)
     try{
@@ -2963,9 +2966,9 @@ function editSessionPlayer (e, session, velocityMapName, noteMapName = velocityM
         }
         throw e
     }
-    try{
-    sessionPlayer.chordMap = checkIfAddChordProgressionMapToPlayer(chordMapName, e)
-    }catch{}
+//     try{
+//     sessionPlayer.chordMap = checkIfAddChordProgressionMapToPlayer(chordMapName, e)
+//     }catch{}
 }
 
 function createControlChangeMaps (noteValueData, name, e){
@@ -3062,7 +3065,8 @@ function addToMusicalEnvironment (e){
       bluesPentatonic: [0, 3, 5, 6, 7, 10],
       minorBluesPentatonicScale: [0, 3, 5, 7, 10],
     };
-    e.modeFilters = {'default': new QuantizedMap(4, [0, 1, 2, 3], [0, 1, 2, 3]), 'chromatic': new QuantizedMap(12, A.buildArray(12,i=>i), A.buildArray(12,i=>i))}
+    e.modeFilters = {'chromatic': new QuantizedMap(12, A.buildArray(12,i=>i), A.buildArray(12,i=>i))}
+    e.modeFilters['default'] = e.modeFilters.chromatic
     Object.keys(modes).forEach(x => {
         e.modeFilters[x] = new QuantizedMap(12, modes[x], modes[x])
     })
@@ -4648,6 +4652,127 @@ addToModuleExports({
   velocityData
 })
 
+//--------------------------------------------------------------------------
+//Yiler keyboard filtering stuff:
+
+//generated with ChatGPT
+function removeNumber(inputString) {
+    // Use a regular expression to replace all numbers with an empty string
+    var resultString = inputString.replace(/\d/g, '');
+    return resultString;
+}
+
+//generated with ChatGPT
+function extractNumbers(inputString) {
+    // Use regular expression to replace anything that is not a number with an empty string
+    const numbersOnly = inputString.replace(/[^0-9]/g, '');
+    return numbersOnly;
+}
+
+//generated with ChatGPT
+function noteToScaleDegree(note, scale) {
+    // Make sure the note is in uppercase for case-insensitive comparison
+    // Find the index of the note in the scale
+    const scaleDegree = scale.indexOf(note);
+    // If the note is not in the scale, return null
+    if (scaleDegree === -1) {
+        return null;
+    }
+    // Scale degrees usually start from 1, so add 1 to the index
+    return scaleDegree + 1;
+}
+
+let keyboard;
+
+let filteredOutput = new easymidi.Output('filteredOut', true);
+
+playedNotes = [];
+
+//generated with ChatGPT
+function sortArrays(arrayA, arrayB) {
+    // Combine the two arrays into an array of objects with original indices
+    const combinedArray = arrayA.map((element, index) => ({
+        element,
+        index
+    }));
+    // Sort the combined array based on the elements of arrayA
+    combinedArray.sort((a, b) => a.element - b.element);
+    // Extract the sorted arrays from the combined array
+    const sortedArrayA = combinedArray.map(item => item.element);
+    const sortedArrayB = combinedArray.map(item => arrayB[item.index]);
+    // Return the result as an object
+    return {
+        arrayA: sortedArrayA,
+        arrayB: sortedArrayB
+    };
+}
+
+function activateKeyboardFilter(keyboardName) {
+    keyboard = new K.easymidi.Input(keyboardName);
+    keyboard.on('noteon', function(event) {
+        try {
+            let currentChordRoot = e.rootMaps.testChordProgression1.wrapLookup((e.currentBeat() + 1));
+            let currentChordQuality = e.chordMaps.testChordProgression1.wrapLookup((e.currentBeat() + 1))[0];
+            let currentNoteMap = e.noteMaps.testChordProgression1.wrapLookup((e.currentBeat() + 1));
+            let octave = extractNumbers(K.Note.fromMidi(event.note));
+            let noteBeingPlayed = removeNumber(K.Note.fromMidi(event.note));
+            chromaticScale = K.Scale.get(`${currentChordRoot} chromatic`)
+            chromaticScale.notes = chromaticScale.notes.map(n => removeNumber(K.Note.fromMidi(K.Note.midi(n + "1"))))
+            console.log("here")
+            console.log(currentNoteMap)
+            console.log(`root: ${currentChordRoot} quality: ${currentChordQuality}`)
+            console.log(`${currentChordRoot} chromatic`)
+            filterQM.keys = currentNoteMap;
+            filterQM.values = currentNoteMap.map(semitone => chromaticScale.notes[semitone]);
+            console.log("noteBeingPlayed: " + noteBeingPlayed)
+            console.log("fQM: " + filterQM.values)
+            let filteredNote = filterQM.wrapLookup(chromaticScale.notes.indexOf(noteBeingPlayed)) + octave
+            playedNotes.push({
+                originalNote: K.Note.fromMidi(event.note),
+                filtered: filteredNote
+            })
+            console.log(playedNotes)
+            console.log("filteredNote" + filteredNote)
+            filteredOutput.send('noteon', {
+                note: K.Note.midi(filteredNote),
+                velocity: 90,
+                channel: 2
+            });
+        } catch (err) {
+            console.log(err)
+        }
+    });
+    keyboard.on('noteoff', function(event) {
+        try {
+            let octave = K.Note.fromMidi(event.note).charAt(K.Note.fromMidi(event.note).length - 1)
+            let filteredNote = filterQM.wrapLookup(chromaticScale.notes.indexOf("noteBeingPlayed")) + octave
+            let noteOffObj = playedNotes.filter(note => note.originalNote == K.Note.fromMidi(event.note))[0]
+            console.log(filteredNote)
+            filteredOutput.send('noteoff', {
+                note: K.Note.midi(noteOffObj.filtered),
+                velocity: 90,
+                channel: 2
+            });
+            //playedNotes = A.removeFirstInstance(playedNotes, filteredNote)
+            playedNotes = A.removeFirstInstance(playedNotes, noteOffObj)
+        } catch (err) {
+            console.log(err)
+        }
+    });
+}
+
+addToModuleExports({
+    removeNumber,
+    extractNumbers,
+    noteToScaleDegree,
+    keyboard,
+    filteredOutput,
+    playedNotes,
+    sortArrays,
+    activateKeyboardFilter
+})
+
+// activateKeyboardFilter("Arturia KeyStep 32")
 // --------------------------------------------------------------------------
 //Other setup functions:
 
@@ -4709,10 +4834,7 @@ function setUpDefaultMusicalEnvironmentFourPlayers (){
     recordConfigurationDataIntoMusicalEnvironment(melodyData, 'p2', e)
     assignPlayerForMusicSynthesizerSession(e, 2, 'p3')
      e.players.exampleMidiPlayer4.polyphonyMap = 'default'
-     e.players.exampleMidiPlayer4.modeFilter = 'default'
      e.players.exampleMidiPlayer3.polyphonyMap = 'default'
-     e.players.exampleMidiPlayer3.modeFilter = 'default'
-     e.players.exampleMidiPlayer2.modeFilter = 'default'
      e.players.exampleMidiPlayer1.modeMap = 'default'
      e.players.exampleMidiPlayer2.modeMap = 'default'
      e.players.exampleMidiPlayer4.modeMap = 'default'
@@ -4737,7 +4859,6 @@ function setUpVerySimpleMusicalEnvironment (){
     recordConfigurationDataIntoMusicalEnvironment(simpleMelodyData, 'p1', e)
     assignPlayerForMusicSynthesizerSession(e, 1, 'p1')
     e.players.exampleMidiPlayer1.polyphonyMap = 'default'
-    e.players.exampleMidiPlayer1.modeFilter = 'default'
     e.players.exampleMidiPlayer1.modeMap = 'default'
     return e
 }
@@ -4761,7 +4882,6 @@ function setUpSimpleMusicalEnvironment (){
     recordConfigurationDataIntoMusicalEnvironment(simpleMelodyData, 'p1', e)
     assignPlayerForMusicSynthesizerSession(e, 1, 'p1')
     e.players.exampleMidiPlayer1.polyphonyMap = 'default'
-    e.players.exampleMidiPlayer1.modeFilter = 'default'
     e.players.exampleMidiPlayer2.modeMap = 'default'
     return e
 }
@@ -4784,7 +4904,6 @@ function setUpLongMusicalEnvironment (){
     recordConfigurationDataIntoMusicalEnvironment(simpleMelodyData, 'p1', e)
     assignPlayerForMusicSynthesizerSession(e, 1, 'p1')
     e.players.exampleMidiPlayer1.polyphonyMap = 'default'
-    e.players.exampleMidiPlayer1.modeFilter = 'default'
     e.players.exampleMidiPlayer1.modeMap = 'default'
     return e
 }
@@ -4822,9 +4941,7 @@ function setUpTwoPlayerMusicalEnvironment (){
     recordConfigurationDataIntoMusicalEnvironment(exampleData, 'p2', e)
     assignPlayerForMusicSynthesizerSession(e, 2, 'p2')
     e.players.exampleMidiPlayer1.polyphonyMap = 'default'
-    e.players.exampleMidiPlayer1.modeFilter = 'default'
     e.players.exampleMidiPlayer2.polyphonyMap = 'default'
-    e.players.exampleMidiPlayer2.modeFilter = 'default'
     e.players.exampleMidiPlayer1.modeMap = 'default'
     e.players.exampleMidiPlayer2.modeMap = 'default'
     return e
@@ -4835,7 +4952,6 @@ function setUpDefaultMusicalEnvironmentOnePlayer (){
     recordConfigurationDataIntoMusicalEnvironment(lsystemData, 'p1', e)
     assignPlayerForMusicSynthesizerSession(e, 1, 'p1', {rhythmMapName: 'straight'})
     e.players.exampleMidiPlayer1.polyphonyMap = 'default'
-    e.players.exampleMidiPlayer1.modeFilter = 'default'
      e.players.exampleMidiPlayer1.modeMap = 'default'
     return e
 }
