@@ -2684,7 +2684,7 @@ export function checkIfAddChordProgressionMapToPlayer (chordMapName, e){
 }
 
 //Create Player:
-export function createSessionPlayer (e, session, velocityMapName, noteMapName = velocityMapName, octaveMapName = velocityMapName, rhythmMapName = velocityMapName, polyphonyMapName = velocityMapName, noteDurationMap = velocityMapName, maskMapName = velocityMapName, rhythmPatternName = velocityMapName, chordMapName = "default", controlChangeMapName = 'default', rootMapName = velocityMapName, modeMapName = velocityMapName, channel = 1){
+export function createSessionPlayer (e, session, velocityMapName, noteMapName = velocityMapName, octaveMapName = velocityMapName, rhythmMapName = velocityMapName, polyphonyMapName = 'default', noteDurationMap = velocityMapName, maskMapName = velocityMapName, rhythmPatternName = velocityMapName, chordMapName = "default", controlChangeMapName = 'default', rootMapName = velocityMapName, modeMapName = velocityMapName, channel = 1){
     let name = 'exampleMidiPlayer' + JSON.stringify(session)
     setupMidiRhythm(e, name, rhythmMapName)
     let sessionPlayer = e.players['exampleMidiPlayer' + session]
@@ -2722,7 +2722,7 @@ export function createSessionPlayer (e, session, velocityMapName, noteMapName = 
 //https://stackoverflow.com/a/43363105/19515980
 
 //Edit Player:
-export function editSessionPlayer (e, session, velocityMapName, noteMapName = velocityMapName, octaveMapName = velocityMapName, rhythmMapName = velocityMapName, polyphonyMapName = velocityMapName, noteDurationMap = velocityMapName, maskMapName = velocityMapName, rhythmPatternName = velocityMapName, chordMapName = 'default', controlChangeMapName = 'default', rootMapName = velocityMapName, modeMapName = velocityMapName, channel = 1){
+export function editSessionPlayer (e, session, velocityMapName, noteMapName = velocityMapName, octaveMapName = velocityMapName, rhythmMapName = velocityMapName, polyphonyMapName = 'default', noteDurationMap = velocityMapName, maskMapName = velocityMapName, rhythmPatternName = velocityMapName, chordMapName = 'default', controlChangeMapName = 'default', rootMapName = velocityMapName, modeMapName = velocityMapName, channel = 1){
     console.log('chose to edit')
     let sessionPlayer = e.players['exampleMidiPlayer' + session]
     sessionPlayer.velocityMap = velocityMapName

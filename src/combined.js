@@ -2899,7 +2899,7 @@ function checkIfAddChordProgressionMapToPlayer (chordMapName, e){
 }
 
 //Create Player:
-function createSessionPlayer (e, session, velocityMapName, noteMapName = velocityMapName, octaveMapName = velocityMapName, rhythmMapName = velocityMapName, polyphonyMapName = velocityMapName, noteDurationMap = velocityMapName, maskMapName = velocityMapName, rhythmPatternName = velocityMapName, chordMapName = "default", controlChangeMapName = 'default', rootMapName = velocityMapName, modeMapName = velocityMapName, channel = 1){
+function createSessionPlayer (e, session, velocityMapName, noteMapName = velocityMapName, octaveMapName = velocityMapName, rhythmMapName = velocityMapName, polyphonyMapName = 'default', noteDurationMap = velocityMapName, maskMapName = velocityMapName, rhythmPatternName = velocityMapName, chordMapName = "default", controlChangeMapName = 'default', rootMapName = velocityMapName, modeMapName = velocityMapName, channel = 1){
     let name = 'exampleMidiPlayer' + JSON.stringify(session)
     setupMidiRhythm(e, name, rhythmMapName)
     let sessionPlayer = e.players['exampleMidiPlayer' + session]
@@ -2937,7 +2937,7 @@ function createSessionPlayer (e, session, velocityMapName, noteMapName = velocit
 //https://stackoverflow.com/a/43363105/19515980
 
 //Edit Player:
-function editSessionPlayer (e, session, velocityMapName, noteMapName = velocityMapName, octaveMapName = velocityMapName, rhythmMapName = velocityMapName, polyphonyMapName = velocityMapName, noteDurationMap = velocityMapName, maskMapName = velocityMapName, rhythmPatternName = velocityMapName, chordMapName = 'default', controlChangeMapName = 'default', rootMapName = velocityMapName, modeMapName = velocityMapName, channel = 1){
+function editSessionPlayer (e, session, velocityMapName, noteMapName = velocityMapName, octaveMapName = velocityMapName, rhythmMapName = velocityMapName, polyphonyMapName = 'default', noteDurationMap = velocityMapName, maskMapName = velocityMapName, rhythmPatternName = velocityMapName, chordMapName = 'default', controlChangeMapName = 'default', rootMapName = velocityMapName, modeMapName = velocityMapName, channel = 1){
     console.log('chose to edit')
     let sessionPlayer = e.players['exampleMidiPlayer' + session]
     sessionPlayer.velocityMap = velocityMapName
@@ -4882,7 +4882,7 @@ function setUpSimpleMusicalEnvironment (){
     recordConfigurationDataIntoMusicalEnvironment(simpleMelodyData, 'p1', e)
     assignPlayerForMusicSynthesizerSession(e, 1, 'p1')
     e.players.exampleMidiPlayer1.polyphonyMap = 'default'
-    e.players.exampleMidiPlayer2.modeMap = 'default'
+    e.players.exampleMidiPlayer1.modeMap = 'default'
     return e
 }
 
