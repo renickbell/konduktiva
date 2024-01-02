@@ -3057,11 +3057,11 @@ function addToMusicalEnvironment (e){
     e.rhythmPatterns = {'default': new QuantizedMap(4, [0, 1 ,2 , 3], [true, true, true, true])}
     e.noteDurationMaps = {"default": new QuantizedMap(4, [0, 1, 2, 3], [0, 1, 2, 3])}
 //     e.pattern = undefined
-    e.controlChangeMaps = {"default": new QuantizedMap(81, [20, 40, 60, 80], A.buildArray(4, x => {return {
+    e.controlChangeMaps = {"default": new QuantizedMap(81, [20, 40, 60, 80], A.buildArray(4, x => {return [{
       channel: 0,
       controller: 25,
-      value: randomRange(0, 159),
-    }}))
+      value: randomRange(0, 126),
+    }]}))
 }
     e.chordMaps = generateChordProgressions()
     e.chordMaps['default'] = new QuantizedMap(16, [0,4,8,12],['M','m7','m9','maj9'])
@@ -3933,7 +3933,10 @@ function checkIfSendMidiControlChange (e, b, player){
     checkIfUseVerboseLogging(player, 'correctCC' + correctCC)
     if (player.currentControlChange !== correctCC){
         player.currentControlChange = correctCC
-        e.midiOutputs[player.midiOutput - 1].send('cc', correctCC)
+//         e.midiOutputs[player.midiOutput - 1].send('cc', correctCC)
+        correctCC.forEach(x => {
+            e.midiOutputs[player.midiOutput - 1].send('cc', x)
+        })
         checkIfUseVerboseLogging(player, 'CC data sent')
     }
 }
@@ -4567,7 +4570,7 @@ function getMidiKeys(scaleOrChordNotesArray) {
 
 //generated with ChatGPT
 function createCircleOfFifths(startingNote) {
-    // Define the starting note (C major)
+    // Define the starting note
     let currentNote = startingNote;
     const circle = [currentNote];
     // Loop through 11 times to complete the circle of fifths
@@ -4578,10 +4581,44 @@ function createCircleOfFifths(startingNote) {
         circle.push(currentNote);
     })
     // Print the circle of fifths
-    console.log(circle);
     return circle;
 }
 
+function generateCircleOfFithsProgression (nChords, key) {
+    let c1 = createCircleOfFifths(key)
+    return R.reverse(A.buildArray(nChords, i => c1[i%(c1.length)]))
+}
+
+function unzip (inputArray) {
+    let zeros = inputArray.map(x=> x[0]);
+    let ones = inputArray.map(x=> x[1]);
+    return [zeros, ones]
+}
+
+// argument is an array of weight/value pairs as arrays
+function weightedPick (pairs) {
+    let t2 = unzip(pairs)
+    let absolutes = deltaToAbsolute(A.scaleToSum(1,t2[0]))
+    let w1 = new QuantizedMap(absolutes[0], absolutes[1], t2[1])
+    return w1.floorLookup(Math.random())
+}
+
+let chordTypes = {
+        chordColor: ['M','m','dim','aug','sus2','sus4'],
+        chordColorWeights: [2,4,0.5,1,1,0.5,0.5],
+        chordAdd: ['','2','4','6','7','9','11','13'],
+        chordAddWeights: [15,0.5,0.5,1,1,1,0.5,0.5],
+}
+
+function randomChord (rootNote, chordData) {
+    let color = weightedPick(R.zip(chordData.chordColorWeights,chordData.chordColor))
+    let add = weightedPick(R.zip(chordData.chordAddWeights,chordData.chordAdd))
+    if (color === 'aug' && (add != '')) {add = '7'};
+    if (color === 'dim' && add != '') {add = '7'};
+    if (color === "sus2" || color === "sus4") {add = ''}
+    if (add === '2') {color = ''};
+    return [rootNote, color + add]
+}
 
 function generateChordProgression(chordLengths, key, counterClockwiseChance) {
     let progression = [];
@@ -4682,6 +4719,11 @@ addToModuleExports({
   circleOfFifthMelodyGeneration,
   circleOfFifthMelodySplitNotes,
   createCircleOfFifths,
+  generateCircleOfFithsProgression,
+  unzip,
+    weightedPick,
+    chordTypes,
+    randomChord,
   generateChordProgression,
   generateChordsv2,
   generationData,
@@ -4757,16 +4799,16 @@ function sortArrays(arrayA, arrayB) {
 }
 
 function activateKeyboardFilter(keyboardName) {
-    keyboard = new K.easymidi.Input(keyboardName);
+    keyboard = new easymidi.Input(keyboardName);
     keyboard.on('noteon', function(event) {
         try {
             let currentChordRoot = e.rootMaps.testChordProgression1.wrapLookup((e.currentBeat() + 1));
             let currentChordQuality = e.chordMaps.testChordProgression1.wrapLookup((e.currentBeat() + 1))[0];
             let currentNoteMap = e.noteMaps.testChordProgression1.wrapLookup((e.currentBeat() + 1));
-            let octave = extractNumbers(K.Note.fromMidi(event.note));
-            let noteBeingPlayed = removeNumber(K.Note.fromMidi(event.note));
-            chromaticScale = K.Scale.get(`${currentChordRoot} chromatic`)
-            chromaticScale.notes = chromaticScale.notes.map(n => removeNumber(K.Note.fromMidi(K.Note.midi(n + "1"))))
+            let octave = extractNumbers(Note.fromMidi(event.note));
+            let noteBeingPlayed = removeNumber(Note.fromMidi(event.note));
+            chromaticScale = Scale.get(`${currentChordRoot} chromatic`)
+            chromaticScale.notes = chromaticScale.notes.map(n => removeNumber(Note.fromMidi(Note.midi(n + "1"))))
             console.log("here")
             console.log(currentNoteMap)
             console.log(`root: ${currentChordRoot} quality: ${currentChordQuality}`)
@@ -4777,13 +4819,13 @@ function activateKeyboardFilter(keyboardName) {
             console.log("fQM: " + filterQM.values)
             let filteredNote = filterQM.wrapLookup(chromaticScale.notes.indexOf(noteBeingPlayed)) + octave
             playedNotes.push({
-                originalNote: K.Note.fromMidi(event.note),
+                originalNote: Note.fromMidi(event.note),
                 filtered: filteredNote
             })
             console.log(playedNotes)
             console.log("filteredNote" + filteredNote)
             filteredOutput.send('noteon', {
-                note: K.Note.midi(filteredNote),
+                note: Note.midi(filteredNote),
                 velocity: 90,
                 channel: 2
             });
@@ -4793,12 +4835,12 @@ function activateKeyboardFilter(keyboardName) {
     });
     keyboard.on('noteoff', function(event) {
         try {
-            let octave = K.Note.fromMidi(event.note).charAt(K.Note.fromMidi(event.note).length - 1)
+            let octave = Note.fromMidi(event.note).charAt(Note.fromMidi(event.note).length - 1)
             let filteredNote = filterQM.wrapLookup(chromaticScale.notes.indexOf("noteBeingPlayed")) + octave
-            let noteOffObj = playedNotes.filter(note => note.originalNote == K.Note.fromMidi(event.note))[0]
+            let noteOffObj = playedNotes.filter(note => note.originalNote == Note.fromMidi(event.note))[0]
             console.log(filteredNote)
             filteredOutput.send('noteoff', {
-                note: K.Note.midi(noteOffObj.filtered),
+                note: Note.midi(noteOffObj.filtered),
                 velocity: 90,
                 channel: 2
             });
