@@ -2724,7 +2724,7 @@ export function createMidiOutputPlayer (e, midiOutput, velocityMapName, noteMapN
     }
     catch (e){
         if (e.toString() === 'Error: No MIDI output found with name: undefined'){
-            console.log("\x1b[31m",'Extra outputs required. Please open more midiOutputs of your music synthesizer',"\x1b[0m")
+            console.log("\x1b[31m",'Extra outputs required. Please open more instances of your music synthesizer',"\x1b[0m")
             //color logging from: https://stackoverflow.com/questions/9781218/how-to-change-node-jss-console-font-color/41407246#41407246
         }
         throw e
@@ -2840,7 +2840,7 @@ export function addToMusicalEnvironment (e){
     e.maxPolyphonyMaps = {'default': new QuantizedMap(4, [0, 1, 2, 3], [4, 6, 8, 10])}
 //     e.noteDurationMaps = {}
     e.rhythmPatterns = {'default': new QuantizedMap(4, [0, 1 ,2 , 3], [true, true, true, true])}
-    e.noteDurationMaps = {"default": new QuantizedMap(4, [0, 1, 2, 3], [0, 1, 2, 3])}
+    e.noteDurationMaps = {"default": new QuantizedMap(4, [0, 1, 2, 3], [1, 1, 1, 1])}
 //     e.pattern = undefined
     e.controlChangeMaps = {"default": new QuantizedMap(81, [20, 40, 60, 80], A.buildArray(4, x => {return [{
       channel: 0,
@@ -3687,7 +3687,7 @@ export function checkIfSendMidiControlChange (e, b, player){
 }
 
 export function updateMidiInputList (e){
-    e.inputs = easymidi.getInputs().map(x => {
+    return easymidi.getInputs().map(x => {
         return {inputName: x, recordMessage: false}
     })
 }
@@ -4071,7 +4071,7 @@ export let randomMelody1 = {
   noteDurations: A.buildArray(12, x => {return x * 4}),
   bools: A.buildArray(48, x => {return true}),
   octave: chordProgressionScarboroughFair.map(x => {
-      return 0
+      return 3
   }),
   total: 16,
   polyphonyMap: A.buildArray(16, x => {return 50}),
@@ -4148,7 +4148,7 @@ export let melodyData = {
   bools: A.buildArray(48, x => {return true}),
   //noteValuesKeys: A.buildArray(12, x => {return (x * 4)}),
   octave: chordProgressionScarboroughFair.map(x => {
-      return 0
+      return 3
   }),
   noteValues: chordProgressionScarboroughFair.map(x => {
       return x.map(n => {
@@ -4234,7 +4234,7 @@ export let lsystemData = {
 //       })
 //   }),
   octave: chordProgressionScarboroughFair.map(x => {
-      return x[0].octave
+      return x[0].octave + 1
   }),
   noteValues: chordProgressionScarboroughFair.map(x => {
       return x.map(n => {
@@ -4398,7 +4398,7 @@ export let circleOfFifthMelody = {
 //     noteDurations: A.buildArray(24, x => x * 0.25),
     noteDurations: A.buildArray(24, x => 0.25),
     bools: boolsData,
-    octave: circleOfFifthMelodySplitNotes.octaveNotes.map(x => {return x}),
+    octave: circleOfFifthMelodySplitNotes.octaveNotes.map(x => {return 3}),
 noteValues: circleOfFifthMelodySplitNotes.rootNotes.map(x => {return [x]}),
 // noteValues: ["IIm9", "IIm9", "V", "V", "IIIm7", "IIIm7", "VIm","VIm"].map(x => {return [x]}),
     total: 18,
