@@ -2663,21 +2663,22 @@ export function checkIfAddToDissonanceRecorder (beat, note, indexOfBeat){
 //configure-konduktiva.mjs
 
 //Fill in the variables inside the player:
+//HERE
+//Change function so if the thing is undefined do not use velocityMapName use defaultName pass defaultName as another argument.
 export function assignPlayerForMusicSynthesizerMidiOutput (e, midiOutput, defaultName, playerData){
-    if (playerData === undefined){
-        playerData = {velocityMapName: defaultName}
-    }
-    else if (defaultName !== undefined && playerData.velocityMapName === undefined){
-        playerData.velocityMapName = defaultName
-    }
+     if (playerData === undefined){
+         playerData = {}
+     }
+//     else if (defaultName !== undefined && playerData.velocityMapName === undefined){
+//         playerData.velocityMapName = defaultName
+//     }
     if (checkIfMidiOutputPlayerExist(midiOutput, e) === undefined){
-    createMidiOutputPlayer(e, midiOutput, playerData.velocityMapName, playerData.noteMapName, playerData.octaveMapName, playerData.rhythmMapName, playerData.polyphonyMapName, playerData.noteDurationMap, playerData.maskMapName, playerData.rhythmPatternName, playerData.chordMapName, playerData.controlChangeMapName, playerData.rootMapName, playerData.modeMapName, playerData.channel)
+    createMidiOutputPlayer(defaultName, e, midiOutput, playerData.velocityMapName, playerData.noteMapName, playerData.octaveMapName, playerData.rhythmMapName, playerData.polyphonyMapName, playerData.noteDurationMap, playerData.maskMapName, playerData.rhythmPatternName, playerData.chordMapName, playerData.controlChangeMapName, playerData.rootMapName, playerData.modeMapName, playerData.channel)
     }
     else{
-        editMidiOutputPlayer(e, midiOutput, playerData.velocityMapName, playerData.noteMapName, playerData.octaveMapName, playerData.rhythmMapName, playerData.polyphonyMapName, playerData.noteDurationMap, playerData.maskMapName, playerData.rhythmPatternName, playerData.chordMapName, playerData.controlChangeMapName, playerData.rootMapName, playerData.modeMapName, playerData.channel)
+        editMidiOutputPlayer(defaultName, e, midiOutput, playerData.velocityMapName, playerData.noteMapName, playerData.octaveMapName, playerData.rhythmMapName, playerData.polyphonyMapName, playerData.noteDurationMap, playerData.maskMapName, playerData.rhythmPatternName, playerData.chordMapName, playerData.controlChangeMapName, playerData.rootMapName, playerData.modeMapName, playerData.channel)
     }
 }
-
 
 //Check if this player name has been used:
 export function checkIfMidiOutputPlayerExist (midiOutput, e){
@@ -2699,7 +2700,7 @@ export function checkIfAddChordProgressionMapToPlayer (chordMapName, e){
 }
 
 //Create Player:
-export function createMidiOutputPlayer (e, midiOutput, velocityMapName, noteMapName = velocityMapName, octaveMapName = velocityMapName, rhythmMapName = velocityMapName, polyphonyMapName = 'default', noteDurationMap = velocityMapName, maskMapName = velocityMapName, rhythmPatternName = velocityMapName, chordMapName = "default", controlChangeMapName = 'default', rootMapName = velocityMapName, modeMapName = velocityMapName, channel = 1){
+export function createMidiOutputPlayer (defaultName, e, midiOutput, velocityMapName = defaultName, noteMapName = defaultName, octaveMapName = defaultName, rhythmMapName = defaultName, polyphonyMapName = 'default', noteDurationMap = defaultName, maskMapName = defaultName, rhythmPatternName = defaultName, chordMapName = "default", controlChangeMapName = 'default', rootMapName = defaultName, modeMapName = defaultName, channel = defaultName){
     let name = 'exampleMidiPlayer' + JSON.stringify(midiOutput)
     setupMidiRhythm(e, name, rhythmMapName)
     let midiOutputPlayer = e.players['exampleMidiPlayer' + midiOutput]
@@ -2710,7 +2711,12 @@ export function createMidiOutputPlayer (e, midiOutput, velocityMapName, noteMapN
     midiOutputPlayer.rhythmMap = rhythmMapName
     //e.rhythmMaps[rhythmMapName].add(e)
     midiOutputPlayer.midiOutput = midiOutput
-    midiOutputPlayer.channel = channel
+    if (e.channelMaps[channel] === undefined){
+        midiOutputPlayer.channelMap = 'default'
+    }
+    else{
+        midiOutputPlayer.channelMap = channel
+    }
     midiOutputPlayer.polyphonyMap = polyphonyMapName
     midiOutputPlayer.noteDurationMap = noteDurationMap
     midiOutputPlayer.controlChangeMap = controlChangeMapName
@@ -2737,7 +2743,7 @@ export function createMidiOutputPlayer (e, midiOutput, velocityMapName, noteMapN
 //https://stackoverflow.com/a/43363105/19515980
 
 //Edit Player:
-export function editMidiOutputPlayer (e, midiOutput, velocityMapName, noteMapName = velocityMapName, octaveMapName = velocityMapName, rhythmMapName = velocityMapName, polyphonyMapName = 'default', noteDurationMap = velocityMapName, maskMapName = velocityMapName, rhythmPatternName = velocityMapName, chordMapName = 'default', controlChangeMapName = 'default', rootMapName = velocityMapName, modeMapName = velocityMapName, channel = 1){
+export function editMidiOutputPlayer (defaultName, e, midiOutput, velocityMapName = defaultName, noteMapName = defaultName, octaveMapName = defaultName, rhythmMapName = defaultName, polyphonyMapName = 'default', noteDurationMap = defaultName, maskMapName = defaultName, rhythmPatternName = defaultName, chordMapName = 'default', controlChangeMapName = 'default', rootMapName = defaultName, modeMapName = defaultName, channel = defaultName){
     console.log('chose to edit')
     let midiOutputPlayer = e.players['exampleMidiPlayer' + midiOutput]
     midiOutputPlayer.velocityMap = velocityMapName
@@ -2747,7 +2753,12 @@ export function editMidiOutputPlayer (e, midiOutput, velocityMapName, noteMapNam
     midiOutputPlayer.rhythmMap = rhythmMapName
     //e.rhythmMap[rhythmMapName].add(e)
     midiOutputPlayer.midiOutput = midiOutput
-    midiOutputPlayer.channel = channel
+    if (e.channelMaps[channel] === undefined){
+        midiOutputPlayer.channelMap = 'default'
+    }
+    else{
+        midiOutputPlayer.channelMap = channel
+    }
     midiOutputPlayer.noteDurationMap = noteDurationMap
     midiOutputPlayer.controlChangeMap = controlChangeMapName
     midiOutputPlayer.modeMap = modeMapName
@@ -2830,6 +2841,7 @@ export function recordConfigurationDataIntoMusicalEnvironment (noteValueData, na
 }
 
 export function addToMusicalEnvironment (e){
+    e.channelMaps = {'default': new QuantizedMap(4, [0], [1])}
     e.midiOutputs = updateMidiOutputList(e)
     e.inputs = updateMidiInputList(e)
 //     e.midiDataSets = {}
@@ -3172,23 +3184,24 @@ export function checkIfUseVerboseLogging (player){
 }
 
 //Send Midi Data to music synthesizer:
-export function sendMidiData (info, player, note){
+export function sendMidiData (info, player, note, channel){
    // add2Log(note)
     //add2Log('--------------------------------------------------------------------------')
-   checkIfUseVerboseLogging(player, 'note', note, 'velocity: ', info.velocity, 'channel', player.channel - 1, 'midiOutput', player.midiOutput - 1)
+   checkIfUseVerboseLogging(player, 'note', note, 'velocity: ', info.velocity, 'channel', channel - 1, 'midiOutput', player.midiOutput - 1)
     e.midiOutputs[player.midiOutput - 1].send('noteon', {
       note: note,
       velocity: info.velocity,
-      channel: player.channel - 1,
+      channel: channel - 1,
     });
     setTimeout(() => {
         e.midiOutputs[player.midiOutput - 1].send('noteoff', {
           note: note,
           velocity: info.velocity,
-          channel: player.channel - 1,
+          channel: channel - 1,
         });
     }, info.noteDuration * 1000)
 }
+
 
 //Convert velocity values from 0-1 to midi 0-127:
 export function convertVelocityToMidiValues (inputVelocity){
@@ -3439,10 +3452,11 @@ export function callMusicSynthesizerRhythm (e, b, midiOutput){
     info = calculateFinalNoteValue(info, player)
 //     console.log('FINAL playing finaValues', info.finalValues)
     info.finalValues.forEach((x, i) => {
-        sendMidiData(info, player, x)
+        sendMidiData(info, player, x, findChannel(player, b, e))
     })
     return true
 }
+
 
 //NEW BELL MIDI FUNCS:
 
@@ -3573,6 +3587,13 @@ export function checkChangeChordProgressionAndCreateNewMaps (e, b, player){
     applyNewMapNamesToPlayer(e, player, newMapNames)
 }
 
+export function findChannel (player, b, e){
+    checkIfUseVerboseLogging(player, 'Finding channel, beat:', b)
+    let channelMap = e.channelMaps[player.channelMap]
+    checkIfUseVerboseLogging(player, 'ChannelMap:', JSON.stringify(channelMap))
+    return channelMap.wrapLookup(b)
+}
+
 export function sendChordMidiInfo (playerName, b, e){
     let player = e.players[playerName];
     let info = getNoteInfoToSend(player, b, playerName);
@@ -3589,15 +3610,15 @@ export function sendChordMidiInfo (playerName, b, e){
     info = calculateFinalNoteValue(info, player);
     checkIfSendMidiControlChange(e, b, player)
     info.finalValues.forEach((x, i) => {
-        sendMidiData(info, player, x)
+        sendMidiData(info, player, x, findChannel(player, b, e))
     });
     return true
 }
 
 //only thing diffferent is I am getting all the info at once.
-export function sendNotesMidiInfo (midiOutput, b, e){
-    let player = e.players[midiOutput]
-    let info = getNoteInfoToSend(player, b, midiOutput)
+export function sendNotesMidiInfo (playerName, b, e){
+    let player = e.players[playerName]
+    let info = getNoteInfoToSend(player, b, playerName)
     info = filterPolyphany(e, b, player, info)
     info.noteValues = info.noteValues.map(x => {
         return filterMode(x, e, b, player)
@@ -3605,10 +3626,12 @@ export function sendNotesMidiInfo (midiOutput, b, e){
     info = calculateFinalNoteValue(info, player)
     checkIfSendMidiControlChange(e, b, player)
     info.finalValues.forEach((x, i) => {
-        sendMidiData(info, player, x)
+        let chann = findChannel(player, b, e)
+        sendMidiData(info, player, x, chann)
     })
     return true
 }
+
 
 // END OF NEW BELL MIDI export functionS
 
