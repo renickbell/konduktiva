@@ -989,3 +989,289 @@ testR.add(e, 'p3')
 ---
 
 ---
+
+## Action functions
+
+To Note: None of the action functions or the functions called by/in the action functions are intended to be directly called by users.
+
+Action function are a key part of Konduktiva. Click (here)[http://konduktiva.org/doku.php?id=action-functions] to get a simple explanation of action functions and click (here)[http://konduktiva.org/doku.php?id=custom-actions] to see a simple explanation on how to create custom action functions.
+
+Here the details of what each action function does will be documented more specifically.
+
+### default
+Number -> Number -> MusicalEnvironment
+
+A simple action function for testing and debugging purposes which will log all of the arguments into the console disregarding the verbose variable of the player. (Not meant to be called by user)
+
+#### Syntax
+```
+e.actions.default(midiOutput, b, e)
+```
+
+##### Parameters
+###### midiOutput
+The index in the array e.midiOutputs. 
+###### b
+Beat
+###### e
+MusicalEnvironment.
+
+##### Examples
+```
+e.actions.default(1, 100, e)
+/*
+Hi this is the default action function being triggered
+This is the midiOutput:  1
+This is the beat:  100
+undefined
+*/
+```
+
+### midiSequencedRhythm/callMusicSynthesizerRhythm:
+Object -> Number -> 
+
+DEPRECATED
+
+### sendNotesMidiInfo:
+String -> Number -> MusicalEnvironment -> Boolean
+
+Sends note MIDI messages using the information provided.
+Note other functions called in this function documented below.
+#### Syntax
+```
+e.actions.sendNotesMidiInfo(playerName, b, e)
+```
+
+#### Parameter
+##### playerName
+The name of the player to be played
+###### b
+Beat
+###### e
+MusicalEnvironment
+
+##### Example
+```
+e.actions.sendNotesMidiInfo('exampleMidiPlayer1', 100, e)
+```
+
+### sendChordMidiInfo:
+String -> Number -> MusicalEnvironment -> Boolean
+
+Sends chord MIDI messages using the information provided.
+Note other functions called in this function documented below.
+#### Syntax
+```
+e.actions.sendChordMidiInfo(playerName, b, e)
+```
+
+#### Parameter
+##### playerName
+The name of the player to be played
+###### b
+Beat
+###### e
+MusicalEnvironment
+
+##### Example
+```
+e.actions.sendChordMidiInfo('exampleMidiPlayer1', 100, e)
+```
+
+### superDirt/playSuperDirtSample:
+Object -> Number -> 
+
+Plays the information of a player using superdirt
+
+#### Syntax
+```
+e.actions.superDirt(e.players.exampleMidiPlayer1, 100)
+```
+
+#### Parameter
+##### p
+Player
+##### b
+Beat
+
+#### Example
+```
+e.actions.superDirt(e.players.exampleMidiPlayer1, 100)
+```
+
+### Functions used by action functions
+
+#### getNoteInfoToSend
+Object -> Number -> Number -> Object
+
+Gets MIDI information that the player should be playing at a specific beat.
+
+#### Syntax
+```
+K.getNoteInfoToSend(player, b, midiOutput)
+```
+
+#### Parameter
+##### player
+Player that should be playing
+##### b
+Beat
+##### midiOutput
+The index of the array in e.midiOutputs.
+
+#### checkIfUseVerboseLogging
+Object -> ... -> Boolean
+
+Checks if player verbose player is true and if so log messages requested.
+
+#### Syntax
+```
+K.checkIfUseVerboseLogging(player, ...)
+```
+
+#### Parameters
+##### players
+Player to check for verbose variable.
+##### other things to log
+There can be as many other arguments as the user wants and it will be logged in the console if player.verbose is true.
+
+#### Example
+K.checkIfUseVerboseLogging(e.players.exampleMidiPlayer1, ...)
+
+### filterPolyphany
+MusicalEnvironment -> Number -> Object -> Object -> Object
+
+Checks the maxPolyphany map for how many chords can be played at a specific beat. Notes over the polyphany limit will be dropped.
+
+#### Syntax 
+```
+K.filterPolyphany(e, b, player, info)
+```
+
+#### Parameter
+##### e
+MusicalEnvironment
+##### b
+Beat
+##### player
+Player to play
+##### info
+Information gotten from getNoteInfoToSend function
+
+#### Examples
+```
+K.filterPolyphany(e, 100, e.players.exampleMidiPlayer1, K.getNoteInfoToSend(e.players.exampleMidiPlayer1, 100, 1))
+```
+
+### filterMode
+Number -> MusicalEnvironment -> Number -> Object -> Number
+
+Filters note through modes.
+
+#### Syntax
+```
+K.filterMode(note, e, b, player)
+```
+
+#### Parameter
+##### note
+Note to filter
+##### e 
+MusicalEnvironment
+##### b
+Beat
+##### player
+Player
+
+#### Example
+```
+K.filterMode(4, e, 100, e.players.exampleMidiPlayer1)
+//4
+```
+
+### calculateFinalNoteValue
+Object -> Object
+
+Calculates the note variable of the final MIDI message.
+
+#### Syntax
+```
+K.calculateFinalNoteValue(info)
+```
+
+#### Parameter
+##### info
+The object returned by getNoteInfoToSend.
+
+#### Example
+```
+K.calculateFinalNoteValue(K.getNoteInfoToSend(e.players.exampleMidiPlayer1, 100, 1))
+```
+
+### checkIfSendMidiControlChange
+MusicalEnvironment -> Number -> Object ->
+
+Checks if player is supposed to send MIDI CC messages at the current beat and if yes sends the correct MIDI CC message.
+
+### Syntax 
+```
+K.checkIfSendMidiControlChange(e, b, player)
+```
+
+#### Parameters 
+##### e
+MusicalEnvironment
+##### b
+Beat
+##### player
+Player
+
+#### Example
+```
+K.checkIfSendMidiControlChange(e, 100, e.players.exampleMidiPlayer1)
+```
+
+### findChannel
+Object -> Number -> MusicalEnvironment -> Number
+
+Checks which channel the player should be sending MIDI messages to.
+#### Syntax
+```
+K.findChannel(player, b, e)
+```
+
+#### Parameter
+##### Player
+Player that should be checked
+##### b
+Beat
+##### e
+MusicalEnvironment
+
+#### Examples
+```
+K.findChannel(e.players.exampleMidiPlayer1, 100, e)
+```
+
+### sendMidiData
+Object -> Object -> Number -> Number ->
+
+Sends MIDI noteon and noteoff messages.
+
+#### Syntax
+```
+K.sendMidiData(info, player, note, channel)
+```
+
+#### Parameters
+##### info
+Object returned from getNoteInfoToSend function.
+##### player
+Player to check
+##### Channel
+Channel to send MIDI message to.
+
+#### Examples 
+```
+K.sendMidiData(K.getNoteInfoToSend(e.players.exampleMidiPlayer1, 100, 1), e.players.exampleMidiPlayer1, 50, 1)
+```
