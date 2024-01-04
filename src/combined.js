@@ -3081,7 +3081,7 @@ function addToMusicalEnvironment (e){
     e.midiOutputs = updateMidiOutputList(e)
     e.inputs = updateMidiInputList(e)
 //     e.midiDataSets = {}
-    e.velocityMaps = {'default': new QuantizedMap(4, [0, 1, 2, 3], [100, 120, 80, 100])}
+    e.velocityMaps = {'default': new QuantizedMap(4, [0, 1, 2, 3], [127,60,50,30])}
     e.noteMaps = {'default': new QuantizedMap(4, [0, 1, 2, 3], [[0], [1], [2], [3]])}
     e.octaveMaps = {}
 //     e.rootNoteMaps = {}
@@ -4343,56 +4343,6 @@ function changeWebsocketServerPort (newPort, wss){
     }
 }
 
-function addToMusicalEnvironment (e){
-    e.channelMaps = {'default': new QuantizedMap(4, [0], [1])}
-    e.midiOutputs = updateMidiOutputList(e)
-    e.inputs = updateMidiInputList(e)
-//     e.midiDataSets = {}
-    e.velocityMaps = {'default': new QuantizedMap(4, [0, 1, 2, 3], [100, 120, 80, 100])}
-    e.noteMaps = {'default': new QuantizedMap(4, [0, 1, 2, 3], [[0], [1], [2], [3]])}
-    e.octaveMaps = {}
-//     e.rootNoteMaps = {}
-    e.maxPolyphonyMaps = {'default': new QuantizedMap(4, [0, 1, 2, 3], [4, 6, 8, 10])}
-//     e.noteDurationMaps = {}
-    e.rhythmPatterns = {'default': new QuantizedMap(4, [0, 1 ,2 , 3], [true, true, true, true])}
-    e.noteDurationMaps = {"default": new QuantizedMap(4, [0, 1, 2, 3], [1, 1, 1, 1])}
-//     e.pattern = undefined
-    e.controlChangeMaps = {"default": new QuantizedMap(81, [20, 40, 60, 80], A.buildArray(4, x => {return [{
-      channel: 0,
-      controller: 25,
-      value: randomRange(0, 126),
-    }]}))
-}
-    e.chordMaps = generateChordProgressions()
-    e.chordMaps['default'] = new QuantizedMap(16, [0,4,8,12],['M','m7','m9','maj9'])
-    e.chordMaps['exampleChords'] = e.chordMaps['default']
-    e.songMaps = {
-        'twelveBars-lsystem-scarbrofair': new QuantizedMap(15000, [1000, 5000, 10000], ['twelveBars', 'lsystem', 'scarboroughFair'])
-    }
-    let modes = {
-      ionian: [0, 2, 4, 5, 7, 9, 11],
-      dorian: [0, 2, 3, 5, 7, 9, 10],
-      phrygian: [0, 1, 3, 5, 7, 8, 10],
-      lydian: [0, 2, 4, 6, 7, 9, 11],
-      mixolydian: [0, 2, 4, 5, 7, 9, 10],
-      aeolian: [0, 2, 3, 5, 7, 8, 10],
-      locrian: [0, 1, 3, 5, 6, 8, 10],
-      blues: [0, 3, 5, 6, 7, 10],
-      bluesPentatonic: [0, 3, 5, 6, 7, 10],
-      minorBluesPentatonicScale: [0, 3, 5, 7, 10],
-    };
-    e.modeFilters = {'chromatic': new QuantizedMap(12, A.buildArray(12,i=>i), A.buildArray(12,i=>i))}
-    e.modeFilters['default'] = e.modeFilters.chromatic
-    Object.keys(modes).forEach(x => {
-        e.modeFilters[x] = new QuantizedMap(12, modes[x], modes[x])
-    })
-    e.modeMaps = {'default': new QuantizedMap(400, [0], [ 'chromatic']), 'chromatic': new QuantizedMap(400, [0], [ 'chromatic'])}
-    e.rootMaps = {'default': new QuantizedMap(4, [0, 1, 2, 3], ['C', 'C', 'C', 'C'])} //English alphabets for music
-     e.notesInputMode = 'relativeSemitone' //OR 'relativeScaleDegree'
-//     e.notesInputMode = 'relativeScaleDegree'
-    e.recordedMessages = {}
-     e.messageMaps = {}
-}
 addToModuleExports({
 clients, commands, newResponseTimes, createDefaultWebsocketServer, wss, changeWebsocketServerPort
 })

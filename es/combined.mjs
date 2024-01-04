@@ -2855,7 +2855,7 @@ export function addToMusicalEnvironment (e){
     e.midiOutputs = updateMidiOutputList(e)
     e.inputs = updateMidiInputList(e)
 //     e.midiDataSets = {}
-    e.velocityMaps = {'default': new QuantizedMap(4, [0, 1, 2, 3], [100, 120, 80, 100])}
+    e.velocityMaps = {'default': new QuantizedMap(4, [0, 1, 2, 3], [127,60,50,30])}
     e.noteMaps = {'default': new QuantizedMap(4, [0, 1, 2, 3], [[0], [1], [2], [3]])}
     e.octaveMaps = {}
 //     e.rootNoteMaps = {}
