@@ -2136,6 +2136,16 @@ addToModuleExports({
 // --------------------------------------------------------------------------
 //chords.js:
 
+function addNoteMapFromChordMap(e, rootMapName, chordMapName, noteMapName){
+    let keyspan = e.rootMaps[rootMapName].keyspan;
+    let keys = e.rootMaps[rootMapName].keys;
+    let rootArray = e.rootMaps[rootMapName].values;
+    let chords = [];
+    rootArray.forEach(root => chords.push(Chord.get(root + e.chordMaps[chordMapName].values[rootArray.indexOf(root)])));
+    let chordsIntervals = chords.map(c => c.intervals.map(x => Interval.semitones(x)));
+    e.noteMaps[noteMapName] = new QuantizedMap(keyspan, keys, chordsIntervals);
+}
+ 
 function getChordComponents (values){
     let roots = [];
     let chords = [];
@@ -2517,6 +2527,7 @@ function makeChordProgression (name, total, iois, notes, octaves, e){
 // makeChordProgression('yo', 10, [4, 8, 12, 16, 20], [10, 10, 10, 10, 20], [5, 5, 5])
 
 addToModuleExports({
+    addNoteMapFromChordMap,
   assignChordProgressionToPlayer,
   checkIfChangeChordProgression,
   conditionalNoteConfigurations,
