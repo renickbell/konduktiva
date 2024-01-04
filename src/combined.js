@@ -3287,7 +3287,7 @@ function addToMusicalEnvironment (e){
         e.modeFilters[x] = new QuantizedMap(12, modes[x], modes[x])
     })
     e.modeMaps = {'default': new QuantizedMap(400, [0, 100, 200, 300, 400], [ 'ionian', 'phrygian', 'mixolydian' ])}
-    e.rootMaps = {'default': new QuantizedMap(4, [0, 1, 2, 3], ['C', 'C', 'C', 'C'])} //English alphabets for music
+    e.rootMaps = {'default': new QuantizedMap(4, [0, 1, 2, 3], ['C', 'C', 'C', 'C']), 'exampleChordRoots': new QuantizedMap(12, [0, 4, 8, 12], ['C','A','D','G'])} //English alphabets for music
      e.notesInputMode = 'relativeSemitone' //OR 'relativeScaleDegree'
 //     e.notesInputMode = 'relativeScaleDegree'
     e.recordedMessages = {}
@@ -3431,6 +3431,20 @@ function checkAllItemsType (inputArray, type){
         return false
     }
 }
+
+function addChordProgression (e, mapName, keyspan, keys, values){
+    let roots = []
+    let chords = []
+    values.forEach(x => {
+        let both = Chord.tokenize(x)
+        roots.push(both[0])
+        chords.push(both[1])
+    })
+    e.rootMaps[mapName] = new QuantizedMap(keyspan, keys, roots)
+    e.chordMaps[mapName] = new QuantizedMap(keyspan, keys, chords)
+}
+
+
 
 addToModuleExports({
   addToMusicalEnvironment,
@@ -4000,6 +4014,7 @@ function sendChordMidiInfo (session, b, e){
         return filterMode(x, e, b, player)
     })
     info = calculateFinalNoteValue(info, player)
+    checkIfSendMidiControlChange(e, b, player)
     info.finalValues.forEach((x, i) => {
         sendMidiData(info, player, x)
     })
@@ -4015,6 +4030,7 @@ function sendNotesMidiInfo (session, b, e){
         return filterMode(x, e, b, player)
     })
     info = calculateFinalNoteValue(info, player)
+    checkIfSendMidiControlChange(e, b, player)
     info.finalValues.forEach((x, i) => {
         sendMidiData(info, player, x)
     })
@@ -4857,6 +4873,48 @@ addToModuleExports({
   velocityData
 })
 
+//--------------------------------------------------------------------------
+//worker-functions.js
+
+let workerCodeForArguments = `
+const {
+  Worker, isMainThread, parentPort, workerData,
+} = require('node:worker_threads');
+
+function returnToParent (info){
+    parentPort.postMessage(info)
+}
+
+try{
+    eval(workerData)
+}
+catch {
+    process.exit()
+}
+
+process.exit()
+`
+
+//code in workerCode has to be stringified.
+function giveWorkerWork (workerCode){
+    return new Promise((resolve, reject) => {
+        worker = new Worker(workerCodeForArguments, {eval: true, workerData: workerCode})
+        worker.on('message', result => {
+              console.log('worker done', result)
+              resolve(result)
+        })
+        worker.on('error', err => {
+            console.log('worker crashed', err)
+            // Reject the Promise with the error if something goes wrong
+            reject(err);
+            worker.terminate()
+        });
+    })
+}
+
+addToModuleExports({
+    workerCodeForArguments, giveWorkerWork
+})
 // --------------------------------------------------------------------------
 //Other setup functions:
 

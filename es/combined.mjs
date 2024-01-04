@@ -4533,6 +4533,45 @@ noteValues: circleOfFifthMelodySplitNotes.rootNotes.map(x => {return [x]}),
 //console.time('p1')
 
 //--------------------------------------------------------------------------
+//worker-functions.mjs
+
+export let workerCodeForArguments = `
+const {
+  Worker, isMainThread, parentPort, workerData,
+} = require('node:worker_threads');
+
+function returnToParent (info){
+    parentPort.postMessage(info)
+}
+
+try{
+    eval(workerData)
+}
+catch {
+    process.exit()
+}
+
+process.exit()
+`
+
+//code in workerCode has to be stringified.
+export function giveWorkerWork (workerCode){
+    return new Promise((resolve, reject) => {
+        let worker = new Worker(workerCodeForArguments, {eval: true, workerData: workerCode})
+        worker.on('message', result => {
+              console.log('worker done', result)
+              resolve(result)
+        })
+        worker.on('error', err => {
+            console.log('worker crashed', err)
+            // Reject the Promise with the error if something goes wrong
+            reject(err);
+            worker.terminate()
+        });
+    })
+}
+
+//--------------------------------------------------------------------------
 //other functions:
 
 export function setUpMusicalEnvironmentExamples (){
