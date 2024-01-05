@@ -743,7 +743,7 @@ class MusicalEnvironment {
         this.samplePatternCount = 0;
         this.samplePatternStore = {};
         this.currentDensityGraphs = [];
-        this.currentBeatsPerMeasure = 4;
+        this.timeSignature = 4;
         this.currentTempo = 120;
         this.beatOfChangeToCurrentTempo = undefined;
         this.timeOfChangeToCurrentTempo = undefined;
