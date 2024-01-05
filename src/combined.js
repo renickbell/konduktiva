@@ -3915,7 +3915,7 @@ function getNoteInfoToSend (player, b, midiOutput){
         noteDuration: e.rhythmMaps[player.rhythmMap].values[0].wrapLookup(b),
         velocity: convertVelocityToMidiValues(e.velocityMaps[player.velocityMap].wrapLookup(b)),
 //         noteValues:  e.noteMaps[player.noteMap].wrapLookup(e.noteDurationMaps[player.noteDurationMap].wrapLookup(b)),
-        noteValues:  e.noteMaps[player.noteMap].wrapLookup(e.noteDurationMaps[player.noteDurationMap].wrapLookup(b)),
+        noteValues:  e.noteMaps[player.noteMap].wrapLookup(b),
 //         noteValues: (e.octaveMaps[player.noteMap].wrapLookup(e.noteDurationMaps[player.noteDurationMap].wrapLookup(b)) * 12) + e.rootNoteMaps[player.noteMap].wrapLookup(e.noteDurationMaps[player.noteDurationMap].wrapLookup(b)),
         octaves: e.octaveMaps[player.octaveMap].wrapLookup(b),
         root: e.rootMaps[player.rootMap].wrapLookup(b),
