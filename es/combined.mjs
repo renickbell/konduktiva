@@ -2112,7 +2112,7 @@ export function createRootMap (noteValueData, name, e){
         e.rootMaps[name] = new QuantizedMap(noteValueData.rootMap.length, A.buildArray(noteValueData.rootMap.length, x => {return x}), noteValueData.rootMap)
     }
     else {
-        e.rootMaps[name] = new QuantizedMap(noteValueData.rootMapKeyspan, noteValueData.rootMapKeys, noteValueData.root)
+        e.rootMaps[name] = new QuantizedMap(noteValueData.rootMapKeyspan, noteValueData.rootMapKeys, noteValueData.rootMap)
     }
 }
 

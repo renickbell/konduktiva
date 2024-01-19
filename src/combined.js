@@ -1972,6 +1972,17 @@ function generativeParseString (inputString,rules,generations) {
 }
 //Chatgpt helped with removing for loop
 
+function generativeParseString(inputString, rules, generations) {
+    let currentGeneration = inputString;
+    Array.from({ length: generations }, () => {
+        let tempGeneration = parseString(currentGeneration, rules);
+        delete currentGeneration
+        currentGeneration = tempGeneration
+        delete tempGeneration
+    })
+    return currentGeneration;
+}
+
 //Gnerated the QuantizedMap for the lsystem chord progression:
 /**
   * Generates a random L-system in form of a QuantizedMap.
@@ -2277,7 +2288,7 @@ function createRootMap (noteValueData, name, e){
         e.rootMaps[name] = new QuantizedMap(noteValueData.rootMap.length, A.buildArray(noteValueData.rootMap.length, x => {return x}), noteValueData.rootMap)
     }
     else {
-        e.rootMaps[name] = new QuantizedMap(noteValueData.rootMapKeyspan, noteValueData.rootMapKeys, noteValueData.root)
+        e.rootMaps[name] = new QuantizedMap(noteValueData.rootMapKeyspan, noteValueData.rootMapKeys, noteValueData.rootMap)
     }
 }
 
@@ -2936,7 +2947,7 @@ function checkIfAddChordProgressionMapToPlayer (chordMapName, e){
 }
 
 //Create Player:
-function createMidiOutputPlayer (defaultName, e, midiOutput, velocityMapName = 'default', noteMapName = defaultName, octaveMapName = defaultName, rhythmMapName = defaultName, polyphonyMapName = 'default', noteDurationMap = defaultName, maskMapName = defaultName, rhythmPatternName = defaultName, chordMapName = "default", controlChangeMapName = 'default', rootMapName = defaultName, modeMapName = defaultName, channel = defaultName, playerName = 'exampleMidiPlayer' + JSON.stringify(midiOutput)){
+function createMidiOutputPlayer (defaultName, e, midiOutput, velocityMapName = 'default', noteMapName = defaultName, octaveMapName = defaultName, rhythmMapName = defaultName, polyphonyMapName = 'default', noteDurationMap = defaultName, maskMapName = defaultName, rhythmPatternName = defaultName, chordMapName = "default", controlChangeMapName = 'default', rootMapName = defaultName, modeMapName = 'default', channel = defaultName, playerName = 'exampleMidiPlayer' + JSON.stringify(midiOutput)){
     setupMidiRhythm(e, playerName, rhythmMapName)
     let midiOutputPlayer = e.players[playerName]
     midiOutputPlayer.velocityMap = velocityMapName
@@ -2977,7 +2988,7 @@ function createMidiOutputPlayer (defaultName, e, midiOutput, velocityMapName = '
 //https://stackoverflow.com/a/43363105/19515980
 
 //Edit Player:
-function editMidiOutputPlayer (defaultName, e, midiOutput, velocityMapName = 'default', noteMapName = defaultName, octaveMapName = defaultName, rhythmMapName = defaultName, polyphonyMapName = 'default', noteDurationMap = defaultName, maskMapName = defaultName, rhythmPatternName = defaultName, chordMapName = 'default', controlChangeMapName = 'default', rootMapName = defaultName, modeMapName = defaultName, channel = defaultName, playerName = 'exampleMidiPlayer' + midiOutput){
+function editMidiOutputPlayer (defaultName, e, midiOutput, velocityMapName = 'default', noteMapName = defaultName, octaveMapName = defaultName, rhythmMapName = defaultName, polyphonyMapName = 'default', noteDurationMap = defaultName, maskMapName = defaultName, rhythmPatternName = defaultName, chordMapName = 'default', controlChangeMapName = 'default', rootMapName = defaultName, modeMapName = 'default', channel = defaultName, playerName = 'exampleMidiPlayer' + midiOutput){
     console.log('chose to edit')
     let midiOutputPlayer = e.players[playerName]
     midiOutputPlayer.velocityMap = velocityMapName
