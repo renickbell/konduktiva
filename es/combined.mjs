@@ -2094,7 +2094,7 @@ export function createNoteRelatedMaps (noteValueData, name, e){
     if (noteValueData.noteValuesKeys === undefined){
         noteValueData.noteValuesKeys = A.buildArray(noteValueData.noteValues.length, x => {return x})
     }
-    e.noteMaps[name] = new QuantizedMap(noteValueData.noteValues.length, noteValueData.noteValuesKeys, noteValueData.noteValues)
+    e.noteMaps[name] = new QuantizedMap(noteValueData.noteValuesKeyspan, noteValueData.noteValuesKeys, noteValueData.noteValues)
 }
 
 //Create octave related things:
@@ -2675,21 +2675,23 @@ export function checkIfAddToDissonanceRecorder (beat, note, indexOfBeat){
 //Fill in the variables inside the player:
 //HERE
 //Change function so if the thing is undefined do not use velocityMapName use defaultName pass defaultName as another argument.
-export function assignPlayerForMusicSynthesizerMidiOutput (e, midiOutput, defaultName, playerData, playerName){
-     if (playerData === undefined){
-         playerData = {}
-     }
+export function assignPlayerForMusicSynthesizerMidiOutput (e, midiOutput, defaultName, playerData = {}, playerName = 'exampleMidiPlayer' + JSON.stringify(midiOutput)){
 //     else if (defaultName !== undefined && playerData.velocityMapName === undefined){
 //         playerData.velocityMapName = defaultName
 //     }
-    if (checkIfMidiOutputPlayerExist(midiOutput, e) === undefined){
-    createMidiOutputPlayer(defaultName, e, midiOutput, playerData.velocityMapName, playerData.noteMapName, playerData.octaveMapName, playerData.rhythmMapName, playerData.polyphonyMapName, playerData.noteDurationMap, playerData.maskMapName, playerData.rhythmPatternName, playerData.chordMapName, playerData.controlChangeMapName, playerData.rootMapName, playerData.modeMapName, playerData.channel, playerName)
+//     if (checkIfMidiOutputPlayerExist(midiOutput, e) === undefined){
+    if (checkIfPlayerExists(playerName, e) === undefined){
+        createMidiOutputPlayer(defaultName, e, midiOutput, playerData.velocityMapName, playerData.noteMapName, playerData.octaveMapName, playerData.rhythmMapName, playerData.polyphonyMapName, playerData.noteDurationMap, playerData.maskMapName, playerData.rhythmPatternName, playerData.chordMapName, playerData.controlChangeMapName, playerData.rootMapName, playerData.modeMapName, playerData.channel, playerName)
     }
     else{
         editMidiOutputPlayer(defaultName, e, midiOutput, playerData.velocityMapName, playerData.noteMapName, playerData.octaveMapName, playerData.rhythmMapName, playerData.polyphonyMapName, playerData.noteDurationMap, playerData.maskMapName, playerData.rhythmPatternName, playerData.chordMapName, playerData.controlChangeMapName, playerData.rootMapName, playerData.modeMapName, playerData.channel, playerName)
     }
 }
 
+//Check if this player name has been used:
+function checkIfPlayerExists (playerName, e){
+    return Object.keys(e.players).find(x => x === playerName)
+}
 
 //Check if this player name has been used:
 export function checkIfMidiOutputPlayerExist (midiOutput, e){
@@ -2710,10 +2712,7 @@ export function checkIfAddChordProgressionMapToPlayer (chordMapName, e){
     }
 }
 
-//Create Player:
-export function createMidiOutputPlayer (defaultName, e, midiOutput, velocityMapName = 'default', noteMapName = defaultName, octaveMapName = defaultName, rhythmMapName = defaultName, polyphonyMapName = 'default', noteDurationMap = defaultName, maskMapName = defaultName, rhythmPatternName = defaultName, chordMapName = "default", controlChangeMapName = 'default', rootMapName = defaultName, modeMapName = defaultName, channel = defaultName, playerName = 'exampleMidiPlayer' + JSON.stringify(midiOutput)
-){
-    setupMidiRhythm(e, playerName, rhythmMapName)
+export function generalMidiOutputVariableAssigning (defaultName, e, midiOutput, velocityMapName = defaultName, noteMapName = defaultName, octaveMapName = defaultName, rhythmMapName = defaultName, polyphonyMapName = defaultName, noteDurationMap = defaultName, maskMapName = defaultName, rhythmPatternName = defaultName, chordMapName = defaultName, controlChangeMapName = defaultName, rootMapName = defaultName, modeMapName = defaultName, channel = defaultName, playerName = 'exampleMidiPlayer' + JSON.stringify(midiOutput)){
     let midiOutputPlayer = e.players[playerName]
     midiOutputPlayer.velocityMap = velocityMapName
     midiOutputPlayer.noteMap = noteMapName
@@ -2752,43 +2751,19 @@ export function createMidiOutputPlayer (defaultName, e, midiOutput, velocityMapN
 
 //https://stackoverflow.com/a/43363105/19515980
 
+//Create Player:
+export function createMidiOutputPlayer (defaultName, e, midiOutput, velocityMapName = 'default', noteMapName = defaultName, octaveMapName = defaultName, rhythmMapName = defaultName, polyphonyMapName = 'default', noteDurationMap = defaultName, maskMapName = defaultName, rhythmPatternName = defaultName, chordMapName = "default", controlChangeMapName = 'default', rootMapName = defaultName, modeMapName = 'default', channel = defaultName, playerName = 'exampleMidiPlayer' + JSON.stringify(midiOutput)){
+    console.log('Chose to create player')
+    setupMidiRhythm(e, playerName, rhythmMapName)
+    generalMidiOutputVariableAssigning.apply(null, arguments)
+}
+
+//https://stackoverflow.com/a/43363105/19515980
+
 //Edit Player:
-export function editMidiOutputPlayer (defaultName, e, midiOutput, velocityMapName = 'default', noteMapName = defaultName, octaveMapName = defaultName, rhythmMapName = defaultName, polyphonyMapName = 'default', noteDurationMap = defaultName, maskMapName = defaultName, rhythmPatternName = defaultName, chordMapName = 'default', controlChangeMapName = 'default', rootMapName = defaultName, modeMapName = defaultName, channel = defaultName, playerName = 'exampleMidiPlayer' + midiOutput){
-    console.log('chose to edit')
-    let midiOutputPlayer = e.players[playerName]
-    midiOutputPlayer.velocityMap = velocityMapName
-    midiOutputPlayer.noteMap = noteMapName
-    midiOutputPlayer.octaveMap = octaveMapName
-    midiOutputPlayer.maskMap = maskMapName
-    midiOutputPlayer.rhythmMap = rhythmMapName
-    //e.rhythmMap[rhythmMapName].add(e)
-    midiOutputPlayer.midiOutput = midiOutput
-    if (e.channelMaps[channel] === undefined){
-        midiOutputPlayer.channelMap = 'default'
-    }
-    else{
-        midiOutputPlayer.channelMap = channel
-    }
-    midiOutputPlayer.noteDurationMap = noteDurationMap
-    midiOutputPlayer.controlChangeMap = controlChangeMapName
-    midiOutputPlayer.modeMap = modeMapName
-    midiOutputPlayer.rootMap = rootMapName
-    midiOutputPlayer.polyphonyMap = polyphonyMapName
-    midiOutputPlayer.chordMap = chordMapName
-    e.rhythmPatterns[rhythmPatternName].add(e, playerName)
-    try{
-        e.midiOutputs[midiOutput - 1] = (new easymidi.Output(easymidi.getOutputs()[midiOutput]))
-    }
-    catch (e){
-        if (e.toString() === 'Error: No MIDI output found with name: undefined'){
-            console.log("\x1b[31m",'Extra outputs required. Please open more midiOutputs of your music synthesizer',"\x1b[0m")
-            //color logging from: https://stackoverflow.com/questions/9781218/how-to-change-node-jss-console-font-color/41407246#41407246
-        }
-        throw e
-    }
-//     try{
-//     midiOutputPlayer.chordMap = checkIfAddChordProgressionMapToPlayer(chordMapName, e)
-//     }catch{}
+export function editMidiOutputPlayer (defaultName, e, midiOutput, velocityMapName = 'default', noteMapName = defaultName, octaveMapName = defaultName, rhythmMapName = defaultName, polyphonyMapName = 'default', noteDurationMap = defaultName, maskMapName = defaultName, rhythmPatternName = defaultName, chordMapName = 'default', controlChangeMapName = 'default', rootMapName = defaultName, modeMapName = 'default', channel = defaultName, playerName = 'exampleMidiPlayer' + midiOutput){
+    console.log('Chose to edit player')
+    generalMidiOutputVariableAssigning.apply(null, arguments)
 }
 
 export function createControlChangeMaps (noteValueData, name, e){
@@ -2825,7 +2800,6 @@ export function createModeMaps (noteValueData, name, e){
     }
 }
 
-let hi;
 //Create maps and other things from noteValue Data and save these new things in the musical environment:
 export function recordConfigurationDataIntoMusicalEnvironment (noteValueData, name, e){
     createNoteSpans(noteValueData, e)
@@ -2833,7 +2807,12 @@ export function recordConfigurationDataIntoMusicalEnvironment (noteValueData, na
     createNoteRelatedMaps(noteValueData, name, e)
     createOctaveMaps(noteValueData, name, e)
 //     e.rootNoteMaps[name] = new QuantizedMap(noteValueData.rootNote.length, A.buildArray(noteValueData.rootNote.length, x => {return x}), noteValueData.rootNote)
-    e.velocityMaps[name] = new QuantizedMap(noteValueData.velocity.length, A.buildArray(noteValueData.velocity.length, x => {return x}), noteValueData.velocity)
+    if (noteValueData.velocityKeys === undefined){
+        e.velocityMaps[name] = new QuantizedMap(noteValueData.velocity.length, A.buildArray(noteValueData.velocity.length, x => {return x}), noteValueData.velocity)
+    }
+    else {
+        e.velocityMaps[name] = new QuantizedMap(noteValueData.velocity.length, noteValueData.velocityKeys, noteValueData.velocity)
+    }
     if (noteValueData.polyphonyMap !== undefined){
         e.maxPolyphonyMaps[name] = new QuantizedMap(noteValueData.polyphonyMap.length, A.buildArray(noteValueData.polyphonyMap.length, x => {return x}), noteValueData.polyphonyMap, e)
     }
