@@ -3073,8 +3073,8 @@ function recordConfigurationDataIntoMusicalEnvironment (noteValueData, name, e){
 
 function addToMusicalEnvironment (e){
     e.channelMaps = {'default': new QuantizedMap(4, [0], [1])}
-    e.midiOutputs = updateMidiOutputList(e)
-    e.inputs = updateMidiInputList(e)
+    updateMidiOutputList(e)
+    updateMidiInputList(e)
 //     e.midiDataSets = {}
     e.velocityMaps = {'default': new QuantizedMap(4, [0, 1, 2, 3], [127,60,50,30])}
     e.noteMaps = {'default': new QuantizedMap(4, [0, 1, 2, 3], [[0], [1], [2], [3]])}
@@ -3979,13 +3979,13 @@ function checkIfSendMidiControlChange (e, b, player){
 }
 
 function updateMidiInputList (e){
-    return easymidi.getInputs().map(x => {
+    e.midiInputs = easymidi.getInputs().map(x => {
         return {inputName: x, recordMessage: false}
     })
 }
 
 function ignoreMessagesFromInput (e, inputIndex){
-    let currentInput = e.inputs[inputIndex]
+    let currentInput = e.midiInputs[inputIndex]
     currentInput.outputPort.off('message', currentInput.inputFunc)
 }
 
@@ -4099,7 +4099,7 @@ function yilerNoteOffFilter (inputNote){
 //Yiler function ends here
 
 function receiveMessagesFromInput (e, inputIndex, outputIndex, recordMessages){
-    let currentInput = e.inputs[inputIndex]
+    let currentInput = e.midiInputs[inputIndex]
     if (currentInput.recordedMessages === undefined){
         currentInput.recordedMessages = new QuantizedMap(0, [], [])
     }
@@ -4108,7 +4108,7 @@ function receiveMessagesFromInput (e, inputIndex, outputIndex, recordMessages){
     }
     currentInput.outputIndex = outputIndex
     currentInput.inputFunc = (deltaTime, message) => {
-        let currentInput = e.inputs[inputIndex]
+        let currentInput = e.midiInputs[inputIndex]
         if (deltaTime._type === 'noteon'){
             console.log('erge', deltaTime)
             deltaTime.note = yilerNoteOnFilter(deltaTime.note)
@@ -4132,7 +4132,7 @@ function receiveMessagesFromInput (e, inputIndex, outputIndex, recordMessages){
 }
 
 function addInputMessageToRecordedMessages (inputIndex, recordedMessagesName){
-    e.recordedMessages[recordedMessagesName] = e.inputs[inputIndex].recordedMessages
+    e.recordedMessages[recordedMessagesName] = e.midiInputs[inputIndex].recordedMessages
     let messages = e.recordedMessages[recordedMessages]
     let relativeKeys = [0]
     messages.keys.forEach((x, i) => {
