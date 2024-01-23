@@ -20,6 +20,7 @@ const osc = require("osc");
 const v8 = require('v8');
 const A = require('array-toolkit')
 const R = require('ramda')
+const midiFileIO = require('midi-file-io');
 // const A = require('./github-array-toolkit-package/array-toolkit/array-toolkit.mjs')
 
 
@@ -63,6 +64,8 @@ mergedFunctions.Midi = Midi
 mergedFunctions.RomanNumeral = RomanNumeral
 mergedFunctions.Mode = Mode
 mergedFunctions.Pcset = Pcset
+mergedFunctions.midiFileIO = require('midi-file-io');
+
 
 module.exports = mergedFunctions
 // --------------------------------------------------------------------------
@@ -395,7 +398,7 @@ function decreaseDensity (inputArray) {
         return [inputArray[0] + inputArray[1]]
     }
     else {
-        let target = (K.randomRangeInt(0,inputArray.length - 2));
+        let target = (randomRangeInt(0,inputArray.length - 2));
         let outputA = inputArray.slice(0,target);
         let outputB = [inputArray[target] + inputArray[target+1]].concat(inputArray.slice(target+2))
         return outputA.concat(outputB)
@@ -4030,41 +4033,41 @@ function yilerNoteOnFilter (inputNote){
         let chordCorrespondingScale;
         let chordRelativeSemitone = e.noteMaps.p4.wrapLookup((e.currentBeat()+ 1)/4)
         console.log(chordRelativeSemitone)
-        let chordBeingPlayed = K.Chord.detect(chordRelativeSemitone.map(e => K.Note.fromMidi(e)))
+        let chordBeingPlayed = Chord.detect(chordRelativeSemitone.map(e => K.Note.fromMidi(e)))
         if (chordBeingPlayed[0].includes("b")) {
-            chromaticScale = K.Scale.get(chordBeingPlayed[0].slice(0, 2) + " chromatic")
+            chromaticScale = Scale.get(chordBeingPlayed[0].slice(0, 2) + " chromatic")
         } else {
-            chromaticScale = K.Scale.get(chordBeingPlayed[0].charAt(0) + " chromatic")
+            chromaticScale = Scale.get(chordBeingPlayed[0].charAt(0) + " chromatic")
         }
         console.log(chromaticScale)
         if (chordBeingPlayed[0].includes("m") && chordBeingPlayed.length < 4) {
             if (chordBeingPlayed[0].includes("b")) {
-                scaleDegreeToNote = K.Scale.degrees(`${chordBeingPlayed[0].slice(0,2)} minor`)
-                chordCorrespondingScale = K.Scale.get((`${chordBeingPlayed[0].slice(0,2)} mfs.appendFile('./data.csv',inor`)).notes
+                scaleDegreeToNote = Scale.degrees(`${chordBeingPlayed[0].slice(0,2)} minor`)
+                chordCorrespondingScale = Scale.get((`${chordBeingPlayed[0].slice(0,2)} mfs.appendFile('./data.csv',inor`)).notes
             } else {
-                scaleDegreeToNote = K.Scale.degrees(`${chordBeingPlayed[0].charAt(0)} minor`)
-                chordCorrespondingScale = K.Scale.get((`${chordBeingPlayed[0].charAt(0)} minor`)).notes
+                scaleDegreeToNote = Scale.degrees(`${chordBeingPlayed[0].charAt(0)} minor`)
+                chordCorrespondingScale = Scale.get((`${chordBeingPlayed[0].charAt(0)} minor`)).notes
             }
         } else {
             if (chordBeingPlayed[0].includes("b")) {
-                scaleDegreeToNote = K.Scale.degrees(`${chordBeingPlayed[0].slice(0,2)} major`)
-                chordCorrespondingScale = K.Scale.get((`${chordBeingPlayed[0].slice(0,2)} major`)).notes
+                scaleDegreeToNote = Scale.degrees(`${chordBeingPlayed[0].slice(0,2)} major`)
+                chordCorrespondingScale = Scale.get((`${chordBeingPlayed[0].slice(0,2)} major`)).notes
             } else {
-                scaleDegreeToNote = K.Scale.degrees(`${chordBeingPlayed[0].charAt(0)} major`)
-                chordCorrespondingScale = K.Scale.get((`${chordBeingPlayed[0].charAt(0)} major`)).notes
+                scaleDegreeToNote = Scale.degrees(`${chordBeingPlayed[0].charAt(0)} major`)
+                chordCorrespondingScale = Scale.get((`${chordBeingPlayed[0].charAt(0)} major`)).notes
             }
         }
         filterQM.keys = chordRelativeSemitone;
         console.log(chordCorrespondingScale)
-        console.log(K.Chord.get(chordBeingPlayed[0]).notes)
-        filterQM.values = K.Chord.get(chordBeingPlayed[0]).notes.map(n => noteToScaleDegree(n, chordCorrespondingScale))
-        console.log(noteToScaleDegree(K.Chord.get(chordBeingPlayed[0]).notes[0], chordCorrespondingScale))
-        let octave = K.Note.fromMidi(inputNote).charAt(K.Note.fromMidi(inputNote).length - 1)
-        let noteBeingPlayed = K.Note.fromMidi(inputNote).slice(0, -1)
+        console.log(Chord.get(chordBeingPlayed[0]).notes)
+        filterQM.values = Chord.get(chordBeingPlayed[0]).notes.map(n => noteToScaleDegree(n, chordCorrespondingScale))
+        console.log(noteToScaleDegree(Chord.get(chordBeingPlayed[0]).notes[0], chordCorrespondingScale))
+        let octave = Note.fromMidi(inputNote).charAt(K.Note.fromMidi(inputNote).length - 1)
+        let noteBeingPlayed = Note.fromMidi(inputNote).slice(0, -1)
 //         console.log("noteBeingPlayed: " + noteBeingPlayed)
 //         console.log("fQM: " + filterQM.values)
         let filteredNote = scaleDegreeToNote(filterQM.wrapLookup(chromaticScale.notes.indexOf(noteBeingPlayed))) + octave
-        playedNotes.push({originalNote: K.Note.fromMidi(inputNote) ,filtered:filteredNote})
+        playedNotes.push({originalNote: Note.fromMidi(inputNote) ,filtered:filteredNote})
 //         console.log(playedNotes)
         console.log('before', inputNote, "filteredNote" + filteredNote)
             return Note.midi(filteredNote)
@@ -4075,10 +4078,10 @@ function yilerNoteOnFilter (inputNote){
 
 function yilerNoteOffFilter (inputNote){
         try {
-        let octave = K.Note.fromMidi(inputNote).charAt(K.Note.fromMidi(inputNote).length - 1)
-        let noteBeingPlayed = K.Note.fromMidi(inputNote).slice(0, -1)
+        let octave = Note.fromMidi(inputNote).charAt(K.Note.fromMidi(inputNote).length - 1)
+        let noteBeingPlayed = Note.fromMidi(inputNote).slice(0, -1)
         let filteredNote = scaleDegreeToNote(filterQM.wrapLookup(chromaticScale.notes.indexOf(noteBeingPlayed))) + octave
-        let noteOffObj = playedNotes.filter(note => note.originalNote == K.Note.fromMidi(inputNote))[0]
+        let noteOffObj = playedNotes.filter(note => note.originalNote == Note.fromMidi(inputNote))[0]
 //         console.log(filteredNote)
         console.log('yo', noteOffObj)
         let output = Note.midi(noteOffObj.filtered)
@@ -4911,6 +4914,177 @@ addToModuleExports({
 })
 
 // activateKeyboardFilter("Arturia KeyStep 32")
+//--------------------------------------------------------------------------
+//MIDI-reading:
+//code helped by chatgpt
+
+function getDataFromMidiFile (midiFileData){
+    let tempos = []
+    let timeSignatures = []
+    let endsOfTracks = []
+    let name;
+    midiFileData.tracks.forEach(x => {
+        let data = []
+        x.forEach(e => {
+            if (e.subtype === 'setTempo'){
+                tempos.push(e)
+            }
+            else if (e.subtype === 'endOfTrack'){
+                endsOfTracks.push(e)
+            }
+            else if (e.type === 'meta' && e.subtype === 'text'){
+                name = e.text
+            }
+            else if (e.subtype === 'timeSignature'){
+                timeSignatures.push(e)
+            }
+        })
+    })
+    return {name: name, timeSignatures: timeSignatures, tempos: tempos, endsOfTracks: endsOfTracks}
+}
+
+//modified by steve, generated by Chatgpt:
+function groupByAbsoluteTime(objects) {
+  let result = [];
+  let currentGroup = [];
+  for (let i = 0; i < objects.length; i++) {
+    let obj = objects[i];
+    let nextObj = objects[i + 1];
+    currentGroup.push(obj);
+    if (!nextObj || obj.absoluteTime !== nextObj.absoluteTime) {
+      result.push(currentGroup);
+      currentGroup = [];
+    }
+  }
+  return result;
+}
+
+function midiToRootAndValue (midiNote){
+    let rootAndValue = Note.fromMidi(midiNote)
+    return {value: rootAndValue.slice(rootAndValue.length - 1), root: rootAndValue.slice(0, rootAndValue.length - 1)}
+}
+
+function splitMidiNote (midiNote, musicalKey){
+    let noteInfo = Note.get(K.Note.fromMidi(midiNote))
+    return {octave: noteInfo.oct, note: Interval.semitones(K.Interval.distance(musicalKey, noteInfo.pc)), key: musicalKey}
+}
+
+function checkIfTrackIncludesNoteOnOffMessages (midiTrack){
+    return !midiTrack.every(x => {if (x.subtype === 'noteOn'){return false};return true})
+}
+
+function findFileNameFromFilePath (filePath){
+    let pathArray = filePath.split('/').join('\\').split('\\');
+    return pathArray[pathArray.length - 1].split('.')[0]
+}
+//generated by chatgpt
+
+function getClosestSmallerDivisible(originalNumber, divisibleBy) {
+  // If originalNumber is already divisible by divisibleBy, return originalNumber
+  if (originalNumber % divisibleBy === 0 || divisibleBy > originalNumber) {
+    return originalNumber;
+  }
+  // Decrease originalNumber until it can be divided by divisibleBy without remainder
+  originalNumber = Math.floor(originalNumber / divisibleBy) * divisibleBy;
+  return originalNumber;
+}
+
+function findDurationOfEachNote (midiTrack, ticksPerQuarter){
+    let notesCurrentlyOn = []
+    let completeNotes = []
+    let absoluteTime = 0
+    midiTrack.forEach((x, i) => {
+        if (typeof x.deltaTime === 'number'){
+            absoluteTime += x.deltaTime
+        }
+        if (x.subtype === 'noteOn'){
+            notesCurrentlyOn.push(Object.assign(x, {absoluteTime: absoluteTime / ticksPerQuarter}))
+        }
+        else if (x.subtype === 'noteOff'){
+            notesCurrentlyOn.every((n, d) => {
+                if (n.noteNumber === x.noteNumber){
+                    notesCurrentlyOn[d].noteDuration = (absoluteTime - n.absoluteTime) / ticksPerQuarter
+                    completeNotes.push(notesCurrentlyOn[d])
+                    notesCurrentlyOn = A.safeSplice(notesCurrentlyOn, 1, d)
+                    return false
+                }
+                return true
+            })
+        }
+    })
+    return {completeNotes: completeNotes.sort((a, b) => a.absoluteTime - b.absoluteTime), 'endOfTrackAbsoluteTime': absoluteTime / ticksPerQuarter}
+}
+
+function playerForMidiTrack (musicalKey, midiTrack, name, output, ticksPerQuarter, e){
+    let completedNotesData = findDurationOfEachNote(midiTrack, ticksPerQuarter)
+    let completedNoteOnEvents = groupByAbsoluteTime(completedNotesData.completeNotes)
+     let keyspan = getClosestSmallerDivisible(completedNotesData.endOfTrackAbsoluteTime, e.timeSignature)
+    let keys = completedNoteOnEvents.map(x => {return x[0].absoluteTime})
+    configObj = {
+        rootMap: [],
+        velocity: completedNotesData.completeNotes.map(x => {return x.velocity}),
+        bools: midiTrack.map(x => {return true}),
+        noteDurationKeyspan: keyspan,
+        noteDurationValues: completedNoteOnEvents.map(x => {return x[0].noteDuration}),
+        noteDurations: keys,
+        rootMapKeys: keys,
+        rootMapKeyspan: keyspan,
+        octaveMapKeys: keys,
+        octaveMapKeyspan: keyspan,
+        noteValuesKeys: keys,
+        noteValuesKeyspan: keyspan,
+        noteValues: [],
+        total: completedNotesData.endOfTrackAbsoluteTime,
+        rhythmMap:  absoluteToDelta(completedNoteOnEvents.map(x => {return x[0].noteDuration})),
+    }
+    configObj.octave = []
+         configObj.noteValues = completedNoteOnEvents.map(x => {return x.map(n => {
+             let allData = splitMidiNote(n.noteNumber, musicalKey)
+             configObj.rootMap.push(musicalKey)
+           configObj.octave.push(allData.octave)
+         return allData.note
+     })})
+        let extraConfig = {
+     polyphonyMapName: 'default', chordMapName: 'default', controlChangeMapName: 'default', modeMapName: 'default'}
+    recordConfigurationDataIntoMusicalEnvironment(configObj, name, e)
+    assignPlayerForMusicSynthesizerMidiOutput(e, output, name, extraConfig, name)
+    e.rhythmMaps[name].values[0] = new QuantizedMap(keyspan, keys, K.absoluteToDelta(keys))
+    e.rhythmMaps[name].values[0].values.push(keyspan - keys[keys.length - 1])
+}
+
+function addParsedDataMidiDataToMusicalEnvironment (midiData, parsedData, musicalKey, filePath, e){
+    let ticksPerQuarter = midiData.header.ticksPerQuarter
+    e.changeTempo(60e6 / parsedData.tempos[0].microsecondsPerBeat)
+    e.timeSignature = parsedData.timeSignatures[0].numerator
+    let playerName = findFileNameFromFilePath(filePath)
+    midiData.tracks.forEach((x, i) => {
+        if (checkIfTrackIncludesNoteOnOffMessages(x) === true){
+                playerForMidiTrack(musicalKey, x, playerName + i, i + 1, ticksPerQuarter, e)
+        }
+    })
+}
+
+function addMidiFileToMusicalEnvironment (filePath, musicalKey, e){
+    let midiFile = fs.readFileSync(filePath, 'binary')
+    let midiData = midiFileIO.parseMidiBuffer(midiFile);
+    let parsedData = getDataFromMidiFile(midiData)
+    addParsedDataMidiDataToMusicalEnvironment(midiData, parsedData, musicalKey, filePath, e)
+//     return parsedData
+}
+
+addToModuleExports({
+    getDataFromMidiFile,
+    groupByAbsoluteTime,
+    midiToRootAndValue,
+    splitMidiNote,
+    checkIfTrackIncludesNoteOnOffMessages,
+    findFileNameFromFilePath,
+    getClosestSmallerDivisible,
+    playerForMidiTrack,
+    addParsedDataMidiDataToMusicalEnvironment,
+    addMidiFileToMusicalEnvironment,
+    findDurationOfEachNote
+})
 // --------------------------------------------------------------------------
 //Other setup functions:
 
@@ -5179,7 +5353,7 @@ function setUpMusicalEnvironment (param){
 addToModuleExports({ setUpMusicalEnvironmentExamples,  setUpDefaultMusicalEnvironmentFourPlayers, setUpKonduktiva, setUpDefaultMusicalEnvironmentOnePlayer, setUpVerySimpleMusicalEnvironment, setUpSimpleMusicalEnvironment, setUpLongMusicalEnvironment, setUpTwoPlayerMusicalEnvironment, setUpMusicalEnvironment})
 
 //let K = require('./combined.js')
-//let e = K.setUpDefaultMusicalEnvironment()
+//let e = setUpDefaultMusicalEnvironment()
 
 //REPLACE the whole midi.js for await import version for verbose to work. Also replace musicSynthesizerMidiOutput with exampleMidiPlayer.
 //Remove related addMapToMusicalEnvironment function and replace musicalEnvironment class.
