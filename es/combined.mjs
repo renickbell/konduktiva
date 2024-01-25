@@ -2771,7 +2771,7 @@ export function editMidiOutputPlayer (defaultName, e, midiOutput, velocityMapNam
 
 export function createControlChangeMaps (noteValueData, name, e){
     if (noteValueData.controlChangeMap !== undefined && noteValueData.controlChangeMapKeys !== undefined){
-        e.controlChangeMaps[name] = new QuantizedMap(noteValueData.controlChangeMapKeys[noteValueData.controlChangeMapKeys.length - 1] + 1, noteValueData.controlChangeMapKeys, noteValueData.controlChangeMap)
+        e.controlChangeMaps[name] = new QuantizedMap(noteValueData.controlChangeMapKeyspan, noteValueData.controlChangeMapKeys, noteValueData.controlChangeMap)
     }
 }
 

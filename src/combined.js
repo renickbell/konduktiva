@@ -1976,17 +1976,6 @@ function generativeParseString (inputString,rules,generations) {
 }
 //Chatgpt helped with removing for loop
 
-function generativeParseString(inputString, rules, generations) {
-    let currentGeneration = inputString;
-    Array.from({ length: generations }, () => {
-        let tempGeneration = parseString(currentGeneration, rules);
-        delete currentGeneration
-        currentGeneration = tempGeneration
-        delete tempGeneration
-    })
-    return currentGeneration;
-}
-
 //Gnerated the QuantizedMap for the lsystem chord progression:
 /**
   * Generates a random L-system in form of a QuantizedMap.
@@ -3003,7 +2992,7 @@ function editMidiOutputPlayer (defaultName, e, midiOutput, velocityMapName = 'de
 
 function createControlChangeMaps (noteValueData, name, e){
     if (noteValueData.controlChangeMap !== undefined && noteValueData.controlChangeMapKeys !== undefined){
-        e.controlChangeMaps[name] = new QuantizedMap(noteValueData.controlChangeMapKeys[noteValueData.controlChangeMapKeys.length - 1] + 1, noteValueData.controlChangeMapKeys, noteValueData.controlChangeMap)
+        e.controlChangeMaps[name] = new QuantizedMap(noteValueData.controlChangeMapKeyspan, noteValueData.controlChangeMapKeys, noteValueData.controlChangeMap)
     }
 }
 
