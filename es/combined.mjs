@@ -1086,6 +1086,45 @@ export class MusicalEnvironment {
             this.players[x].verbose = state
         })
     }
+        findConnectedPlayers (player){
+        let playersToPlay = []
+        if (e.players[player].controlChangePlayer !== undefined){
+            playersToPlay.push(e.players[player].controlChangePlayer)
+        }
+        if (e.players[player].midiProgramPlayer !== undefined){
+            playersToPlay.push(e.players[player].midiProgramPlayer)
+        }
+        return playersToPlay
+    }
+    playWithConnected (player){
+        if (e.players[player] === undefined){
+            throw new Error('Player '+ player + ' not found. Could not run playWithConnected')
+            return false
+        }
+        console.log('playing', [...this.findConnectedPlayers(player), player])
+        this.playN([...this.findConnectedPlayers(player), player])
+    }
+    stopWithConnected (player){
+        if (e.players[player] === undefined){
+            throw new Error('Player '+ player + ' not found. Could not run stopWithConnected')
+            return false
+        }
+        this.stopN([...this.findConnectedPlayers(player), player])
+    }
+    stopConnected (player){
+        if (e.players[player] === undefined){
+            throw new Error('Player '+ player + ' not found. Could not run stopConnected')
+            return false
+        }
+        this.stopN(this.findConnectedPlayers(player))
+    }
+    playConnected (player){
+        if (e.players[player] === undefined){
+            throw new Error('Player '+ player + ' not found. Could not run playConnected')
+            return false
+        }
+        this.playN(this.findConnectedPlayers(player))
+    }
 }
 // addMapToMusicalEnvironment(e, 'rhythmMaps', 'chalk', 10, [0, 1, 2, 3], [4, 5, 6, 7])
 
@@ -2714,7 +2753,7 @@ export function checkIfAddChordProgressionMapToPlayer (chordMapName, e){
     }
 }
 
-export function generalMidiOutputVariableAssigning (defaultName, e, midiOutput, velocityMapName = defaultName, noteMapName = defaultName, octaveMapName = defaultName, rhythmMapName = defaultName, polyphonyMapName = defaultName, noteDurationMap = defaultName, maskMapName = defaultName, rhythmPatternName = defaultName, chordMapName = defaultName, controlChangeMapName = defaultName, rootMapName = defaultName, modeMapName = defaultName, legatoMapName = defaultName, channel = defaultName, playerName = 'exampleMidiPlayer' + JSON.stringify(midiOutput)){
+export function generalMidiOutputVariableAssigning (defaultName, e, midiOutput, velocityMapName = defaultName, noteMapName = defaultName, octaveMapName = defaultName, rhythmMapName = defaultName, polyphonyMapName = defaultName, noteDurationMap = defaultName, maskMapName = defaultName, rhythmPatternName = defaultName, chordMapName = defaultName, rootMapName = defaultName, modeMapName = defaultName, legatoMapName = defaultName, midiProgramPlayerName = defaultName + 'MidiProgram', controlChangePlayerName = defaultName + 'ControlChange', channel = defaultName, playerName = 'exampleMidiPlayer' + JSON.stringify(midiOutput)){
     let midiOutputPlayer = e.players[playerName]
     midiOutputPlayer.velocityMap = velocityMapName
     midiOutputPlayer.noteMap = noteMapName
@@ -2729,9 +2768,24 @@ export function generalMidiOutputVariableAssigning (defaultName, e, midiOutput, 
     else{
         midiOutputPlayer.channelMap = channel
     }
+    if (e.players[midiProgramPlayerName] !== undefined){
+        midiOutputPlayer.midiProgramPlayer = midiProgramPlayerName
+        e.players[midiProgramPlayerName].midiOutput = midiOutput
+        e.players[midiProgramPlayerName].channelMap = channel
+        if (e.channelMaps[channel] === undefined){ 
+            e.players[midiProgramPlayerName].channelMap = 'default'
+        }
+    }
+    if (e.players[controlChangePlayerName] !== undefined){
+        midiOutputPlayer.controlChangePlayer = controlChangePlayerName
+        e.players[controlChangePlayerName].midiOutput = midiOutput
+        e.players[controlChangePlayerName].channelMap = channel
+        if (e.channelMaps[channel] === undefined){ 
+            e.players[controlChangePlayerName].channelMap = 'default'
+        }
+    }
     midiOutputPlayer.polyphonyMap = polyphonyMapName
     midiOutputPlayer.noteDurationMap = noteDurationMap
-    midiOutputPlayer.controlChangeMap = controlChangeMapName
     midiOutputPlayer.modeMap = modeMapName
     midiOutputPlayer.rootMap = rootMapName
     midiOutputPlayer.chordMap = chordMapName
@@ -2755,7 +2809,7 @@ export function generalMidiOutputVariableAssigning (defaultName, e, midiOutput, 
 //https://stackoverflow.com/a/43363105/19515980
 
 //Create Player:
-export function createMidiOutputPlayer (defaultName, e, midiOutput, velocityMapName = 'default', noteMapName = defaultName, octaveMapName = defaultName, rhythmMapName = defaultName, polyphonyMapName = 'default', noteDurationMap = defaultName, maskMapName = defaultName, rhythmPatternName = defaultName, chordMapName = "default", controlChangeMapName = 'default', rootMapName = defaultName, modeMapName = 'default', legatoMapName = defaultName, channel = defaultName, playerName = 'exampleMidiPlayer' + JSON.stringify(midiOutput)){
+export function createMidiOutputPlayer (defaultName, e, midiOutput, velocityMapName = defaultName, noteMapName = defaultName, octaveMapName = defaultName, rhythmMapName = defaultName, polyphonyMapName = defaultName, noteDurationMap = defaultName, maskMapName = defaultName, rhythmPatternName = defaultName, chordMapName = defaultName, rootMapName = defaultName, modeMapName = defaultName, legatoMapName = defaultName, midiProgramPlayerName = defaultName + 'MidiProgram', controlChangePlayerName = defaultName + 'ControlChange', channel = defaultName, playerName = 'exampleMidiPlayer' + JSON.stringify(midiOutput)){
     console.log('Chose to create player')
     setupMidiRhythm(e, playerName, rhythmMapName)
     generalMidiOutputVariableAssigning.apply(null, arguments)
@@ -2764,9 +2818,24 @@ export function createMidiOutputPlayer (defaultName, e, midiOutput, velocityMapN
 //https://stackoverflow.com/a/43363105/19515980
 
 //Edit Player:
-export function editMidiOutputPlayer (defaultName, e, midiOutput, velocityMapName = 'default', noteMapName = defaultName, octaveMapName = defaultName, rhythmMapName = defaultName, polyphonyMapName = 'default', noteDurationMap = defaultName, maskMapName = defaultName, rhythmPatternName = defaultName, chordMapName = 'default', controlChangeMapName = 'default', rootMapName = defaultName, modeMapName = 'default', legatoMapName = defaultName, channel = defaultName, playerName = 'exampleMidiPlayer' + midiOutput){
+export function editMidiOutputPlayer (defaultName, e, midiOutput, velocityMapName = defaultName, noteMapName = defaultName, octaveMapName = defaultName, rhythmMapName = defaultName, polyphonyMapName = defaultName, noteDurationMap = defaultName, maskMapName = defaultName, rhythmPatternName = defaultName, chordMapName = defaultName, rootMapName = defaultName, modeMapName = defaultName, legatoMapName = defaultName, midiProgramPlayerName = defaultName + 'MidiProgam', controlChangePlayerName = defaultName + 'ControlChange', channel = defaultName, playerName = 'exampleMidiPlayer' + JSON.stringify(midiOutput)){
     console.log('Chose to edit player')
     generalMidiOutputVariableAssigning.apply(null, arguments)
+}
+
+//HERE name creation is wrong cannot be the same as the orignal player name it should be name + something
+export function createControlChangePlayers (noteValueData, name, e){
+    if (noteValueData.controlChangePlayer !== undefined && noteValueData.controlChangePlayerKeys !== undefined && noteValueData.controlChangePlayerKeyspan !== undefined){
+//         e.controlChangePlayers[name] = new QuantizedMap(noteValueData.controlChangePlayerKeyspan, noteValueData.controlChangePlayerKeys, noteValueData.controlChangePlayer)
+         K.createMidiCCPlayer (e, name + 'ControlChange', noteValueData.controlChangePlayerKeyspan, noteValueData.controlChangePlayerKeys, noteValueData.controlChangePlayer, noteValueData.channels, undefined)
+    }
+}
+
+//HERE name creation is wrong cannot be the same as the orignal player name it should be name + something
+export function createMidiProgramPlayers (noteValueData, name, e){
+    if (noteValueData.midiProgramPlayer !== undefined && noteValueData.midiProgramPlayerKeys !== undefined && noteValueData.midiProgramPlayerKeyspan !== undefined){
+         K.createMidiProgramPlayer(e, name + 'MidiProgram', noteValueData.midiProgramPlayerKeyspan, noteValueData.midiProgramPlayerKeys, noteValueData.midiProgramPlayer, noteValueData.channels, undefined)
+    }
 }
 
 export function createControlChangeMaps (noteValueData, name, e){
@@ -2819,6 +2888,8 @@ export function recordConfigurationDataIntoMusicalEnvironment (noteValueData, na
     if (noteValueData.polyphonyMap !== undefined){
         e.maxPolyphonyMaps[name] = new QuantizedMap(noteValueData.polyphonyMap.length, A.buildArray(noteValueData.polyphonyMap.length, x => {return x}), noteValueData.polyphonyMap, e)
     }
+    createControlChangePlayers(noteValueData, name, e)
+    createMidiProgramPlayers(noteValueData, name, e)
     createControlChangeMaps(noteValueData, name, e)
     createModeFilters(noteValueData, name, e)
     createModeMaps(noteValueData, name, e)
@@ -2880,6 +2951,7 @@ export function addToMusicalEnvironment (e){
     e.recordedMessages = {}
      e.messageMaps = {}
      e.legatoMaps = {'default': new QuantizedMap(16, [0, 4, 8, 12], [0.9, 0.9, 0.9, 0.9])}
+     e.midiProgramMaps = {}
 }
 
 // addToMusicalEnvironment(e)
@@ -3436,7 +3508,7 @@ export function callMusicSynthesizerRhythm (e, b, midiOutput){
     info = convertLettersToMidi(info, player)
     visualizeVolume(info)
     checkIfChangeChordProgression(e, b, player)
-    checkIfSendMidiControlChange(e, b, player)
+//     checkIfSendMidiControlChange(e, b, player)
     info = convertNoteValuesToMidi(info, e, b, player)
     info = calculateFinalNoteValue(info, player)
 //     console.log('FINAL playing finaValues', info.finalValues)
@@ -3597,7 +3669,7 @@ export function sendChordMidiInfo (playerName, b, e){
         return filterMode(x, e, b, player)
     });
     info = calculateFinalNoteValue(info, player);
-    checkIfSendMidiControlChange(e, b, player)
+//     checkIfSendMidiControlChange(e, b, player)
     info.finalValues.forEach((x, i) => {
         sendMidiData(info, player, x, findChannel(player, b, e), e)
     });
@@ -3613,7 +3685,7 @@ export function sendNotesMidiInfo (playerName, b, e){
         return filterMode(x, e, b, player)
     })
     info = calculateFinalNoteValue(info, player)
-    checkIfSendMidiControlChange(e, b, player)
+//     checkIfSendMidiControlChange(e, b, player)
     info.finalValues.forEach((x, i) => {
         let chann = findChannel(player, b, e)
         sendMidiData(info, player, x, chann, e)
@@ -3621,6 +3693,53 @@ export function sendNotesMidiInfo (playerName, b, e){
     return true
 }
 
+export function sendMidiCCMessages (playerName, b, e){
+    let player = e.players[playerName]
+    let CCMessages = e.controlChangeMaps[player.controlChangeMap].wrapLookup(b)
+    let channel = e.channelMaps[player.channelMap].wrapLookup(b)
+    if (CCMessages instanceof Array){
+        CCMessages.forEach(x => {
+           checkIfUseVerboseLogging(player, 'Playing Midi CC message.\n controller', x.controller, 'value: ', x.value, 'channel', channel - 1, 'midiOutput', player.midiOutput - 1)
+            e.midiOutputs[player.midiOutput - 1].send('cc', {
+                controller: x.controller,
+                value: x.value,
+                channel: channel - 1,
+            });
+        })
+    }
+    else {
+           checkIfUseVerboseLogging(player, 'Playing Midi CC message.\n controller', CCMessages.controller, 'value: ', CCMessages.value, 'channel', channel - 1, 'midiOutput', player.midiOutput - 1)
+        e.midiOutputs[player.midiOutput - 1].send('cc', {
+            controller: CCMessages.controller,
+            value: CCMessages.value,
+            channel: channel - 1,
+        });
+    }
+    return true
+}
+
+export function sendMidiProgramMessages (playerName, b, e){
+    let player = e.players[playerName]
+    let midiProgam = e.midiProgramMaps[player.midiProgramMap].wrapLookup(b)
+    let channel = e.channelMaps[player.channelMap].wrapLookup(b)
+    if (midiProgam instanceof Array){
+        midiProgam.forEach(x => {
+           checkIfUseVerboseLogging(player, 'Playing Midi program.\n number', x,  'channel', channel - 1, 'midiOutput', player.midiOutput - 1)
+            e.midiOutputs[player.midiOutput - 1].send('program', {
+                number: x,
+                channel: channel - 1,
+            });
+        })
+    }
+    else {
+           checkIfUseVerboseLogging(player, 'Playing Midi program.\n number', midiProgam,  'channel', channel - 1, 'midiOutput', player.midiOutput - 1)
+            e.midiOutputs[player.midiOutput - 1].send('program', {
+                number: midiProgam,
+                channel: channel - 1,
+            });
+    }
+    return true
+}
 
 // END OF NEW BELL MIDI export functionS
 
@@ -3949,6 +4068,53 @@ export function createPlaybackPlayer (e, midiOutput, recordedMessagesName){
     player.midiOutput = midiOutput
 }
 
+export function createExtensionPlayerBasics (e, name, keyspan, keys, channels, midiOutput){
+    let player = e.players[name]
+    e.rhythmMaps[name] = new QuantizedMap(1, [1], [new QuantizedMap(keyspan, keys, keys.map(x => {return 1}))])
+    e.rhythmPatterns[name] = new RhythmPattern (name, keyspan, keys.map((x, i) => {
+        return 1
+    }), keys.map(x => {return true}))
+    e.rhythmPatterns[name].add(e, name)
+    player.rhythmMap = 'straight'
+    player.midiOutput = midiOutput
+    player.channelMap = name
+}
+
+export function createMidiCCPlayer (e, name, keyspan, keys, midiCCs, channels, midiOutput){
+    setupMidiCCPlayer(e, name)
+    let player = e.players[name]
+    createExtensionPlayerBasics (e, name, keyspan, keys, channels, midiOutput)
+    e.controlChangeMaps[name] = new QuantizedMap(keyspan, keys, midiCCs)
+    player.controlChangeMap = name
+}
+
+export function createMidiProgramPlayer (e, name, keyspan, keys, midiPrograms, channels, midiOutput){
+    setupMidiProgramPlayer(e, name)
+    let player = e.players[name]
+    createExtensionPlayerBasics (e, name, keyspan, keys, channels, midiOutput)
+    e.midiProgramMaps[name] = new QuantizedMap(keyspan, keys, midiPrograms)
+    player.midiProgramMap = name
+}
+
+//This function is modified to set action as send Midi CC messages instead of superDirt
+export function setupMidiCCPlayer (env, sequenceName, rhythmPatternName = 'default') {
+    env.players[sequenceName] = new Player(sequenceName);
+    env.players[sequenceName].maskMap = 'default'
+    //env.players[playerName].samplePattern = playerName;
+    env.players[sequenceName].action = 'sendMidiCCMessages';
+    env.players[sequenceName].rhythmMap = rhythmPatternName
+    return sequenceName
+}
+
+//This function is modified to set action as send Midi CC messages instead of superDirt
+export function setupMidiProgramPlayer (env, sequenceName, rhythmPatternName = 'default') {
+    env.players[sequenceName] = new Player(sequenceName);
+    env.players[sequenceName].maskMap = 'default'
+    //env.players[playerName].samplePattern = playerName;
+    env.players[sequenceName].action = 'sendMidiProgramMessages';
+    env.players[sequenceName].rhythmMap = rhythmPatternName
+    return sequenceName
+}
 
 // e.stop('m1')
 //
@@ -4739,10 +4905,16 @@ export let exampleMusicalEnvironmentsExtraConfig = {
     chordMapName: 'default',
     controlChangeMapName: 'default',
     modeMapName: 'default',
-    legatoMapName: 'default'
+    legatoMapName: 'default',
+    midiProgramPlayerName: false,
+    controlChangePlayerName: false,
 }
 
-export let legatoOnlyConfig = {legatoMapName: 'default'}
+export let legatoOnlyConfig = {
+    legatoMapName: 'default',
+    midiProgramPlayerName: false,
+    controlChangePlayerName: false,
+}
 
 export function setUpMusicalEnvironmentExamples (){
     let e = new MusicalEnvironment()
@@ -4761,6 +4933,8 @@ export function setUpMusicalEnvironmentExamples (){
     e.actions.sendChordMidiInfo = sendChordMidiInfo
     e.actions.sendNotesMidiInfo = sendNotesMidiInfo
     e.actions.sendPlaybackMessage = sendPlaybackMessage
+    e.actions.sendMidiCCMessages = sendMidiCCMessages
+    e.actions.sendMidiProgramMessages = sendMidiProgramMessages
     return e
 }
 
