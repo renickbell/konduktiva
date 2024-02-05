@@ -3126,6 +3126,14 @@ function recordConfigurationDataIntoMusicalEnvironment (noteValueData, name, e){
     return name
 }
 
+function populateModeFilters (e){
+    Scale.names().forEach(x => {
+        let filter = Scale.get(x).intervals.map(n => {return Interval.semitones(n)})
+        e.modeFilters[x] = new QuantizedMap(12, filter, filter)
+    })
+}
+//Converting names to actual semitones helped by chatgpt
+
 function addToMusicalEnvironment (e){
     e.channelMaps = {'default': new QuantizedMap(4, [0], [1])}
     updateMidiOutputList(e)
@@ -3152,23 +3160,9 @@ function addToMusicalEnvironment (e){
     e.songMaps = {
         'twelveBars-lsystem-scarbrofair': new QuantizedMap(15000, [1000, 5000, 10000], ['twelveBars', 'lsystem', 'scarboroughFair'])
     }
-    let modes = {
-      ionian: [0, 2, 4, 5, 7, 9, 11],
-      dorian: [0, 2, 3, 5, 7, 9, 10],
-      phrygian: [0, 1, 3, 5, 7, 8, 10],
-      lydian: [0, 2, 4, 6, 7, 9, 11],
-      mixolydian: [0, 2, 4, 5, 7, 9, 10],
-      aeolian: [0, 2, 3, 5, 7, 8, 10],
-      locrian: [0, 1, 3, 5, 6, 8, 10],
-      blues: [0, 3, 5, 6, 7, 10],
-      bluesPentatonic: [0, 3, 5, 6, 7, 10],
-      minorBluesPentatonicScale: [0, 3, 5, 7, 10],
-    };
-    e.modeFilters = {'chromatic': new QuantizedMap(12, A.buildArray(12,i=>i), A.buildArray(12,i=>i))}
+    e.modeFilters = {}
+    populateModeFilters(e)
     e.modeFilters['default'] = e.modeFilters.chromatic
-    Object.keys(modes).forEach(x => {
-        e.modeFilters[x] = new QuantizedMap(12, modes[x], modes[x])
-    })
     e.modeMaps = {'default': new QuantizedMap(400, [0], [ 'chromatic']), 'chromatic': new QuantizedMap(400, [0], [ 'chromatic'])}
     e.rootMaps = {'default': new QuantizedMap(4, [0, 1, 2, 3], ['C', 'C', 'C', 'C'])} //English alphabets for music
      e.notesInputMode = 'relativeSemitone' //OR 'relativeScaleDegree'
@@ -3386,6 +3380,7 @@ addToModuleExports({
 //   splitOnePlaybackMapIntoMany,
   typesOfItemsInArray,
     addChordProgression,
+    populateModeFilters,
 })
 
 // --------------------------------------------------------------------------
