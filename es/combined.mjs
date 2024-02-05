@@ -4313,6 +4313,7 @@ export let randomMelody2 = {
 
 // export let melodyDataNoteData = generateChords(0, 4, "7", "major")
 export let melodyData = {
+    noteValuesKeyspan: 12,
   rootMap: ['C', 'C', 'C', 'C'],
   velocity: [
     112, 107, 116, 115,
@@ -4382,6 +4383,7 @@ export let generationData = countLetterChanges(generativeParseString('aab', {
 
 export let lsystemNoteData = generateChords(0, 4, "7", "major")
 export let lsystemData = {
+    noteValuesKeyspan: 12,
   rootMap: ['C', 'C', 'C', 'C'],
   velocity: velocityData,
    noteDurationKeyspan: 12,
@@ -4546,6 +4548,7 @@ export let chords = generateChordsv2("C", 5, progression)
 export let newChords2 = chords.map(e => separateOctaveAndRoot(e))
 
 export let circleOfFifthChords = {
+    noteValuesKeyspan: 12,
   velocity: A.buildArray(30, x => 90),
    noteDurationKeyspan: 16,
   noteDurationValues: [0, 1, 2, 3],
@@ -4569,6 +4572,7 @@ export let circleOfFifthChords = {
 export let circleOfFifthMelodyGeneration = melodyFromChordProgression(chords, circleOfFifthChords.rhythmMap)
 export let circleOfFifthMelodySplitNotes = separateOctaveAndRoot(circleOfFifthMelodyGeneration.notes)
 export let circleOfFifthMelody = {
+        noteValuesKeyspan: 12,
     velocity: A.buildArray(30, x => 90),
     noteDurationKeyspan: 18,
     noteDurationValues: A.buildArray(24, x => x/2),
@@ -4816,6 +4820,8 @@ export function findDurationOfEachNote (midiTrack, ticksPerQuarter){
     let notesCurrentlyOn = []
     let completeNotes = []
     let absoluteTime = 0
+    let programChangeMessages = []
+    let controllerMessages = []
     midiTrack.forEach((x, i) => {
         if (typeof x.deltaTime === 'number'){
             absoluteTime += x.deltaTime
@@ -4828,14 +4834,20 @@ export function findDurationOfEachNote (midiTrack, ticksPerQuarter){
                 if (n.noteNumber === x.noteNumber){
                     notesCurrentlyOn[d].noteDuration = (absoluteTime - n.absoluteTime) / ticksPerQuarter
                     completeNotes.push(notesCurrentlyOn[d])
-                    notesCurrentlyOn = A.safeSplice(notesCurrentlyOn, 1, d)
+                    notesCurrentlyOn = K.A.safeSplice(notesCurrentlyOn, 1, d)
                     return false
                 }
                 return true
             })
         }
+        else if (x.subtype === 'controller'){
+            controllerMessages.push(Object.assign(x, {absoluteTime: absoluteTime / ticksPerQuarter}))
+        }
+        else if (x.subtype === 'programChange'){
+            programChangeMessages.push(Object.assign(x, {absoluteTime: absoluteTime / ticksPerQuarter}))
+        }
     })
-    return {completeNotes: completeNotes.sort((a, b) => a.absoluteTime - b.absoluteTime), 'endOfTrackAbsoluteTime': absoluteTime / ticksPerQuarter}
+    return {completeNotes: completeNotes.sort((a, b) => a.absoluteTime - b.absoluteTime), 'endOfTrackAbsoluteTime': absoluteTime / ticksPerQuarter, 'controllerMessages': controllerMessages, 'programChangeMessages': programChangeMessages}
 }
 
 export function playerForMidiTrack (musicalKey, midiTrack, name, output, ticksPerQuarter, e){
@@ -4858,7 +4870,7 @@ export function playerForMidiTrack (musicalKey, midiTrack, name, output, ticksPe
         noteValuesKeyspan: keyspan,
         noteValues: [],
         total: completedNotesData.endOfTrackAbsoluteTime,
-//         rhythmMap:  absoluteToDelta(completedNoteOnEvents.map(x => {return x[0].noteDuration})),
+        rhythmMap:  K.absoluteToDelta(completedNoteOnEvents.map(x => {return x[0].noteDuration})),
     }
     configObj.octave = []
          configObj.noteValues = completedNoteOnEvents.map(x => {return x.map(n => {
@@ -4868,10 +4880,32 @@ export function playerForMidiTrack (musicalKey, midiTrack, name, output, ticksPe
          return allData.note
      })})
         let extraConfig = {
-            polyphonyMapName: 'default', chordMapName: 'default', controlChangeMapName: 'default', modeMapName: 'default', legatoMapName: 'default'}
-    recordConfigurationDataIntoMusicalEnvironment(configObj, name, e)
-    assignPlayerForMusicSynthesizerMidiOutput(e, output, name, extraConfig, name)
-    e.rhythmMaps[name].values[0] = new QuantizedMap(keyspan, keys, K.absoluteToDelta(keys))
+            polyphonyMapName: 'default', chordMapName: 'default', modeMapName: 'default', legatoMapName: 'default', controlChangePlayerName: false, midiProgramPlayerName: false}
+    if (completedNotesData.controllerMessages.length > 0){
+        configObj.controlChangePlayerKeyspan = keyspan
+        let groupedCC = groupByAbsoluteTime(completedNotesData.controllerMessages)
+        configObj.controlChangePlayerKeys = groupedCC.map(x => {return x[0].absoluteTime})
+        configObj.controlChangePlayer = groupedCC.map(x => {
+            return x.map(c => {
+                return {channel: c.channel, controller: c.controllerType, value: c.value}
+            })
+        })
+        delete extraConfig.controlChangePlayerName
+    }
+    if (completedNotesData.programChangeMessages.length > 0){
+        configObj.midiProgramPlayerKeyspan = keyspan
+        let groupedProgamChangeMessages = groupByAbsoluteTime(completedNotesData.programChangeMessages)
+        configObj.midiProgramPlayerKeys = groupedProgamChangeMessages.map(x => {return x[0].absoluteTime})
+        configObj.midiProgramPlayer = groupedProgamChangeMessages.map(x => {
+            return x.map(p => {
+                return p.programNumber
+            })
+        })
+        delete extraConfig.midiProgramPlayerName
+    }
+    K.recordConfigurationDataIntoMusicalEnvironment(configObj, name, e)
+    K.assignPlayerForMusicSynthesizerMidiOutput(e, output, name, extraConfig, name)
+    e.rhythmMaps[name].values[0] = new K.QuantizedMap(keyspan, keys, K.absoluteToDelta(keys))
     e.rhythmMaps[name].values[0].values.push(keyspan - keys[keys.length - 1])
 }
 
@@ -4954,6 +4988,7 @@ export function setUpDefaultMusicalEnvironmentFourPlayers (){
 export function setUpVerySimpleMusicalEnvironment (){
     let e = setUpMusicalEnvironmentExamples()
     let simpleMelodyData = {
+        noteValuesKeyspan: 4,
         velocity : [100, 100, 100, 100],
         noteDurations: A.buildArray(12, x => {return x}),
         bools: [true, true, true, true],
@@ -4974,6 +5009,7 @@ export function setUpVerySimpleMusicalEnvironment (){
 export function setUpSimpleMusicalEnvironment (){
     let e = setUpMusicalEnvironmentExamples()
     let simpleMelodyData = {
+        noteValuesKeyspan: 4,
         velocity : [120, 40, 80, 65],
         noteDurations: A.buildArray(12, x => {return x}),
         bools: [true, true, true, true],
@@ -5019,6 +5055,7 @@ export function setUpLongMusicalEnvironment (){
 export function setUpTwoPlayerMusicalEnvironment (){
     let e = setUpMusicalEnvironmentExamples()
     let simpleMelodyData = {
+        noteValuesKeyspan: 4,
         velocity : [100, 100, 100, 100],
         noteDurations: A.buildArray(12, x => {return x}),
         bools: [true, true, true, true],
@@ -5032,6 +5069,7 @@ export function setUpTwoPlayerMusicalEnvironment (){
         rootMap: [ 'C', 'C', 'C', 'C' ],
     }
     let exampleData = {
+        noteValuesKeyspan: 4,
         velocity : [100, 100, 100, 100],
         noteDurations: A.buildArray(12, x => {return x}),
         bools: [true, true, true, true],
