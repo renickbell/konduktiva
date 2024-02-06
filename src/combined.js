@@ -3163,7 +3163,7 @@ function addToMusicalEnvironment (e){
     e.modeFilters = {}
     populateModeFilters(e)
     e.modeFilters['default'] = e.modeFilters.chromatic
-    e.modeMaps = {'default': new QuantizedMap(400, [0], [ 'chromatic']), 'chromatic': new QuantizedMap(400, [0], [ 'chromatic'])}
+    e.modeMaps = {'default': new QuantizedMap(4, [0], [ 'chromatic']), 'chromatic': new QuantizedMap(4, [0], [ 'chromatic'])}
     e.rootMaps = {'default': new QuantizedMap(4, [0, 1, 2, 3], ['C', 'C', 'C', 'C'])} //English alphabets for music
      e.notesInputMode = 'relativeSemitone' //OR 'relativeScaleDegree'
 //     e.notesInputMode = 'relativeScaleDegree'
