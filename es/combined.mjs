@@ -2791,16 +2791,11 @@ export function generalMidiOutputVariableAssigning (defaultName, e, midiOutput, 
     midiOutputPlayer.chordMap = chordMapName
     midiOutputPlayer.legatoMap = legatoMapName
     e.rhythmPatterns[rhythmPatternName].add(e, playerName)
-    try{
-        e.midiOutputs.push(new easymidi.Output(easymidi.getOutputs()[midiOutput]))
-    }
-    catch (e){
-        if (e.toString() === 'Error: No MIDI output found with name: undefined'){
-            console.log("\x1b[31m",'Extra outputs required. Please open more instances of your music synthesizer',"\x1b[0m")
+    if (e.midiOutputs[midiOutput - 1] === undefined){
+        console.log("\x1b[31m",'Extra outputs required. Please open more instances of your music synthesizer',"\x1b[0m")
+        throw new Error('Extra outputs required. Please open more instances of your music synthesizer',"\x1b[0m")
             //color logging from: https://stackoverflow.com/questions/9781218/how-to-change-node-jss-console-font-color/41407246#41407246
-        }
-        throw e
-    }
+     }
 //     try{
 //     midiOutputPlayer.chordMap = checkIfAddChordProgressionMapToPlayer(chordMapName, e)
 //     }catch{}

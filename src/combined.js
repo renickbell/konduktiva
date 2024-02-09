@@ -3012,17 +3012,10 @@ function generalMidiOutputVariableAssigning (defaultName, e, midiOutput, velocit
     midiOutputPlayer.chordMap = chordMapName
     midiOutputPlayer.legatoMap = legatoMapName
     e.rhythmPatterns[rhythmPatternName].add(e, playerName)
-    try{
-//         e.midiOutputs.push(new easymidi.Output(easymidi.getOutputs()[midiOutput]))
-           e.midiOutputs.push(e.midiOutputs[midiOutput], true)
-
-    }
-    catch (e){
-        if (e.toString() === 'Error: No MIDI output found with name: undefined'){
+    if (e.midiOutputs[midiOutput - 1] === undefined){
             console.log("\x1b[31m",'Extra outputs required. Please open more instances of your music synthesizer',"\x1b[0m")
+        throw new Error('Extra outputs required. Please open more instances of your music synthesizer',"\x1b[0m")
             //color logging from: https://stackoverflow.com/questions/9781218/how-to-change-node-jss-console-font-color/41407246#41407246
-        }
-        throw e
     }
 //     try{
 //     midiOutputPlayer.chordMap = checkIfAddChordProgressionMapToPlayer(chordMapName, e)
@@ -3136,7 +3129,7 @@ function populateModeFilters (e){
 
 function addToMusicalEnvironment (e){
     e.channelMaps = {'default': new QuantizedMap(4, [0], [1])}
-    updateMidiOutputList(e)
+     updateMidiOutputList(e)
     updateMidiInputList(e)
 //     e.midiDataSets = {}
     e.velocityMaps = {'default': new QuantizedMap(4, [0, 1, 2, 3], [127,60,50,30])}
@@ -4062,18 +4055,17 @@ function getNoteInfoToSend(player, b, midiOutput) {
 
 //Update Midi outputs:
 function updateMidiOutputList (e){
-    let easymidiOutputs = K.easymidi.getOutputs()
+    let easymidiOutputs = easymidi.getOutputs()
     if (process.platform === 'linux'){
         easymidiOutputs.shift()
     }
     if (e.midiOutputs !== undefined){
-        e.midiOutputs.forEach((x, i) => {
+        e.midiOutputs.forEach(x => {
             x.close()
-            e.midiOutputs[i] = undefined
         })
     }
     e.midiOutputs = easymidiOutputs.map(x => {
-        return new easymidi.Output(x, true)
+        return new easymidi.Output(x)
     })
 }
 
@@ -5356,7 +5348,7 @@ function setUpMusicalEnvironmentExamples (){
     setUpDefaultDensityGraphsForMusicalEnvironment(e)
     setUpDefaultPlayersForMusicalEnvironments(e)
     addToMusicalEnvironment(e)
-    updateMidiOutputList(e)
+//     updateMidiOutputList(e)
     setupScheduler(e)
     e.startScheduler()
     e.actions.midiSequencedRhythm = musicSynthesizerCaller
