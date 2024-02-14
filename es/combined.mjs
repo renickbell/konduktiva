@@ -28,6 +28,7 @@ export const {
     Mode
 } = require("tonal")
 export const midiFileIO = require('midi-file-io');
+export const { Worker, isMainThread, parentPort } = require('worker_threads');
 
 // --------------------------------------------------------------------------
 //konduktiva-revised-2.mjs:
@@ -1846,6 +1847,14 @@ export function randomRange (min, max,decimalPlaces) {
 // --------------------------------------------------------------------------
 //lsystem.mjs:
 
+async function waitFor (time){
+    return new Promise((resolve, reject) => {
+        setTimeout(() => {
+            resolve()
+        }, time)
+    })
+}
+
 /**
   * Generates an L-system for a number of generations based on a starting inputString and a set of rules.
   * @param {string} inputString - The axiom of the L-system.
@@ -1879,18 +1888,212 @@ export function generativeParseString (inputString,rules,generations) {
   ]
 }
 */
-export function generateRandomLsystemChordProgression (){
-    let velocityData = countLetterChanges(generateRandomLsystemString(20))
-    let boolsData = generateLsystemBoolsData()
-    let octaveData = countLetterChanges(generateRandomLsystemString(20))
-    let notesData = generateLsystemNoteData()
-    let noteDurationData = generateLsystemNoteData()
+export async function generateRandomLsystemChordProgression (){
+    let velocityString = await generateRandomLsystemString(20)
+    let velocityData = countLetterChanges(velocityString)
+    let boolsData = await generateLsystemBoolsData()
+    let octaveString = await generateRandomLsystemString(20)
+    let octaveData = countLetterChanges(octaveString)
+    let notesData = await generateLsystemNoteData()
+    let noteDurationData = await generateLsystemNoteData()
     boolsData = A.resizeArray(notesData.length, boolsData)
     noteDurationData = A.resizeArray(notesData.length, noteDurationData)
     octaveData = A.resizeArray(notesData.length, octaveData).map(x => {return x * 2})
     velocityData = A.resizeArray(notesData.length, velocityData).map(x => {return x * (x * 10)})
+    await waitFor(5)
     return new QuantizedMap(notesData.length, noteDurationData, notesData.map((x, i) => {return {data: [{note: x, octave: octaveData[i], velocity: velocityData[i]}], bool: boolsData[i]}}))
 }
+
+let workerScript = `
+// --------------------------------------------------------------------------
+// -- worker.js
+// --------------------------------------------------------------------------
+
+const {
+  Worker, isMainThread, parentPort, workerData,
+} = require('node:worker_threads');
+
+const A = require('array-toolkit')
+/**
+  * Round a number to a specific number of decimal places.
+  * @param {number} number - Number to round.
+  * @param {number} decimalPlaces - Amount of decimal places to round numbe to.
+  * @example console.log(roundTo(10.2332, 2)) //10.23
+*/
+function roundTo (number,decimalPlaces){
+    let roundedNumber=number.toFixed(decimalPlaces);
+    return JSON.parse(roundedNumber)
+}
+
+/**
+  * Returns a random number between a range.
+  * @param {number} min - Minimum amount the random number can be.
+  * @param {number} max - Maximum amount the random number can be.
+  * @param {number} decimalPlaces - The amount of decimal places the random number can have.
+  * @example
+  * console.log(randomRange(0, 4, 4)) //1.7395
+  * console.log(randomRange(0, 4, 40)) //1.71246107249822
+*/
+function randomRange (min, max,decimalPlaces) {
+    if (decimalPlaces==undefined){decimalPlaces=0}
+      return roundTo(min + (max - min) * (Math.random()),decimalPlaces);
+}
+
+
+function parseItem (input, rules) {
+    if (Object.keys(rules).includes(input)) {
+        return rules[input]}
+    else {
+        return input
+    }
+}
+// let parseItem = (input,rules) => { if (Object.keys(rules).includes(input)) {return rules[input]} else {return input}}
+
+// let parseString = (inputString,rules) => inputString.split("").map(x => parseItem(x,rules)).join().replace(/,/g,"")
+function parseString (inputString, rules) {
+    return inputString.split("").map(x => parseItem(x,rules)).join().replace(/,/g,"")
+}
+
+/**
+  * Generates an L-system for a number of generations based on a starting inputString and a set of rules.
+  * @param {string} inputString - The axiom of the L-system.
+  * @param {object} rules - The rules of the L-system.
+  * @param {number} generations - The number of generations the L-system has.
+  * @example
+  * console.log(generativeParseString('a', {'a': 'ba', 'b': 'aaa'}, 5))
+*/
+function generativeParseString (inputString,rules,generations) {
+    return Array.from({length: generations}, () => {
+       inputString=parseString(inputString,rules)
+        return inputString
+   })[generations - 1]
+}
+
+function generativeParseString(inputString, rules, generations) {
+    let currentGeneration = inputString;
+    while (generations > 0) {
+        let tempGeneration = parseString(currentGeneration, rules);
+        currentGeneration = tempGeneration;
+        generations -= 1;
+    }
+    return currentGeneration;
+}
+
+function generateRandomLsystemString (length = 30, pickedAlphabets){
+    let configuration = generateRandomLSystemConfiguration(pickedAlphabets)
+    console.log('configuration', configuration)
+    let finalLsystem = ''
+    let failedAttemps = 0
+    while (finalLsystem.length < length){
+        failedAttemps += 1
+        finalLsystem = generativeParseString(configuration.startingLetters, configuration.conditions, 3 ** failedAttemps)
+    }
+    return finalLsystem
+}
+
+//lsystem function with stale lsystem checks:
+function generateRandomLsystemString (length = 30, pickedAlphabets){
+    let configuration = generateRandomLSystemConfiguration(pickedAlphabets)
+    if (configuration.startingLetters === generativeParseString(configuration.startingLetters, configuration.conditions, 1)){
+        return configuration.startingLetters
+    }
+    let staleCounter = 0
+//     console.log('configuration', configuration)
+    let finalLsystem = ''
+    let failedAttemps = 0
+    while (finalLsystem.length < length && failedAttemps < 1000){
+        failedAttemps += 1
+        let newSystem = generativeParseString(configuration.startingLetters, configuration.conditions, 3 ** failedAttemps)
+        if (staleCounter >= 5){
+            return finalLsystem
+        }
+        else if (newSystem === finalLsystem){
+            staleCounter += 1
+        }
+        else {
+            staleCounter = 0
+        }
+        finalLsystem = newSystem
+    }
+    return finalLsystem
+}
+
+//generates alphabets for the lsystem chord progression:
+function generateLsystemAlphabets (){
+    let alphabets = Array.from({ length: 26 }, (_, i) => String.fromCharCode(97 + i));
+    return Array.from({length: randomRange(2, 10)}, () => {
+        return A.pick(alphabets)
+    })
+}
+
+/**
+  * Loops a string by a certain amount of times:
+  * @param {number} times - Number of times the string should be repeated.
+  * @param {string} string - The string that should be repeated.
+  * @example
+  * console.log(repeatString(2, 'Hi how are you')) //'Hi how are youHi how are you'
+  * console.log(repeatString(3, 'Ha ')) //'Ha Ha Ha '
+*/
+function repeatString (times, string){
+    return A.buildArray(times, x => {return string}).join('')
+}
+
+/**
+  * Shuffles a string in a random way
+  * @param {string} str - The string to be shuffled
+  * @example
+  * console.log(shuffleString('abbbsdfhshfsdoih')) //bhfobsfsdbihsdah
+  * console.log(shuffleString('HiHowAreYou')) //rHYwoeoHiAu
+*/
+function shuffleString(str) {
+  let arr = str.split('');
+  let len = arr.length;
+  arr.forEach((x, c) =>{
+    let i = len - 1 - c
+    let j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]]; // Use array destructuring for swapping
+  })
+  return arr.join('');
+}
+//One of the versions generated by Chatgpt
+
+//generates conditions for the lsystem chord progression:
+function generateCondition (chosenAlphabets, min, max){
+    let condition = ''
+    chosenAlphabets.forEach((x, i) =>{
+        condition += repeatString(randomRange(min, max), x)
+    })
+    return shuffleString(condition)
+}
+
+//Generate random configurations for the lsystem chord progression:
+function generateRandomLSystemConfiguration (pickedAlphabets){
+    let chosenAlphabets;
+    if (pickedAlphabets === undefined){
+        chosenAlphabets = generateLsystemAlphabets()
+    }
+    else{
+        chosenAlphabets = pickedAlphabets
+    }
+    let startingLetters = chosenAlphabets.map(x => {
+        return repeatString(randomRange(1, 3), x)
+    }).join('')
+    let conditions = {}
+    conditions[chosenAlphabets[0]] = generateCondition(chosenAlphabets, 0, 5) + chosenAlphabets[0]
+    Array.from({length: randomRange(1, 5)}, () => {
+        let rule = generateCondition(chosenAlphabets, 1, 3)
+        conditions[rule] = generateCondition(chosenAlphabets, 0, 5)
+    })
+    startingLetters = shuffleString(startingLetters)
+    return {conditions, startingLetters}
+}
+
+//     parentPort.postMessage('Data received')
+  let lsystemString = generateRandomLsystemString(workerData.length, workerData.pickedAlphabets)
+  parentPort.postMessage(lsystemString);
+  // Exit the worker thread (optional)
+  process.exit();
+`
 
 //Generates lsystem in string for for for the lsystem chord progression:
 /**
@@ -1903,22 +2106,34 @@ export function generateRandomLsystemChordProgression (){
   * console.log(generateRandomLsystemString(2, ['a'])) //'aaaaaaaaaaaaaaaa'
   * console.log(generateRandomLsystemString(2, ['a', 'b'])) //'bbbbbbaababbaababbbaababbbbaababbaababbbaababbbbbaababbaababbbaababbbbbbbaababbaababbbaababbbbaababbaababbbaababbbbbaababbaababbbaababb'
 */
-export function generateRandomLsystemString (length = 30, pickedAlphabets){
-    let configuration = generateRandomLSystemConfiguration(pickedAlphabets)
-    console.log('configuration', configuration)
-    let finalLsystem = ''
-    let failedAttemps = 0
-    while (finalLsystem.length < length){
-        failedAttemps += 1
-        finalLsystem = generativeParseString(configuration.startingLetters, configuration.conditions, 3 ** failedAttemps)
-    }
-    return finalLsystem
+export function generateRandomLsystemString(length = 30, pickedAlphabets){
+    return new Promise((resolve, reject) => {
+        if (isMainThread) {
+          let inputData = {length: length, pickedAlphabets};
+            let worker = new Worker(workerScript, {eval: true, workerData: inputData} )
+            console.log('worker created',inputData)
+          // Listen for messages from the worker thread
+          worker.on('message', result => {
+              console.log('worker done', result)
+               resolve(result)
+               worker.terminate()
+          });
+          worker.on('error', err => {
+              console.log('worker crashed', err)
+              // Reject the Promise with the error if something goes wrong
+              reject(err);
+              worker.terminate()
+          });
+          worker.postMessage(inputData);
+        }
+    })
 }
+//helped by chatgpt
 
 //Generates bools data for the lsystem chord progression:
 /**
   * Generatest L-system bools data. Returns an array filled with true or false booleans.
-  * @example console.log(generateLsystemBoolsData()) //[
+  * @example console.log(await generateLsystemBoolsData()) //[
   false, true,  false, true,  false,
   true,  false, true,  false, true,
   false, true,  false, true,  false,
@@ -1928,20 +2143,23 @@ export function generateRandomLsystemString (length = 30, pickedAlphabets){
   true
 ]
 */
-export function generateLsystemBoolsData (){
-    return generateRandomLsystemString(30, ['a', 'b']).split('').map(x => {
-            if (x === 'a'){
-                return true
-            }
-            else {
-                return false
-            }
-        })
+export async function generateLsystemBoolsData (){
+    let data = await generateRandomLsystemString(30, ['a', 'b'])
+    data.split('').map(x => {
+        if (x === 'a'){
+            return true
+        }
+        else {
+            return false
+        }
+    })
+    return data
 }
 
 //generates note data for the lsystem chord progression:
-export function generateLsystemNoteData (){
-    let noteData = countLetterChanges(generateRandomLsystemString(20))
+async function generateLsystemNoteData (){
+    let noteData = countLetterChanges(await generateRandomLsystemString(20))
+    console.log('noteData', noteData)
     let addedNotesData = []
     let tenLengthArray = Array.from({length: 10})
     Array.from({length: Math.floor(noteData.length / 10)}).forEach((x, i) =>{
@@ -1999,12 +2217,12 @@ export function convertLsystemStringToNumbersViaAssignedLetters (chosenAlphabets
     })
 }
 
-export function generateLsystemByAssigningNumberToLetter (mode, octaves,length) {
+export async function generateLsystemByAssigningNumberToLetter (mode, octaves,length) {
     let alphabets = Array.from({ length: 26 }, (_, i) => String.fromCharCode(97 + i));
     let modeAlphabets = A.safeSplice(alphabets, alphabets.length, mode.length)
-    let modeData = convertLsystemStringToNumbersViaAssignedLetters(modeAlphabets, generateRandomLsystemString(length, modeAlphabets), mode)
+    let modeData = convertLsystemStringToNumbersViaAssignedLetters(modeAlphabets, await generateRandomLsystemString(length, modeAlphabets), mode)
     let octavesAlphabets = A.safeSplice(alphabets, alphabets.length, octaves.length)
-    let octavesData = convertLsystemStringToNumbersViaAssignedLetters(octavesAlphabets,  generateRandomLsystemString(length, octavesAlphabets), octaves)
+    let octavesData = convertLsystemStringToNumbersViaAssignedLetters(octavesAlphabets,  await generateRandomLsystemString(length, octavesAlphabets), octaves)
     return modeData.map((x, i) =>{
         return {note: x, octave: octavesData[i]}
     })
