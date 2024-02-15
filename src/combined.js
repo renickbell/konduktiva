@@ -2047,6 +2047,7 @@ async function generateRandomLsystemChordProgression (){
     let velocityString = await generateRandomLsystemString(20)
     let velocityData = countLetterChanges(velocityString)
     let boolsData = await generateLsystemBoolsData()
+    boolsData = boolsData.split('')
     let octaveString = await generateRandomLsystemString(20)
     let octaveData = countLetterChanges(octaveString)
     let notesData = await generateLsystemNoteData()
@@ -2056,7 +2057,9 @@ async function generateRandomLsystemChordProgression (){
     octaveData = A.resizeArray(notesData.length, octaveData).map(x => {return x * 2})
     velocityData = A.resizeArray(notesData.length, velocityData).map(x => {return x * (x * 10)})
     await waitFor(5)
-    return new QuantizedMap(notesData.length, noteDurationData, notesData.map((x, i) => {return {data: [{note: x, octave: octaveData[i], velocity: velocityData[i]}], bool: boolsData[i]}}))
+    console.log('notesData', notesData)
+    console.log('boolsData', boolsData)
+    return new QuantizedMap(notesData.length, noteDurationData, notesData.map((x, i) => {return {data: [{note: x, octave: octaveData[i], velocity: velocityData[i]}], bool: boolsData[i] === 'a'}}))
 }
 
 let workerScript = `
