@@ -3254,6 +3254,7 @@ function createMidiOutputPlayer (defaultName, e, channel = defaultName, velocity
     setupMidiRhythm(e, playerName, rhythmMapName)
     generalMidiOutputVariableAssigning.apply(null, arguments)
 }
+//apply usuage helped by chatgpt I think from what I remember.
 
 //https://stackoverflow.com/a/43363105/19515980
 
@@ -3262,19 +3263,22 @@ function editMidiOutputPlayer (defaultName, e, channel = defaultName, velocityMa
     console.log('Chose to edit player')
     generalMidiOutputVariableAssigning.apply(null, arguments)
 }
+//apply usuage helped by chatgpt I think from what I remember.
 
 //HERE name creation is wrong cannot be the same as the orignal player name it should be name + something
-function createControlChangePlayers (noteValueData, name, e){
+function createControlChangePlayers (noteValueData, name, e, midiOutput, mapDefaultName){
     if (noteValueData.controlChangePlayer !== undefined && noteValueData.controlChangePlayerKeys !== undefined && noteValueData.controlChangePlayerKeyspan !== undefined){
 //         e.controlChangePlayers[name] = new QuantizedMap(noteValueData.controlChangePlayerKeyspan, noteValueData.controlChangePlayerKeys, noteValueData.controlChangePlayer)
-         createMidiCCPlayer (e, name + 'ControlChange', noteValueData.controlChangePlayerKeyspan, noteValueData.controlChangePlayerKeys, noteValueData.controlChangePlayer, noteValueData.channels, undefined)
+         createMidiCCPlayer (e, name + 'ControlChange', noteValueData.controlChangePlayerKeyspan, noteValueData.controlChangePlayerKeys, noteValueData.controlChangePlayer, noteValueData.channels, midiOutput, mapDefaultName)
+        e.players[name].controlChangePlayer = name + 'ControlChange'
     }
 }
 
 //HERE name creation is wrong cannot be the same as the orignal player name it should be name + something
-function createMidiProgramPlayers (noteValueData, name, e){
+function createMidiProgramPlayers (noteValueData, name, e, midiOutput, mapDefaultName){
     if (noteValueData.midiProgramPlayer !== undefined && noteValueData.midiProgramPlayerKeys !== undefined && noteValueData.midiProgramPlayerKeyspan !== undefined){
-         createMidiProgramPlayer(e, name + 'MidiProgram', noteValueData.midiProgramPlayerKeyspan, noteValueData.midiProgramPlayerKeys, noteValueData.midiProgramPlayer, noteValueData.channels, undefined)
+         createMidiProgramPlayer(e, name + 'MidiProgram', noteValueData.midiProgramPlayerKeyspan, noteValueData.midiProgramPlayerKeys, noteValueData.midiProgramPlayer, noteValueData.channels, midiOutput, mapDefaultName)
+        e.players[name].midiProgramPlayer = name + 'MidiProgram'
     }
 }
 
@@ -3330,8 +3334,8 @@ function recordConfigurationDataIntoMusicalEnvironment (noteValueData, name, e){
     if (noteValueData.polyphonyMap !== undefined){
         e.maxPolyphonyMaps[name] = new QuantizedMap(noteValueData.polyphonyMap.length, A.buildArray(noteValueData.polyphonyMap.length, x => {return x}), noteValueData.polyphonyMap, e)
     }
-    createControlChangePlayers(noteValueData, name, e)
-    createMidiProgramPlayers(noteValueData, name, e)
+//     createControlChangePlayers(noteValueData, name, e)
+//     createMidiProgramPlayers(noteValueData, name, e)
     createModeFilters(noteValueData, name, e)
     createModeMaps(noteValueData, name, e)
     createRootMap(noteValueData, name, e)
@@ -4589,7 +4593,7 @@ function createPlaybackPlayer (e, midiOutput, recordedMessagesName){
     player.midiOutput = midiOutput
 }
 
-function createExtensionPlayerBasics (e, name, keyspan, keys, channels, midiOutput){
+function createExtensionPlayerBasics (e, name, keyspan, keys, channels, midiOutput, mapDefaultName){
     let player = e.players[name]
     e.rhythmMaps[name] = new QuantizedMap(1, [1], [new QuantizedMap(keyspan, keys, keys.map(x => {return 1}))])
     e.rhythmPatterns[name] = new RhythmPattern (name, keyspan, keys.map((x, i) => {
@@ -4598,21 +4602,21 @@ function createExtensionPlayerBasics (e, name, keyspan, keys, channels, midiOutp
     e.rhythmPatterns[name].add(e, name)
     player.rhythmMap = 'straight'
     player.midiOutput = midiOutput
-    player.channelMap = name
+    player.channelMap = mapDefaultName
 }
 
-function createMidiCCPlayer (e, name, keyspan, keys, midiCCs, channels, midiOutput){
+function createMidiCCPlayer (e, name, keyspan, keys, midiCCs, channels, midiOutput, mapDefaultName){
     setupMidiCCPlayer(e, name)
     let player = e.players[name]
-    createExtensionPlayerBasics (e, name, keyspan, keys, channels, midiOutput)
+    createExtensionPlayerBasics (e, name, keyspan, keys, channels, midiOutput, mapDefaultName)
     e.controlChangeMaps[name] = new QuantizedMap(keyspan, keys, midiCCs)
     player.controlChangeMap = name
 }
 
-function createMidiProgramPlayer (e, name, keyspan, keys, midiPrograms, channels, midiOutput){
+function createMidiProgramPlayer (e, name, keyspan, keys, midiPrograms, channels, midiOutput, mapDefaultName){
     setupMidiProgramPlayer(e, name)
     let player = e.players[name]
-    createExtensionPlayerBasics (e, name, keyspan, keys, channels, midiOutput)
+    createExtensionPlayerBasics (e, name, keyspan, keys, channels, midiOutput, mapDefaultName)
     e.midiProgramMaps[name] = new QuantizedMap(keyspan, keys, midiPrograms)
     player.midiProgramMap = name
 }
@@ -5440,6 +5444,9 @@ function playerForMidiTrack (musicalKey, midiTrack, name, output, ticksPerQuarte
      let keyspan = getClosestSmallerDivisible(completedNotesData.endOfTrackAbsoluteTime, e.timeSignature)
     let keys = completedNoteOnEvents.map(x => {return x[0].absoluteTime})
     configObj = {
+        channelKeyspan: 1,
+        channelKeys: [0],
+        channelValues: [output],
         rootMap: [],
         velocity: completedNotesData.completeNotes.map(x => {return x.velocity}),
         bools: midiTrack.map(x => {return true}),
@@ -5465,7 +5472,7 @@ function playerForMidiTrack (musicalKey, midiTrack, name, output, ticksPerQuarte
      })})
         let extraConfig = {
             midiOutput: 1,
-            polyphonyMapName: 'default', chordMapName: 'default', modeMapName: 'default', legatoMapName: 'default', controlChangePlayerName: false, midiProgramPlayerName: false}
+            polyphonyMapName: 'default', modeMapName: 'default', legatoMapName: 'default', controlChangePlayerName: false, midiProgramPlayerName: false}
     if (completedNotesData.controllerMessages.length > 0){
         configObj.controlChangePlayerKeyspan = keyspan
         let groupedCC = groupByAbsoluteTime(completedNotesData.controllerMessages)
@@ -5489,28 +5496,51 @@ function playerForMidiTrack (musicalKey, midiTrack, name, output, ticksPerQuarte
         delete extraConfig.midiProgramPlayerName
     }
     recordConfigurationDataIntoMusicalEnvironment(configObj, name, e)
-    assignPlayerForMusicSynthesizerMidiOutput(e, name, name, extraConfig)
-    e.rhythmMaps[name].values[0] = new QuantizedMap(keyspan, keys, absoluteToDelta(keys))
-    e.rhythmMaps[name].values[0].values.push(keyspan - keys[keys.length - 1])
+//     assignPlayerForMusicSynthesizerMidiOutput(e, name, name, extraConfig)
+//     e.rhythmMaps[name].values[0] = new QuantizedMap(keyspan, keys, absoluteToDelta(keys))
+//     e.rhythmMaps[name].values[0].values.push(keyspan - keys[keys.length - 1])
+    return {name: name, extraConfig: extraConfig, keyspan: keyspan, keys: keys, configObj: configObj, midiOutput: 1}
 }
+
+function createExtensionPlayers (noteValueData, playerName, e, midiOutput, mapDefaultName){
+    createControlChangePlayers.apply(null, arguments)
+    createMidiProgramPlayers.apply(null, arguments)
+}
+//apply usuage helped by chatgpt I think from what I remember.
 
 function addParsedDataMidiDataToMusicalEnvironment (midiData, parsedData, musicalKey, filePath, e){
     let ticksPerQuarter = midiData.header.ticksPerQuarter
-    e.changeTempo(60e6 / parsedData.tempos[0].microsecondsPerBeat)
-    e.timeSignature = parsedData.timeSignatures[0].numerator
+    let tempo = 60e6 / parsedData.tempos[0].microsecondsPerBeat
+//     e.changeTempo(60e6 / parsedData.tempos[0].microsecondsPerBeat)
+//     e.timeSignature = parsedData.timeSignatures[0].numerator
+    let timeSignature = parsedData.timeSignatures[0].numerator
     let playerName = findFileNameFromFilePath(filePath)
+    let playerToCreate = []
     midiData.tracks.forEach((x, i) => {
         if (checkIfTrackIncludesNoteOnOffMessages(x) === true){
-                playerForMidiTrack(musicalKey, x, playerName + i, i + 1, ticksPerQuarter, e)
+                playerToCreate.push(playerForMidiTrack(musicalKey, x, playerName + i, playerToCreate.length + 1, ticksPerQuarter, e))
         }
     })
+    return function (playerNames){
+        if (playerToCreate.length > playerName.length){
+            return new Error('Insufficient player names provided. Make sure the playerName array is filled with at least ' + playerToCreate.length + ' strings.')
+        }
+        playerToCreate.forEach((x, i) =>{
+            assignPlayerForMusicSynthesizerMidiOutput(e, x.name, playerNames[i], x.extraConfig)
+            createExtensionPlayers(x.configObj, playerNames[i], e, x.midiOutput, x.name)
+            e.rhythmMaps[x.name].values[0] = new QuantizedMap(x.keyspan, x.keys, absoluteToDelta(x.keys))
+            e.rhythmMaps[x.name].values[0].values.push(x.keyspan - x.keys[x.keys.length - 1])
+        })
+        e.changeTempo(tempo)
+        e.timeSignature = timeSignature
+    }
 }
 
 function addMidiFileToMusicalEnvironment (filePath, musicalKey, e){
     let midiFile = fs.readFileSync(filePath, 'binary')
     let midiData = midiFileIO.parseMidiBuffer(midiFile);
     let parsedData = getDataFromMidiFile(midiData)
-    addParsedDataMidiDataToMusicalEnvironment(midiData, parsedData, musicalKey, filePath, e)
+    return addParsedDataMidiDataToMusicalEnvironment(midiData, parsedData, musicalKey, filePath, e)
 //     return parsedData
 }
 
