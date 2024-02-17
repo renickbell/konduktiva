@@ -2316,7 +2316,7 @@ async function generateLsystemBoolsData (){
 
 //generates note data for the lsystem chord progression:
 async function generateLsystemNoteData (){
-    let noteData = countLetterChanges(await generateRandomLsystemString(20))
+    let noteData = countLetterChanges(await generateRandomLsystemString(10) + await generateRandomLsystemString(10))
     console.log('noteData', noteData)
     let addedNotesData = []
     let tenLengthArray = Array.from({length: 10})
@@ -2398,7 +2398,8 @@ addToModuleExports({
   generateRandomLSystemConfiguration,
   generateRandomLsystemChordProgression,
   generateRandomLsystemString,
-  generativeParseString
+  generativeParseString,
+  waitFor,
 })
 
 // --------------------------------------------------------------------------
@@ -2888,6 +2889,9 @@ createMaskMap, createRhythmMap
 
 // --------------------------------------------------------------------------
 //websocket.js:
+
+//sources used(unsure)?:
+//https://stackoverflow.com/questions/53518607/nodejs-datacloneerror-function-native-code-could-not-be-cloned
 
 const WebSocketServer = require("ws");
 
@@ -5642,6 +5646,37 @@ function setUpDefaultMusicalEnvironmentFourPlayers (){
     return e
 }
 
+function duplicatePlayer (newPlayerName, existingPlayerName, e){
+    e.players[newPlayerName] = e.players[existingPlayerName]
+    let newPlayer = e.players[newPlayerName] 
+    newPlayer.name = newPlayerName
+    return newPlayer
+}
+
+function setUpTestMusicalEnvironment (){
+    let e = setUpMusicalEnvironmentExamples()
+    let simpleMelodyData = {
+        noteValuesKeyspan: 4,
+        velocity : [100, 100, 100, 100],
+        noteDurations: A.buildArray(12, x => {return x}),
+        bools: [true, true, true, true],
+        rhythmMap: [1, 2, 3, 4],
+        octave: [5, 6, 7, 8],
+        total: 4,
+        noteDurationKeyspan: 12,
+        noteDurationValues: [0, 1, 2, 3],
+        noteDurations: [0, 4, 8, 12],
+        noteValues: [[1], [2], [3], [4]],
+        rootMap: [ 'C', 'C', 'C', 'C' ],
+    }
+    recordConfigurationDataIntoMusicalEnvironment(simpleMelodyData, 'testMidiPlayer1', e)
+    assignPlayerForMusicSynthesizerMidiOutput(e, 'testMidiPlayer1', 'testMidiPlayer1', legatoOnlyConfig)
+    duplicatePlayer('testMidiPlayer2', 'testMidiPlayer1', e)
+    duplicatePlayer('testMidiPlayer3', 'testMidiPlayer1', e)
+    duplicatePlayer('testMidiPlayer4', 'testMidiPlayer1', e)
+    return e
+}
+
 function setUpVerySimpleMusicalEnvironment (){
     let e = setUpMusicalEnvironmentExamples()
     let simpleMelodyData = {
@@ -5802,6 +5837,9 @@ function checkNumInputMusicalEnv (param){
     else if (param === 5){
         return setUpLongMusicalEnvironment()
     }
+    else if (param === 6){
+        return setUpTestMusicalEnvironment()
+    }
     return false
 }
 
@@ -5825,8 +5863,10 @@ function checkStringInputMusicalEnv (param){
     else if (param.includes('long') || param.includes('5')){
         return setUpLongMusicalEnvironment()
     }
+    else if (param.includes('test') || param.includes('6')){
+        return setUpTestMusicalEnvironment()
+    }
     return false
-
 }
 
 function setUpMusicalEnvironment (param){
@@ -5841,7 +5881,9 @@ function setUpMusicalEnvironment (param){
 
 addToModuleExports({ setUpMusicalEnvironmentExamples,  setUpDefaultMusicalEnvironmentFourPlayers, setUpKonduktiva, setUpDefaultMusicalEnvironmentOnePlayer, setUpVerySimpleMusicalEnvironment, setUpSimpleMusicalEnvironment, setUpLongMusicalEnvironment, setUpTwoPlayerMusicalEnvironment, setUpMusicalEnvironment,
     exampleMusicalEnvironmentsExtraConfig,
-    legatoOnlyConfig
+    legatoOnlyConfig,
+    duplicatePlayer,
+    setUpTestMusicalEnvironment,
 })
 
 //let K = require('./combined.js')
