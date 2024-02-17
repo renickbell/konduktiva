@@ -5653,7 +5653,7 @@ function duplicatePlayer (newPlayerName, existingPlayerName, e){
     return newPlayer
 }
 
-function setUpTestMusicalEnvironment (){
+function setUpTestMusicalEnvironment (copies = 4){
     let e = setUpMusicalEnvironmentExamples()
     let simpleMelodyData = {
         noteValuesKeyspan: 4,
@@ -5671,9 +5671,9 @@ function setUpTestMusicalEnvironment (){
     }
     recordConfigurationDataIntoMusicalEnvironment(simpleMelodyData, 'testMidiPlayer1', e)
     assignPlayerForMusicSynthesizerMidiOutput(e, 'testMidiPlayer1', 'testMidiPlayer1', legatoOnlyConfig)
-    duplicatePlayer('testMidiPlayer2', 'testMidiPlayer1', e)
-    duplicatePlayer('testMidiPlayer3', 'testMidiPlayer1', e)
-    duplicatePlayer('testMidiPlayer4', 'testMidiPlayer1', e)
+    Array.from({length: copies - 1}).forEach((x, i) =>{
+        duplicatePlayer('testMidiPlayer' + (i + 2), 'testMidiPlayer1', e)
+    })
     return e
 }
 
@@ -5818,7 +5818,7 @@ function setUpKonduktiva (){
 
 // export let e = setUpDefaultMusicalEnvironment()
 
-function checkNumInputMusicalEnv (param){
+function checkNumInputMusicalEnv (param, extraInfo){
     if (param === 0){
         return setUpVerySimpleMusicalEnvironment()
     }
@@ -5838,12 +5838,12 @@ function checkNumInputMusicalEnv (param){
         return setUpLongMusicalEnvironment()
     }
     else if (param === 6){
-        return setUpTestMusicalEnvironment()
+        return setUpTestMusicalEnvironment(extraInfo)
     }
     return false
 }
 
-function checkStringInputMusicalEnv (param){
+function checkStringInputMusicalEnv (param, extraInfo){
     param = param.toLowerCase()
     if ((param.includes('very') && param.includes('simple')) || param.includes('vsimple') || param.includes('0')){
         return setUpVerySimpleMusicalEnvironment()
@@ -5864,17 +5864,17 @@ function checkStringInputMusicalEnv (param){
         return setUpLongMusicalEnvironment()
     }
     else if (param.includes('test') || param.includes('6')){
-        return setUpTestMusicalEnvironment()
+        return setUpTestMusicalEnvironment(extraInfo)
     }
     return false
 }
 
-function setUpMusicalEnvironment (param){
+function setUpMusicalEnvironment (param, extraInfo){
     if (typeof param === 'number'){
-        return checkNumInputMusicalEnv(param)
+        return checkNumInputMusicalEnv(param, extraInfo)
     }
     else if (typeof param === 'string'){
-        return checkStringInputMusicalEnv(param)
+        return checkStringInputMusicalEnv(param, extraInfo)
     }
     return false
 }
