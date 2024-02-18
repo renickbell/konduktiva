@@ -5215,28 +5215,6 @@ let legatoOnlyConfig = {
     controlChangePlayerName: false,
 }
 
-export function setUpMusicalEnvironmentExamples (){
-    let e = new MusicalEnvironment()
-    setUpDefaultRhythmMapsToMusicalEnvironment(e)
-    setUpDefaultActionToMusicalEnvironment(e)
-    setUpDefaultMaskMapsForMusicalEnvironment(e)
-    setUpDefaultIOIsForMusicalEnvironment(e)
-    setUpDefaultCurrentDensityGraphsForMusicalEnvironment(e)
-    setUpDefaultDensityGraphsForMusicalEnvironment(e)
-    setUpDefaultPlayersForMusicalEnvironments(e)
-    addToMusicalEnvironment(e)
-    updateMidiOutputList(e)
-    setupScheduler(e)
-    e.startScheduler()
-    e.actions.midiSequencedRhythm = musicSynthesizerCaller
-    e.actions.sendChordMidiInfo = sendChordMidiInfo
-    e.actions.sendNotesMidiInfo = sendNotesMidiInfo
-    e.actions.sendPlaybackMessage = sendPlaybackMessage
-    e.actions.sendMidiCCMessages = sendMidiCCMessages
-    e.actions.sendMidiProgramMessages = sendMidiProgramMessages
-    return e
-}
-
 export function setUpDefaultMusicalEnvironmentFourPlayers (){
     let e = setUpMusicalEnvironmentExamples()
     recordConfigurationDataIntoMusicalEnvironment(lsystemData, 'p1', e)
@@ -5251,74 +5229,75 @@ export function setUpDefaultMusicalEnvironmentFourPlayers (){
 }
 
 export function duplicatePlayer (newPlayerName, existingPlayerName, e){
-    e.players[newPlayerName] = e.players[existingPlayerName]
-    let newPlayer = e.players[newPlayerName] 
+    e.players[newPlayerName] = R.clone(e.players[existingPlayerName])
+    let newPlayer = e.players[newPlayerName]
     newPlayer.name = newPlayerName
     return newPlayer
 }
 
+export let simpleMelodyDataTemplate = {
+        noteValuesKeyspan: 4,
+        bools: [true, true, true, true],
+        total: 4,
+        octave: [5, 6, 7, 8],
+        noteDurations: A.buildArray(12, x => {return x}),
+        noteDurationKeyspan: 12,
+        noteDurationValues: [1, 2, 3, 4],
+        noteDurations: [0, 4, 8, 12],
+}
+
 export function setUpTestMusicalEnvironment (copies = 4){
     let e = setUpMusicalEnvironmentExamples()
-    let simpleMelodyData = {
-        noteValuesKeyspan: 4,
-        velocity : [100, 100, 100, 100],
-        noteDurations: A.buildArray(12, x => {return x}),
-        bools: [true, true, true, true],
-        rhythmMap: [1, 2, 3, 4],
-        octave: [5, 6, 7, 8],
-        total: 4,
-        noteDurationKeyspan: 12,
-        noteDurationValues: [0, 1, 2, 3],
-        noteDurations: [0, 4, 8, 12],
-        noteValues: [[1], [2], [3], [4]],
-        rootMap: [ 'C', 'C', 'C', 'C' ],
-    }
+    let simpleMelodyData = R.clone(simpleMelodyDataTemplate)
+    simpleMelodyData.rhythmMap = [1, 2, 3, 4]
+    simpleMelodyData.noteValues = [[1], [2], [3], [4]]
+    simpleMelodyData.rootMap = [ 'C', 'C', 'C', 'C' ]
+    simpleMelodyData.velocity = [100, 100, 100, 100]
+    let customTestConfig = R.clone(legatoOnlyConfig)
+    customTestConfig.noteMapName = 'default'
+    customTestConfig.maskMapName = 'default'
+    customTestConfig.velocityMapName = 'default'
+    customTestConfig.octaveMapName = 'default'
+    customTestConfig.polyphonyMapName = 'default'
+    customTestConfig.noteDurationMap = 'default'
+    customTestConfig.rootMapName = 'default'
+    customTestConfig.chordMapName = 'default'
+    customTestConfig.rhythmMapName = 'straight'
+    customTestConfig.modeMapName = 'default'
     recordConfigurationDataIntoMusicalEnvironment(simpleMelodyData, 'testMidiPlayer1', e)
-    assignPlayerForMusicSynthesizerMidiOutput(e, 'testMidiPlayer1', 'testMidiPlayer1', legatoOnlyConfig)
-    Array.from({length: copies - 1}).forEach((x, i) =>{
-        duplicatePlayer('testMidiPlayer' + (i + 2), 'testMidiPlayer1', e)
+    assignPlayerForMusicSynthesizerMidiOutput(e, 'testMidiPlayer1', 'testMidiPlayer1', customTestConfig)
+    Array.from({length: copies}).forEach((x, i) =>{
+        let currentPlayerName = 'testMidiPlayer' + (i + 1)
+        if (i > 0 ) {
+            duplicatePlayer(currentPlayerName, 'testMidiPlayer1', e)
+        }
+        let currentPlayer = e.players[currentPlayerName]
+        currentPlayer.channelMap = currentPlayerName
+        e.channelMaps[currentPlayerName] = new QuantizedMap(4, [0], [i + 1])
     })
     return e
 }
 
 export function setUpVerySimpleMusicalEnvironment (){
     let e = setUpMusicalEnvironmentExamples()
-    let simpleMelodyData = {
-        noteValuesKeyspan: 4,
-        velocity : [100, 100, 100, 100],
-        noteDurations: A.buildArray(12, x => {return x}),
-        bools: [true, true, true, true],
-        rhythmMap: [1, 2, 3, 4],
-        octave: [5, 6, 7, 8],
-        total: 4,
-        noteDurationKeyspan: 12,
-        noteDurationValues: [0, 1, 2, 3],
-        noteDurations: [0, 4, 8, 12],
-        noteValues: [[1], [2], [3], [4]],
-        rootMap: [ 'C', 'C', 'C', 'C' ],
-    }
-    recordConfigurationDataIntoMusicalEnvironment(simpleMelodyData, 'p1', e)
+    let simpleMelodyData = R.clone(simpleMelodyDataTemplate)
+    simpleMelodyData.velocity = [100, 100, 100, 100],
+    simpleMelodyData.rhythmMap = [1, 2, 3, 4],
+    simpleMelodyData.noteValues = [[1], [2], [3], [4]],
+    simpleMelodyData.rootMap = [ 'C', 'C', 'C', 'C' ],
+    recordConfigurationDataIntoMusicalEnvironment(simpleMelodyData, 'p1', e, legatoOnlyConfig)
     assignPlayerForMusicSynthesizerMidiOutput(e, 'p1','exampleMidiPlayer1', legatoOnlyConfig)
+    e.players.exampleMidiPlayer1.modeMap = 'default'
     return e
 }
 
 export function setUpSimpleMusicalEnvironment (){
     let e = setUpMusicalEnvironmentExamples()
-    let simpleMelodyData = {
-        noteValuesKeyspan: 4,
-        velocity : [120, 40, 80, 65],
-        noteDurations: A.buildArray(12, x => {return x}),
-        bools: [true, true, true, true],
-        rhythmMap: [0.5, 1.5, 3,1 ],
-        octave: [5, 6, 7, 8],
-        total: 4,
-        noteDurationKeyspan: 12,
-        noteDurationValues: [1, 2, 3, 4],
-        noteDurations: [0, 4, 8, 12],
-        noteValues: [[10, 4], [6, 4], [8, 7], [3]],
-        rootMap: [ 'C', 'D', 'A', 'G'],
-        polyphonyMap: [10, 10, 10, 10]
-    }
+    let simpleMelodyData = R.clone(simpleMelodyDataTemplate)
+    simpleMelodyData.velocity = [120, 40, 80, 65]
+    simpleMelodyData.rhythmMap = [0.5, 1.5, 3,1 ]
+    simpleMelodyData.noteValues = [[10, 4], [6, 4], [8, 7], [3]],
+    simpleMelodyData.rootMap = [ 'C', 'D', 'A', 'G'],
     recordConfigurationDataIntoMusicalEnvironment(simpleMelodyData, 'p1', e)
     assignPlayerForMusicSynthesizerMidiOutput(e, 'p1', 'exampleMidiPlayer1', legatoOnlyConfig)
     e.players.exampleMidiPlayer1.polyphonyMap = 'default'
@@ -5328,7 +5307,7 @@ export function setUpSimpleMusicalEnvironment (){
 
 export function setUpLongMusicalEnvironment (){
     let e = setUpMusicalEnvironmentExamples()
-    let simpleMelodyData = {
+    let longerMelodyData = {
         velocity : A.buildArray(12, x => {return 100}),
         noteDurations: A.buildArray(12, x => {return x}),
         bools: A.buildArray(12, x => {return true}),
@@ -5341,7 +5320,7 @@ export function setUpLongMusicalEnvironment (){
         noteValues: [[10, 4], [6, 4], [8, 7], [3], [4], [5], [6], [7], [8,], [9],[10],[11]],
         rootMap: A.buildArray(12, x => {return 'C'}),
     }
-    recordConfigurationDataIntoMusicalEnvironment(simpleMelodyData, 'p1', e)
+    recordConfigurationDataIntoMusicalEnvironment(longerMelodyData, 'p1', e, legatoOnlyConfig)
     assignPlayerForMusicSynthesizerMidiOutput(e, 'p1', 'exampleMidiPlayer1')
     e.players.exampleMidiPlayer1.polyphonyMap = 'default'
     e.players.exampleMidiPlayer1.modeMap = 'default'
@@ -5349,48 +5328,19 @@ export function setUpLongMusicalEnvironment (){
 }
 
 export function setUpTwoPlayerMusicalEnvironment (){
-    let e = setUpMusicalEnvironmentExamples()
-    let simpleMelodyData = {
-        noteValuesKeyspan: 4,
-        velocity : [100, 100, 100, 100],
-        noteDurations: A.buildArray(12, x => {return x}),
-        bools: [true, true, true, true],
-        rhythmMap: [1, 2, 3, 4],
-        octave: [5, 6, 7, 8],
-        total: 4,
-        noteDurationKeyspan: 12,
-        noteDurationValues: [0, 1, 2, 3],
-        noteDurations: [0, 4, 8, 12],
-        noteValues: [[1], [2], [3], [4]],
-        rootMap: [ 'C', 'C', 'C', 'C' ],
-          channelKeyspan: 1,
-          channelKeys: [0],
-          channelValues: [1],
-    }
-    let exampleData = {
-            channelKeyspan: 1,
-            channelKeys: [0],
-            channelValues: [2],
-        noteValuesKeyspan: 4,
-        velocity : [100, 100, 100, 100],
-        noteDurations: A.buildArray(12, x => {return x}),
-        bools: [true, true, true, true],
-        rhythmMap: [1, 2, 3, 4].reverse(),
-        octave: [2, 3, 4, 5].reverse(),
-        total: 4,
-        noteDurationKeyspan: 12,
-        noteDurationValues: [0, 1, 2, 3],
-        noteDurations: [0, 4, 8, 12],
-        noteValues: [[4], [6], [8], [10]].reverse(),
-        rootMap: [ 'C', 'C', 'C', 'C' ],
-    }
-    recordConfigurationDataIntoMusicalEnvironment(simpleMelodyData, 'p1', e)
-    assignPlayerForMusicSynthesizerMidiOutput(e, 'p1', 'exampleMidiPlayer1', legatoOnlyConfig)
+    let e = setUpVerySimpleMusicalEnvironment()
+    let exampleData = R.clone(simpleMelodyDataTemplate)
+    exampleData.channelKeyspan = 1
+    exampleData.channelKeys = [0];
+    exampleData.channelValues = [2];
+    exampleData.noteValuesKeyspan = 4;
+    exampleData.velocity = [100, 100, 100, 100];
+    exampleData.rhythmMap = [4, 3, 2, 1];
+    exampleData.octave = [5, 4, 3, 2];
+    exampleData.noteValues = [[4], [6], [8], [10]].reverse();
+    exampleData.rootMap = [ 'C', 'C', 'C', 'C' ]
     recordConfigurationDataIntoMusicalEnvironment(exampleData, 'p2', e)
     assignPlayerForMusicSynthesizerMidiOutput(e, 'p2', 'exampleMidiPlayer2', legatoOnlyConfig)
-    e.players.exampleMidiPlayer1.polyphonyMap = 'default'
-    e.players.exampleMidiPlayer2.polyphonyMap = 'default'
-    e.players.exampleMidiPlayer1.modeMap = 'default'
     e.players.exampleMidiPlayer2.modeMap = 'default'
     return e
 }
