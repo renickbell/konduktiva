@@ -2226,6 +2226,7 @@ export async function generateLsystemByAssigningNumberToLetter (mode, octaves,le
     let modeData = convertLsystemStringToNumbersViaAssignedLetters(modeAlphabets, await generateRandomLsystemString(length, modeAlphabets), mode)
     let octavesAlphabets = A.safeSplice(alphabets, alphabets.length, octaves.length)
     let octavesData = convertLsystemStringToNumbersViaAssignedLetters(octavesAlphabets,  await generateRandomLsystemString(length, octavesAlphabets), octaves)
+    octavesData = A.resizeArray(modeData.length, octavesData)
     return modeData.map((x, i) =>{
         return {note: x, octave: octavesData[i]}
     })
