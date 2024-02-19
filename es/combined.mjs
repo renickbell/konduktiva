@@ -2405,7 +2405,7 @@ export function createRootMap (noteValueData, name, e){
 // }
 
 //Generates that chord progression that are placed in the.chordMaps variable in the musical environment:
-export function generateChordProgressions (){
+export function generateChordProgressionExamples (){
     let twelveBarsProgression = generateRandomMelody('C', 'blues', 18, 6, 10)
     return {
 //         twelveBars: new QuantizedMap(18, A.buildArray(12, x => {return 4}), twelveBarsProgression.map(x => {x.velocity = 100; return {data: [x], bool: true}})),
@@ -3160,7 +3160,7 @@ export function addToMusicalEnvironment (e){
       value: randomRange(0, 126),
     }]}))
 }
-    e.chordMaps = generateChordProgressions()
+    e.chordMaps = generateChordProgressionExamples()
     e.chordMaps['default'] = new QuantizedMap(16, [0,4,8,12],['M','m7','m9','maj9'])
     e.chordMaps['exampleChords'] = e.chordMaps['default']
     e.songMaps = {
@@ -4731,7 +4731,7 @@ export function randomChord (rootNote, chordData) {
     return [rootNote, color + add]
 }
 
-export function generateChordProgression(chordLengths, key, counterClockwiseChance) {
+export function generateCircleOfFifthsChordProgression(chordLengths, key, counterClockwiseChance) {
     let progression = [];
     let circleOfFifth = createCircleOfFifths(key);
     let currentNoteIndex = 0;
@@ -4754,7 +4754,7 @@ export function generateChordProgression(chordLengths, key, counterClockwiseChan
     return romanNumeralProgression
 }
 
-export let progression = generateChordProgression([1,1,1,1], "C", 0.5)
+export let progression = generateCircleOfFifthsChordProgression([1,1,1,1], "C", 0.5)
 
 export let chords = generateChordsv2("C", 5, progression)
 
