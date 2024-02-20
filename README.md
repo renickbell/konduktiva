@@ -40,6 +40,10 @@ This document works as both a documentation and a tutorial about how to use the 
 
 [Here](http://konduktiva.org/doku.php?id=first_steps)
 
+### Setting Up An Editor (VIM + TMUX)
+
+[Here]()
+
 ### OS Specific Tips:
 
 #### MacOs:
