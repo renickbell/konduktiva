@@ -29,6 +29,7 @@ export const {
 } = require("tonal")
 export const midiFileIO = require('midi-file-io');
 export const { Worker, isMainThread, parentPort } = require('worker_threads');
+export const version = '2.4.2'
 
 // --------------------------------------------------------------------------
 //konduktiva-revised-2.mjs:
@@ -2097,6 +2098,18 @@ function generateRandomLSystemConfiguration (pickedAlphabets){
   // Exit the worker thread (optional)
   process.exit();
 `
+
+export function writeWorkerFileSetupToFile (filePath){
+    let workerTemplate = `const {
+  Worker, isMainThread, parentPort, workerData,
+} = require('node:worker_threads');
+
+function returnToParent (info){
+    parentPort.postMessage(info)
+}
+    `
+    fs.writeFileSync(filePath, workerTemplate)
+}
 
 //Generates lsystem in string for for for the lsystem chord progression:
 /**
@@ -5180,6 +5193,40 @@ export function addMidiFileToMusicalEnvironment (filePath, musicalKey, e){
     let parsedData = getDataFromMidiFile(midiData)
     return addParsedDataMidiDataToMusicalEnvironment(midiData, parsedData, musicalKey, filePath, e)
 //     return parsedData
+}
+
+//--------------------------------------------------------------------------
+//Bell useful navigation funcitons:
+
+export function logPlayersVariables (players, variable, e){
+    players.forEach(x => {
+        console.log('Player: ' + e.players[x].name)
+        console.log(variable + ': ' + e.players[x][variable] + '\n')
+    })
+    return true
+}
+
+export function assignValuesToPlayerVariables (players, variable, value, e){
+    players.forEach(x => {
+        e.players[x][variable] = value
+        checkIfUseVerboseLogging(e.players[x], 'Player Variable Assignment: ' + x + ' ' +  variable + ' = ' + value)
+    })
+    return true
+}
+
+export function changeVariableValueToChromaticMap (names, variable, e) {
+    let chromaticMap;
+    if (variable === 'noteMaps'){
+        chromaticMap =  new QuantizedMap(12,A.buildArray(12,i=> i), A.buildArray(12, i => [i]))
+    }
+    else {
+        chromaticMap =  new QuantizedMap(12,A.buildArray(12,i=> i), A.buildArray(12, i => i))
+    }
+    names.forEach(x => {
+        e[variable][x] = chromaticMap
+    })
+    console.log(variable + 'variables assigned to default chromatic QuantizedMap ' + names)
+    return true
 }
 
 //--------------------------------------------------------------------------

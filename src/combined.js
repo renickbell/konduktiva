@@ -23,6 +23,7 @@ const R = require('ramda')
 const midiFileIO = require('midi-file-io');
 const { Worker, isMainThread, parentPort } = require('worker_threads');
 // const A = require('./github-array-toolkit-package/array-toolkit/array-toolkit.mjs')
+const version = '2.4.3'
 
 
 // --------------------------------------------------------------------------
@@ -69,6 +70,7 @@ mergedFunctions.midiFileIO = require('midi-file-io');
 mergedFunctions.Worker = Worker
 mergedFunctions.isMainThread = isMainThread
 mergedFunctions.parentPort = parentPort
+mergedFunctions.version = version
 
 module.exports = mergedFunctions
 // --------------------------------------------------------------------------
@@ -2253,6 +2255,18 @@ function generateRandomLSystemConfiguration (pickedAlphabets){
   process.exit();
 `
 
+function writeWorkerFileSetupToFile (filePath){
+    let workerTemplate = `const {
+  Worker, isMainThread, parentPort, workerData,
+} = require('node:worker_threads');
+
+function returnToParent (info){
+    parentPort.postMessage(info)
+}
+    `
+    fs.writeFileSync(filePath, workerTemplate)
+}
+
 //Generates lsystem in string for for for the lsystem chord progression:
 /**
   * Generates an L-system of a specific length based on the pickedAlphabets.
@@ -2403,6 +2417,7 @@ addToModuleExports({
   generateRandomLsystemString,
   generativeParseString,
   waitFor,
+  writeWorkerFileSetupToFile,
 })
 
 // --------------------------------------------------------------------------
@@ -5551,6 +5566,47 @@ addToModuleExports({
     addMidiFileToMusicalEnvironment,
     findDurationOfEachNote
 })
+
+//--------------------------------------------------------------------------
+//Bell useful navigation funcitons:
+
+function logPlayersVariables (players, variable, e){
+    players.forEach(x => {
+        console.log('Player: ' + e.players[x].name)
+        console.log(variable + ': ' + e.players[x][variable] + '\n')
+    })
+    return true
+}
+
+function assignValuesToPlayerVariables (players, variable, value, e){
+    players.forEach(x => {
+        e.players[x][variable] = value
+        checkIfUseVerboseLogging(e.players[x], 'Player Variable Assignment: ' + x + ' ' +  variable + ' = ' + value)
+    })
+    return true
+}
+
+function changeVariableValueToChromaticMap (names, variable, e) {
+    let chromaticMap;
+    if (variable === 'noteMaps'){
+        chromaticMap =  new QuantizedMap(12,A.buildArray(12,i=> i), A.buildArray(12, i => [i]))
+    }
+    else {
+        chromaticMap =  new QuantizedMap(12,A.buildArray(12,i=> i), A.buildArray(12, i => i))
+    }
+    names.forEach(x => {
+        e[variable][x] = chromaticMap
+    })
+    console.log(variable + 'variables assigned to default chromatic QuantizedMap ' + names)
+    return true
+}
+
+addToModuleExports({
+    logPlayersVariables,
+    assignValuesToPlayerVariables,
+    changeVariableValueToChromaticMap,
+})
+
 // --------------------------------------------------------------------------
 //Other setup functions:
 
