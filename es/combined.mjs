@@ -3366,9 +3366,8 @@ export function generateRandomMelody (rootNote, mode, melodyLength, octaveMin = 
     let chosenMode = Scale.get(mode.toLowerCase()).intervals.map(x => { return Interval.semitones(x)})
     let modeMap = new QuantizedMap(12, chosenMode, chosenMode)
     let randomMelody  = A.buildArray (melodyLength, x => randomRangeInt (melodyMin, melodyMax))
-    let randomOctaves  = A.buildArray (melodyLength, x => randomRangeInt (octaveMin, octaveMax))
     return randomMelody.map((x, i) => {
-        return {note: modeMap.nearestLookup(x % 12), octave: randomOctaves[i], rootNote: rootNote}
+        return {note: modeMap.nearestLookup(x % 12), octave: randomRangeInt (octaveMin, octaveMax), rootNote: rootNote}
     })
 }
 //helped by chatgpt I think
@@ -5204,6 +5203,28 @@ let legatoOnlyConfig = {
     legatoMapName: 'default',
     midiProgramPlayerName: false,
     controlChangePlayerName: false,
+}
+
+function setUpMusicalEnvironmentExamples (){
+    let e = new MusicalEnvironment()
+    setUpDefaultRhythmMapsToMusicalEnvironment(e)
+    setUpDefaultActionToMusicalEnvironment(e)
+    setUpDefaultMaskMapsForMusicalEnvironment(e)
+    setUpDefaultIOIsForMusicalEnvironment(e)
+    setUpDefaultCurrentDensityGraphsForMusicalEnvironment(e)
+    setUpDefaultDensityGraphsForMusicalEnvironment(e)
+    setUpDefaultPlayersForMusicalEnvironments(e)
+    addToMusicalEnvironment(e)
+//     updateMidiOutputList(e)
+    setupScheduler(e)
+    e.startScheduler()
+    e.actions.midiSequencedRhythm = musicSynthesizerCaller
+    e.actions.sendChordMidiInfo = sendChordMidiInfo
+    e.actions.sendNotesMidiInfo = sendNotesMidiInfo
+    e.actions.sendPlaybackMessage = sendPlaybackMessage
+    e.actions.sendMidiCCMessages = sendMidiCCMessages
+    e.actions.sendMidiProgramMessages = sendMidiProgramMessages
+    return e
 }
 
 export function setUpDefaultMusicalEnvironmentFourPlayers (){

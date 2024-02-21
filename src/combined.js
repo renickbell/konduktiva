@@ -3620,9 +3620,8 @@ function generateRandomMelody (rootNote, mode, melodyLength, octaveMin = 1, octa
     let chosenMode = Scale.get(mode.toLowerCase()).intervals.map(x => { return Interval.semitones(x)})
     let modeMap = new QuantizedMap(12, chosenMode, chosenMode)
     let randomMelody  = A.buildArray (melodyLength, x => randomRangeInt (melodyMin, melodyMax))
-    let randomOctaves  = A.buildArray (melodyLength, x => randomRangeInt (octaveMin, octaveMax))
     return randomMelody.map((x, i) => {
-        return {note: modeMap.nearestLookup(x % 12), octave: randomOctaves[i], rootNote: rootNote}
+        return {note: modeMap.nearestLookup(x % 12), octave: randomRangeInt (octaveMin, octaveMax), rootNote: rootNote}
     })
 }
 //helped by chatgpt I think
