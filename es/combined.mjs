@@ -29,7 +29,7 @@ export const {
 } = require("tonal")
 export const midiFileIO = require('midi-file-io');
 export const { Worker, isMainThread, parentPort } = require('worker_threads');
-export const version = '2.4.2'
+export const version = '2.4.3'
 
 // --------------------------------------------------------------------------
 //konduktiva-revised-2.mjs:
@@ -2099,18 +2099,6 @@ function generateRandomLSystemConfiguration (pickedAlphabets){
   process.exit();
 `
 
-export function writeWorkerFileSetupToFile (filePath){
-    let workerTemplate = `const {
-  Worker, isMainThread, parentPort, workerData,
-} = require('node:worker_threads');
-
-function returnToParent (info){
-    parentPort.postMessage(info)
-}
-    `
-    fs.writeFileSync(filePath, workerTemplate)
-}
-
 //Generates lsystem in string for for for the lsystem chord progression:
 /**
   * Generates an L-system of a specific length based on the pickedAlphabets.
@@ -3150,7 +3138,11 @@ export function recordConfigurationDataIntoMusicalEnvironment (noteValueData, na
 export function populateModeFilters (e){
     Scale.names().forEach(x => {
         let filter = Scale.get(x).intervals.map(n => {return Interval.semitones(n)})
-        e.modeFilters[x] = new QuantizedMap(12, filter, filter)
+        let modeFilterMap = new QuantizedMap(12, filter, filter) 
+        e.modeFilters[x] = R.clone(modeFilterMap)
+        Scale.get(x).aliases.forEach(a => {
+            e.modeFilters[a] = R.clone(modeFilterMap)
+        })
     })
 }
 //Converting names to actual semitones helped by chatgpt
@@ -5228,6 +5220,79 @@ export function changeVariableValueToChromaticMap (names, variable, e) {
     console.log(variable + 'variables assigned to default chromatic QuantizedMap ' + names)
     return true
 }
+
+//--------------------------------------------------------------------------
+//worker-functions.js
+
+export let workerCodeForArguments = `
+const {
+  Worker, isMainThread, parentPort, workerData,
+} = require('node:worker_threads');
+
+function returnToParent (info){
+    parentPort.postMessage(info)
+}
+
+try{
+    eval(workerData)
+}
+catch {
+    process.exit()
+}
+
+process.exit()
+`
+
+export let workerTemplate = `const {
+  Worker, isMainThread, parentPort, workerData,
+} = require('node:worker_threads');
+
+function returnToParent (info){
+    parentPort.postMessage(info)
+}
+`
+
+export function writeWorkerFileSetupToFile (filePath){
+    fs.writeFileSync(filePath, workerTemplate)
+}
+
+//code in workerCode has to be stringified. Eval version
+// export function giveWorkerWork (workerCode){
+//     return new Promise((resolve, reject) => {
+//         worker = new Worker(workerCodeForArguments, {eval: true, workerData: workerCode})
+//         worker.on('message', result => {
+//               console.log('worker done', result)
+//               resolve(result)
+//         })
+//         worker.on('error', err => {
+//             console.log('worker crashed', err)
+//             // Reject the Promise with the error if something goes wrong
+//             reject(err);
+//             worker.terminate()
+//         });
+//     })
+// }
+
+//code in workerCode has to be stringified.
+export function giveWorkerWork(workerCode){
+    let tempFilePath = os.tmpdir() + '/' + 'Konduktiva-worker-temp-file-' + Date.now() + '.js'
+    let copiedWorkerTemplate = R.clone(workerTemplate)
+    fs.writeFileSync(tempFilePath, copiedWorkerTemplate + '\n' + workerCode)
+    return new Promise((resolve, reject) => {
+        worker = new Worker(tempFilePath, {workerData: workerCode})
+        worker.on('message', result => {
+              console.log('worker done', result)
+              resolve(result)
+        })
+        worker.on('error', err => {
+            console.log('worker crashed', err)
+            // Reject the Promise with the error if something goes wrong
+            reject(err);
+            worker.terminate()
+        });
+    })
+}
+//helped by Chatgpt
 
 //--------------------------------------------------------------------------
 //other functions:
