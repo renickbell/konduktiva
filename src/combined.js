@@ -2376,9 +2376,10 @@ function convertLsystemStringToNumbersViaAssignedLetters (chosenAlphabets, lsyst
 }
 
 async function generateLsystemByAssigningNumberToLetter (mode, octaves,length) {
+    let chosenMode = Scale.get(mode.toLowerCase()).intervals.map(x => { return Interval.semitones(x)})
     let alphabets = Array.from({ length: 26 }, (_, i) => String.fromCharCode(97 + i));
-    let modeAlphabets = A.safeSplice(alphabets, alphabets.length, mode.length)
-    let modeData = convertLsystemStringToNumbersViaAssignedLetters(modeAlphabets, await generateRandomLsystemString(length, modeAlphabets), mode)
+    let modeAlphabets = A.safeSplice(alphabets, alphabets.length, chosenMode.length)
+    let modeData = convertLsystemStringToNumbersViaAssignedLetters(modeAlphabets, await generateRandomLsystemString(length, modeAlphabets), chosenMode)
     let octavesAlphabets = A.safeSplice(alphabets, alphabets.length, octaves.length)
     let octavesData = convertLsystemStringToNumbersViaAssignedLetters(octavesAlphabets,  await generateRandomLsystemString(length, octavesAlphabets), octaves)
     octavesData = A.resizeArray(modeData.length, octavesData)
@@ -2386,6 +2387,7 @@ async function generateLsystemByAssigningNumberToLetter (mode, octaves,length) {
         return {note: x, octave: octavesData[i]}
     })
 }
+//helped by chatgpt I think
 
 // hi = generateLsystemByAssigningNumberToLetter([0,2,4,7,9,11], [4 ,5, 6], 10)
 
@@ -3623,6 +3625,7 @@ function generateRandomMelody (rootNote, mode, melodyLength, octaveMin = 1, octa
         return {note: modeMap.nearestLookup(x % 12), octave: randomOctaves[i], rootNote: rootNote}
     })
 }
+//helped by chatgpt I think
 
 //Filters melody through a musical mode:
 function quantizeMelody (melody, mode){
