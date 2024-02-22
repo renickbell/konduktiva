@@ -2198,9 +2198,9 @@ function generateRandomLsystemString (length = 30, pickedAlphabets){
 }
 
 //generates alphabets for the lsystem chord progression:
-function generateLsystemAlphabets (){
+function generateLsystemAlphabets (length = randomRange(2, 10)){
     let alphabets = Array.from({ length: 26 }, (_, i) => String.fromCharCode(97 + i));
-    return Array.from({length: randomRange(2, 10)}, () => {
+    return Array.from({length: length}, () => {
         return A.pick(alphabets)
     })
 }
@@ -2352,9 +2352,9 @@ async function generateLsystemNoteData (){
 }
 
 //generates alphabets for the lsystem chord progression:
-function generateLsystemAlphabets (){
+function generateLsystemAlphabets (length = randomRange(2, 10)){
     let alphabets = Array.from({ length: 26 }, (_, i) => String.fromCharCode(97 + i));
-    return Array.from({length: randomRange(2, 10)}, () => {
+    return Array.from({length: length}, () => {
         return A.pick(alphabets)
     })
 }
@@ -5680,9 +5680,26 @@ function writeWorkerFileSetupToFile (filePath){
 //     })
 // }
 
+function findExistingFilesIncludingStringAmount (nameToIdentify){
+    let filesInDir = fs.readdirSync(process.cwd())
+    let existingAmount = 0
+    filesInDir.forEach(x => {
+        if (x.includes(nameToIdentify)){
+            existingAmount += 1
+        }
+    })
+    return existingAmount
+}
+
 //code in workerCode has to be stringified.
 function giveWorkerWork(workerCode){
-    let tempFilePath = os.tmpdir() + '/' + 'Konduktiva-worker-temp-file-' + Date.now() + '.js'
+    let tempFilePath = process.cwd() + '/' + 'Konduktiva-worker-temp-file-date' + Date.now() + '-random-string-to-prevent-accidental-writes-' + generateLsystemAlphabets(80).join('')
+    let existingFiles = findExistingFilesIncludingStringAmount(tempFilePath)
+    console.log(tempFilePath)
+    if (existingFiles > 0){
+        tempFilePath += '-' + existingFiles 
+    }
+    tempFilePath += '.js'
     let copiedWorkerTemplate = R.clone(workerTemplate)
     fs.writeFileSync(tempFilePath, copiedWorkerTemplate + '\n' + workerCode)
     return new Promise((resolve, reject) => {
@@ -5702,7 +5719,7 @@ function giveWorkerWork(workerCode){
 }
 //helped by Chatgpt.
 
-addToModuleExports({writeWorkerFileSetupToFile, giveWorkerWork, workerTemplate})
+addToModuleExports({writeWorkerFileSetupToFile, giveWorkerWork, workerTemplate, findExistingFilesIncludingStringAmount})
 // --------------------------------------------------------------------------
 //Other setup functions:
 

@@ -2194,9 +2194,9 @@ export async function generateLsystemNoteData (){
 }
 
 //generates alphabets for the lsystem chord progression:
-export function generateLsystemAlphabets (){
+export function generateLsystemAlphabets (length = randomRange(2, 10)){
     let alphabets = Array.from({ length: 26 }, (_, i) => String.fromCharCode(97 + i));
-    return Array.from({length: randomRange(2, 10)}, () => {
+    return Array.from({length: length}, () => {
         return A.pick(alphabets)
     })
 }
@@ -5300,15 +5300,34 @@ export function writeWorkerFileSetupToFile (filePath){
 //     })
 // }
 
+export function findExistingFilesIncludingStringAmount (nameToIdentify){
+    let filesInDir = fs.readdirSync(process.cwd())
+    let existingAmount = 0
+    filesInDir.forEach(x => {
+        if (x.includes(nameToIdentify)){
+            existingAmount += 1
+        }
+    })
+    return existingAmount
+}
+//helped by chatgpt
+
 //code in workerCode has to be stringified.
 export function giveWorkerWork(workerCode){
-    let tempFilePath = os.tmpdir() + '/' + 'Konduktiva-worker-temp-file-' + Date.now() + '.js'
+    let tempFilePath = process.cwd() + '/' + 'Konduktiva-worker-temp-file-date' + Date.now() + '-random-string-to-prevent-accidental-writes-' + generateLsystemAlphabets(80).join('')
+    let existingFiles = findExistingFilesIncludingStringAmount(tempFilePath)
+    console.log(tempFilePath)
+    if (existingFiles > 0){
+        tempFilePath += '-' + existingFiles
+    }
+    tempFilePath += '.js'
     let copiedWorkerTemplate = R.clone(workerTemplate)
     fs.writeFileSync(tempFilePath, copiedWorkerTemplate + '\n' + workerCode)
     return new Promise((resolve, reject) => {
         worker = new Worker(tempFilePath, {workerData: workerCode})
         worker.on('message', result => {
               console.log('worker done', result)
+               fs.unlinkSync(tempFilePath)
               resolve(result)
         })
         worker.on('error', err => {
@@ -5319,7 +5338,7 @@ export function giveWorkerWork(workerCode){
         });
     })
 }
-//helped by Chatgpt
+//helped by Chatgpt.
 
 //--------------------------------------------------------------------------
 //other functions:
