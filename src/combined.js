@@ -1722,7 +1722,7 @@ var udpPort = new osc.UDPPort({
 });
 
 // Open the socket.
-udpPort.open();
+// udpPort.open();
 
 function gatherBySubstring (inputArray, substringArray) {
     return inputArray.filter(x => substringArray.some(y => x.includes(y)))
@@ -1823,51 +1823,22 @@ addToModuleExports({
 //defaultSuperDirtPlayers-revised.js
 
 function setUpDefaultPlayersForMusicalEnvironments (e){
-    e.players.kick = new Player("kick")
-    e.players.snare = new Player("snare")
-    e.players.perc = new Player("perc")
-    e.players.hat = new Player("hat")
-    e.players.sub = new Player("sub")
-    e.players.stab1 = new Player("stab1")
-    e.players.stab2 = new Player("stab2")
-    e.players.atmo = new Player("atmo")
-    e.players.kick.rhythmMap = "straight";
-    e.players.snare.rhythmMap = "straight";
-    e.players.perc.rhythmMap = "straight";
-    e.players.hat.rhythmMap = "straight";
-    e.players.sub.rhythmMap = "straight";
-    e.players.stab1.rhythmMap = "straight";
-    e.players.stab2.rhythmMap = "straight";
-    e.players.atmo.rhythmMap = "straight";
-    e.players.atmo.densityGraph = "defaultTechno";
-    e.players.kick.samplePattern = "kick"
-    e.players.snare.samplePattern = "snare";
-    e.players.perc.samplePattern = "perc";
-    e.players.hat.samplePattern = "hat";
-    e.players.sub.samplePattern = "sub";
-    e.players.stab1.samplePattern = "stab1";
-    e.players.stab2.samplePattern = "stab2";
-    e.players.atmo.samplePattern = "atmo";
-    {
-    e.players.kick.action = "superDirt"
-    e.players.snare.action = "superDirt";
-    e.players.perc.action = "superDirt";
-    e.players.hat.action = "superDirt";
-    e.players.sub.action = "superDirt";
-    e.players.stab1.action = "superDirt";
-    e.players.stab2.action = "superDirt";
-    e.players.atmo.action = "superDirt";
-        }
+    let playerNames = ['kick', 'snare', 'perc', 'hat', 'sub', 'stab1', 'stab2', 'atmo']
+    playerNames.forEach(x => {
+        e.players[x] = new Player(x)
+        e.players[x].rhythmMap = 'straight'
+        e.players[x].samplePattern = x
+        e.players[x].action = 'superDirt'
+    })
     e.players.atmo.densityGraph = 'sparse';
     {
     e.players.kick.cut = A.pick([0,1,1,2])
     e.players.snare.cut = A.pick([3,4])
     e.players.perc.cut = A.pick([5,6])
-    e.players.hat.cut = A.pick([7])
+    e.players.hat.cut = 7
     e.players.sub.cut = A.pick([8,8,8])
     e.players.stab1.cut = A.pick([9,9,10])
     e.players.stab2.cut = A.pick([9,9,10])
-    e.players.atmo.cut = A.pick([11,11,12])
     e.players.atmo.cut = 11
         }
 }
@@ -2369,14 +2340,8 @@ function generateCondition (chosenAlphabets, min, max){
 }
 
 //Generate random configurations for the lsystem chord progression:
-function generateRandomLSystemConfiguration (pickedAlphabets){
-    let chosenAlphabets;
-    if (pickedAlphabets === undefined){
-        chosenAlphabets = generateLsystemAlphabets()
-    }
-    else{
-        chosenAlphabets = pickedAlphabets
-    }
+function generateRandomLSystemConfiguration (pickedAlphabets = generateLsystemAlphabets()){
+    let chosenAlphabets = pickedAlphabets
     let startingLetters = chosenAlphabets.map(x => {
         return repeatString(randomRange(1, 3), x)
     }).join('')
@@ -2386,8 +2351,7 @@ function generateRandomLSystemConfiguration (pickedAlphabets){
         let rule = generateCondition(chosenAlphabets, 1, 3)
         conditions[rule] = generateCondition(chosenAlphabets, 0, 5)
     })
-    startingLetters = shuffleString(startingLetters)
-    return {conditions, startingLetters}
+    return {conditions: conditions, startingLetter: shuffleString(startingLetters)}
 }
 
 function convertLsystemStringToNumbersViaAssignedLetters (chosenAlphabets, lsystem, availableNumbers){
@@ -3084,31 +3048,44 @@ function visualizeVolume (info){
     }, info.noteDuration * 1000)
 }
 
-//Find availablePorts for websocketServer
-function findAvailablePorts (min = 0, max){
-    let WebSocketServer = require("ws");
-    let availablePort;
-    let tempServer;
-    let currentPort = min
-    while (currentPort <= max && availablePort === undefined) {
-        console.log('testing', currentPort)
-        try{
-            tempServer = new WebSocketServer.Server({ port: currentPort })
-            tempServer.close()
-            tempServer = undefined
-            availablePort = currentPort
-        }
-        catch {
-        }
-        currentPort++;
-    }
-//     console.log('Found available port at: ', availablePort)
-//     return availablePort
-}
+// //Find availablePorts for websocketServer
+// async function findAvailablePorts (min = 0, max){
+//     let testPortCode = `;
+//              let WebSocketServer = require("ws");
+//              try{
+//              tempServer = new WebSocketServer.Server({ port: portToTest })
+//              tempServer.close()
+//              returnToParent(portToTest)
+//              }
+//              catch{ returnToParent(new Error('port in use'))}
+//              `
+// //     while (currentPort <= max && availablePort === undefined) {
+// //         console.log('testing', currentPort)
+// //         try{
+// //             tempServer = new WebSocketServer.Server({ port: currentPort })
+// //             tempServer.close()
+// //             tempServer = undefined
+// //             availablePort = currentPort
+// //         }
+// //         catch {
+// //         }
+// //         currentPort++;
+// //     }
+//     for (let i = min; i < max; i++) {
+//         let portToTestCode = 'let portToTest = ' + i 
+//         let result = await giveWorkerWork(portToTestCode + testPortCode)
+//         console.log(result)
+//         if (result !== undefined){
+//             return i
+//         }
+//     }
+// //     console.log('Found available port at: ', availablePort)
+// //     return availablePort
+// }
+// https://stackoverflow.com/a/19129614/19515980
 
 addToModuleExports({
   WebSocketServer,
-  findAvailablePorts,
   findTargetClientByName,
   messageAllClients,
   messageSpecifiedClient,
@@ -4720,8 +4697,12 @@ let commands = [
     }
 ];
 
-let wss = new WebSocketServer.Server({ port: 8080});
+let wss;
 function createDefaultWebsocketServer () {
+    if (wss !== undefined){
+        wss.close()
+    }
+    wss = new WebSocketServer.Server({ port: 8080});
     wss.on("connection", (ws) => {
         console.log("new client connected");
         addNewClients()
@@ -5690,6 +5671,7 @@ function findExistingFilesIncludingStringAmount (nameToIdentify){
     })
     return existingAmount
 }
+//helped by chatgpt
 
 //code in workerCode has to be stringified.
 function giveWorkerWork(workerCode){
@@ -5707,13 +5689,15 @@ function giveWorkerWork(workerCode){
         worker.on('message', result => {
               console.log('worker done', result)
                fs.unlinkSync(tempFilePath)
+                worker.terminate()
               resolve(result)
         })
         worker.on('error', err => {
             console.log('worker crashed', err)
             // Reject the Promise with the error if something goes wrong
-            reject(err);
+           fs.unlinkSync(tempFilePath)
             worker.terminate()
+            reject(err);
         });
     })
 }
@@ -5774,6 +5758,8 @@ function setUpMusicalEnvironmentExamples (){
     let e = new MusicalEnvironment()
     setUpDefaultRhythmMapsToMusicalEnvironment(e)
     setUpDefaultActionToMusicalEnvironment(e)
+    udpPort.open();
+    createDefaultWebsocketServer()
     setUpDefaultMaskMapsForMusicalEnvironment(e)
     setUpDefaultIOIsForMusicalEnvironment(e)
     setUpDefaultCurrentDensityGraphsForMusicalEnvironment(e)

@@ -1694,53 +1694,23 @@ export function addSamplePattern (env, patternName, sp) {
 // --------------------------------------------------------------------------
 //defaultSuperdirtPlayers-revised.mjs:
 
-
 export function setUpDefaultPlayersForMusicalEnvironments (e){
-    e.players.kick = new Player("kick")
-    e.players.snare = new Player("snare")
-    e.players.perc = new Player("perc")
-    e.players.hat = new Player("hat")
-    e.players.sub = new Player("sub")
-    e.players.stab1 = new Player("stab1")
-    e.players.stab2 = new Player("stab2")
-    e.players.atmo = new Player("atmo")
-    e.players.kick.rhythmMap = "straight";
-    e.players.snare.rhythmMap = "straight";
-    e.players.perc.rhythmMap = "straight";
-    e.players.hat.rhythmMap = "straight";
-    e.players.sub.rhythmMap = "straight";
-    e.players.stab1.rhythmMap = "straight";
-    e.players.stab2.rhythmMap = "straight";
-    e.players.atmo.rhythmMap = "straight";
-    e.players.atmo.densityGraph = "defaultTechno";
-    e.players.kick.samplePattern = "kick"
-    e.players.snare.samplePattern = "snare";
-    e.players.perc.samplePattern = "perc";
-    e.players.hat.samplePattern = "hat";
-    e.players.sub.samplePattern = "sub";
-    e.players.stab1.samplePattern = "stab1";
-    e.players.stab2.samplePattern = "stab2";
-    e.players.atmo.samplePattern = "atmo";
-    {
-    e.players.kick.action = "superDirt"
-    e.players.snare.action = "superDirt";
-    e.players.perc.action = "superDirt";
-    e.players.hat.action = "superDirt";
-    e.players.sub.action = "superDirt";
-    e.players.stab1.action = "superDirt";
-    e.players.stab2.action = "superDirt";
-    e.players.atmo.action = "superDirt";
-        }
+    let playerNames = ['kick', 'snare', 'perc', 'hat', 'sub', 'stab1', 'stab2', 'atmo']
+    playerNames.forEach(x => {
+        e.players[x] = new Player(x)
+        e.players[x].rhythmMap = 'straight'
+        e.players[x].samplePattern = x
+        e.players[x].action = 'superDirt'
+    })
     e.players.atmo.densityGraph = 'sparse';
     {
     e.players.kick.cut = A.pick([0,1,1,2])
     e.players.snare.cut = A.pick([3,4])
     e.players.perc.cut = A.pick([5,6])
-    e.players.hat.cut = A.pick([7])
+    e.players.hat.cut = 7
     e.players.sub.cut = A.pick([8,8,8])
     e.players.stab1.cut = A.pick([9,9,10])
     e.players.stab2.cut = A.pick([9,9,10])
-    e.players.atmo.cut = A.pick([11,11,12])
     e.players.atmo.cut = 11
         }
 }
@@ -4386,9 +4356,13 @@ export let commands = [
     }
 ];
 
-const wss = new WebSocketServer.Server({ port: 8080});
+let wss; 
 // Creating connection using websocket
 export function createDefaultWebsocketServer () {
+    if (wss !== undefined){
+        wss.close()
+    }
+    wss = new WebSocketServer.Server({ port: 8080}); 
     wss.on("connection", (ws) => {
         console.log("new client connected");
         addNewClients()
@@ -5324,7 +5298,7 @@ export function giveWorkerWork(workerCode){
     let copiedWorkerTemplate = R.clone(workerTemplate)
     fs.writeFileSync(tempFilePath, copiedWorkerTemplate + '\n' + workerCode)
     return new Promise((resolve, reject) => {
-        worker = new Worker(tempFilePath, {workerData: workerCode})
+        let worker = new Worker(tempFilePath, {workerData: workerCode})
         worker.on('message', result => {
               console.log('worker done', result)
                fs.unlinkSync(tempFilePath)
