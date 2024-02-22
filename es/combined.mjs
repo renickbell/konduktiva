@@ -29,7 +29,6 @@ export const {
 } = require("tonal")
 export const midiFileIO = require('midi-file-io');
 export const { Worker, isMainThread, parentPort } = require('worker_threads');
-export const version = '2.4.3'
 
 // --------------------------------------------------------------------------
 //konduktiva-revised-2.mjs:
@@ -55,6 +54,24 @@ export const structuredClone = obj => {
 
 //--------------------------------------------------------------------------
 // utility
+
+export function checkKonduktivaVersionNumber () {
+    let konduktivaPath = require.resolve('konduktiva')
+    if (os.type() === 'Windows_NT'){
+        konduktivaPath = konduktivaPath.slice(0, konduktivaPath.lastIndexOf('\\'))
+        konduktivaPath = konduktivaPath.slice(0, konduktivaPath.lastIndexOf('\\'))
+        konduktivaPath += '\\package.json'
+    }
+    else {
+        konduktivaPath = konduktivaPath.slice(0, konduktivaPath.lastIndexOf('/'))
+        konduktivaPath = konduktivaPath.slice(0, konduktivaPath.lastIndexOf('/'))
+        konduktivaPath += '/package.json'
+    }
+    let packageFileContents = JSON.parse(fs.readFileSync(konduktivaPath, 'utf8'))
+    return packageFileContents.version
+}
+
+export const version = checkKonduktivaVersionNumber()
 
 export function all (x){
     return Object.keys(x)
@@ -2265,6 +2282,16 @@ export function getChordComponents (values){
         qualities: chords
     }
 }
+
+export function modeMapAndModeFilterFromChordProgression (chordProgression, keyspan, keys, mapName, e){
+    e.modeMaps[mapName] = new QuantizedMap(keyspan, keys, [])
+    chordProgression.forEach((x, i) => {
+        e.modeFilters[mapName + i] = new QuantizedMap(12, x, x)
+        e.modeMaps[mapName].values.push(mapName + i)
+    })
+    return true
+}
+
 //Yiler Function:
 export function setChordsKey(root, octave, template) {
     const notes = ["C", "D", "E", "F", "G", "A", "B"];

@@ -24,8 +24,6 @@ const midiFileIO = require('midi-file-io');
 const { Worker, isMainThread, parentPort } = require('worker_threads');
 // const A = require('./github-array-toolkit-package/array-toolkit/array-toolkit.mjs')
 const os = require('os')
-const version = '2.4.3'
-
 
 // --------------------------------------------------------------------------
 //Exporting dependencies:
@@ -72,7 +70,6 @@ mergedFunctions.Worker = Worker
 mergedFunctions.isMainThread = isMainThread
 mergedFunctions.parentPort = parentPort
 mergedFunctions.os = os
-mergedFunctions.version = version
 
 module.exports = mergedFunctions
 // --------------------------------------------------------------------------
@@ -98,6 +95,24 @@ const structuredClone = obj => {
 
 //--------------------------------------------------------------------------
 // utility
+
+function checkKonduktivaVersionNumber () {
+    let konduktivaPath = require.resolve('konduktiva')
+    if (os.type() === 'Windows_NT'){
+        konduktivaPath = konduktivaPath.slice(0, konduktivaPath.lastIndexOf('\\'))
+        konduktivaPath = konduktivaPath.slice(0, konduktivaPath.lastIndexOf('\\'))
+        konduktivaPath += '\\package.json'
+    }
+    else {
+        konduktivaPath = konduktivaPath.slice(0, konduktivaPath.lastIndexOf('/'))
+        konduktivaPath = konduktivaPath.slice(0, konduktivaPath.lastIndexOf('/'))
+        konduktivaPath += '/package.json'
+    }
+    let packageFileContents = JSON.parse(fs.readFileSync(konduktivaPath, 'utf8'))
+    return packageFileContents.version
+}
+
+const version = checkKonduktivaVersionNumber()
 
 // let all = x => Object.keys(x)
 function all (x){
@@ -1389,7 +1404,9 @@ addToModuleExports({
   timeToBeats,
   variousLsystems,
   whichWrapKey,
-  ymd
+  ymd,
+   version,
+    checkKonduktivaVersionNumber,
 })
 
 // --------------------------------------------------------------------------
@@ -2438,6 +2455,15 @@ function getChordComponents (values){
     }
 }
 
+function modeMapAndModeFilterFromChordProgression (chordProgression, keyspan, keys, mapName, e){
+    e.modeMaps[mapName] = new QuantizedMap(keyspan, keys, [])
+    chordProgression.forEach((x, i) => {
+        e.modeFilters[mapName + i] = new QuantizedMap(12, x, x)
+        e.modeMaps[mapName].values.push(mapName + i)
+    })
+    return true
+}
+
 //Yiler Function:
 function setChordsKey(root, octave, template) {
     const notes = ["C", "D", "E", "F", "G", "A", "B"];
@@ -2825,7 +2851,8 @@ addToModuleExports({
   scaleWithNote,
   separateOctaveAndRoot,
   setChordsKey,
-  sortIntoConfigurationObj
+  sortIntoConfigurationObj,
+     modeMapAndModeFilterFromChordProgression,
 })
 
 // --------------------------------------------------------------------------
