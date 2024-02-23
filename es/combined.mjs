@@ -29,6 +29,7 @@ export const {
 } = require("tonal")
 export const midiFileIO = require('midi-file-io');
 export const { Worker, isMainThread, parentPort } = require('worker_threads');
+export const _ = require('lodash');
 
 // --------------------------------------------------------------------------
 //konduktiva-revised-2.mjs:
@@ -2181,14 +2182,8 @@ export function generateCondition (chosenAlphabets, min, max){
 }
 
 //Generate random configurations for the lsystem chord progression:
-export function generateRandomLSystemConfiguration (pickedAlphabets){
-    let chosenAlphabets;
-    if (pickedAlphabets === undefined){
-        chosenAlphabets = generateLsystemAlphabets()
-    }
-    else{
-        chosenAlphabets = pickedAlphabets
-    }
+export function generateRandomLSystemConfiguration (pickedAlphabets = generateLsystemAlphabets()){
+    let chosenAlphabets = pickedAlphabets
     let startingLetters = chosenAlphabets.map(x => {
         return repeatString(randomRange(1, 3), x)
     }).join('')
@@ -2198,8 +2193,7 @@ export function generateRandomLSystemConfiguration (pickedAlphabets){
         let rule = generateCondition(chosenAlphabets, 1, 3)
         conditions[rule] = generateCondition(chosenAlphabets, 0, 5)
     })
-    startingLetters = shuffleString(startingLetters)
-    return {conditions, startingLetters}
+    return {conditions: conditions, startingLetter: shuffleString(startingLetters)}
 }
 
 export function convertLsystemStringToNumbersViaAssignedLetters (chosenAlphabets, lsystem, availableNumbers){
@@ -2431,7 +2425,7 @@ export function necessaryConfigurations (chosenProgression){
     configurationObj.total = chosenProgression.values.length
     configurationObj.octave = retreiveDataFromChosenProgressionValuesData('octave', chosenProgression)
     configurationObj.noteDurationKeyspan = chosenProgression.keyspan
-    let beatCounter = 0
+//     let beatCounter = 0
     configurationObj.rhythmMapKeys = chosenProgression.keys
     return configurationObj
 }
@@ -2868,13 +2862,15 @@ export function findAvailablePorts (min = 0, max){
 
 //--------------------------------------------------------------------------
 //harmony.mjs:
+//Not in use any more. Unmaintained.
+
 
 //Array to record notes played on current beat, beat before and beat after:
 export let dissonanceRecorder = []
 
 //function that checks for dissonance and changes them to 0:
 export function handleDissonance (beat, info){
-    add2Log('flagged dissonanceRecorder')
+//     add2Log('flagged dissonanceRecorder')
     if (dissonanceRecorder.length > 5){
         dissonanceRecorder.shift()
     }
@@ -4417,22 +4413,10 @@ export let randomMelodyData = {
     109, 107,  97, 112,
     116,  91,  96, 113
   ],
-  noteDurations: A.buildArray(12, x => {return x}),
-  rhythmMap: [0,5, 1, 2.5, 2.75, 4, 5, 6, 8, 8.3, 8.6, 9, 10, 10.5, 10.8],
   bools: [true, true, true, true, true, true, true, true, true, true],
-//   noteValues: chordProgressionScarboroughFair.map(x => {
-//       return x.map(n => {
-//           return n.note + ((n.octave + 1) * 12)
-//       })
-//   }),
   octave: chordProgressionScarboroughFair.map(x => {
       return x[0].octave
   }),
-  total: 16,
-  polyphonyMap: [3 ,2 ,3, 2, 3, 2 ,2 ,3, 2, 3, 2 ,2],
-  total: 16,
-  polyphonyMap: A.buildArray(16, x => {return 50}),
-  rhythmMap: A.buildArray(16, x => {return x * 4}),
    noteDurationKeyspan: 64,
   noteDurationValues: A.buildArray(16, x => {return (x)}),
   noteDurations: A.buildArray(16, x => {return x * 4}),
@@ -4443,11 +4427,7 @@ export let randomMelodyData = {
   }),
    total: 64,
   polyphonyMap: A.buildArray(16, x => {return 50}),
-  //rhythmMap: A.buildArray(40, x => {return randomRange(0.5, 1.5, 2)}),
   rhythmMap: A.buildArray(16, x => {return x * 4}),
-//   octave: A.buildArray(5, x => {return A.buildArray(10, b => {return x + 3})}),
-//   octaveMapKeys: A.buildArray(12, x => {return x * 4}),
-//   octaveMapKeyspan: 20,
     controlChangeMapKeys: [20, 40, 60, 80],
     controlChangeMap: A.buildArray(4, x => {return {
       channel: 0,
@@ -4461,16 +4441,10 @@ export let randomMelodyData = {
 export let noteData2 = chordProgressionScarboroughFair
 export let randomMelody1 = {
   velocity: A.buildArray(40, x => {return randomRange(30, 50)}),
-   noteDurationKeyspan: 64,
-  noteDurationValues: A.buildArray(12, x => {return (x)}),
-  noteDurations: A.buildArray(12, x => {return x * 4}),
   bools: A.buildArray(48, x => {return true}),
   octave: chordProgressionScarboroughFair.map(x => {
       return 3
   }),
-  total: 16,
-  polyphonyMap: A.buildArray(16, x => {return 50}),
-  rhythmMap: A.buildArray(16, x => {return x * 4}),
    noteDurationKeyspan: 64,
   noteDurationValues: A.buildArray(16, x => {return (x)}),
   noteDurations: A.buildArray(16, x => {return x * 4}),
@@ -4479,37 +4453,17 @@ export let randomMelody1 = {
   }),
    total: 64,
   polyphonyMap: A.buildArray(16, x => {return 50}),
-  //rhythmMap: A.buildArray(40, x => {return randomRange(0.5, 1.5, 2)}),
   rhythmMap: A.buildArray(16, x => {return x * 4}),
-//   octave: A.buildArray(5, x => {return A.buildArray(10, b => {return x + 3})}),
-//   octaveMapKeys: A.buildArray(12, x => {return x * 4}),
-//   octaveMapKeyspan: 20,
-//   noteValues: chordProgressionScarboroughFair.map(x => {
-//       return [x[0].note + (12 * 3)]  }),
 }
 
 export let noteData3 = chordProgressionScarboroughFair
 
 export let randomMelody2 = {
-  //velocity: [...A.buildArray(39, x => {return 0}), ...A.buildArray(8, x => { return 40 + (x * 10)})],
     velocity: [...A.buildArray(39, x => {return 0}), ...A.buildArray(8, x => { return 120})],
-  noteDurations: A.buildArray(47, x => {return 1 }),
-  rhythmMap: [...A.buildArray(40, x => {return x}), ...[40, 41, 42, 43, 44 ,45, 46, 47, 48, 49]],
   bools: [...A.buildArray(39, x => {return true}), ...A.buildArray(8, x => {return true})],
-  //noteValues: [...A.buildArray(35, x => {return [60]}), ...noteData3.map(x => {
-  //    return [x.note + ((x.octave + 1) * 12)]
- // })],
   octave: chordProgressionScarboroughFair.map(x => {
       return x[0].octave
   }),
-  noteValues: chordProgressionScarboroughFair.map(x => {
-      return x.map(n => {
-          return n.octave
-      })
-  }),
-  total: 16,
-  polyphonyMap: A.buildArray(16, x => {return 50}),
-  rhythmMap: A.buildArray(16, x => {return x * 4}),
    noteDurationKeyspan: 64,
   noteDurationValues: A.buildArray(16, x => {return (x)}),
   noteDurations: A.buildArray(16, x => {return x * 4}),
@@ -4520,13 +4474,7 @@ export let randomMelody2 = {
   }),
    total: 64,
   polyphonyMap: A.buildArray(16, x => {return 50}),
-  //rhythmMap: A.buildArray(40, x => {return randomRange(0.5, 1.5, 2)}),
   rhythmMap: A.buildArray(16, x => {return x * 4}),
-//   noteValues: chordProgressionScarboroughFair.map(x => {
-//       return x.map(n => {
-//           return n.note + ((n.octave + 1) * 12)
-//       })
-//   }),
 }
 
 // export let melodyDataNoteData = generateChords(0, 4, "7", "major")
@@ -4541,22 +4489,10 @@ export let melodyData = {
     109, 107,  97, 112,
     116,  91,  96, 113
   ],
-   noteDurationKeyspan: 64,
-  noteDurationValues: A.buildArray(12, x => {return (x)}),
-  noteDurations: A.buildArray(12, x => {return x * 4}),
   bools: A.buildArray(48, x => {return true}),
-  //noteValuesKeys: A.buildArray(12, x => {return (x * 4)}),
   octave: chordProgressionScarboroughFair.map(x => {
       return 3
   }),
-  noteValues: chordProgressionScarboroughFair.map(x => {
-      return x.map(n => {
-          return n.octave
-      })
-  }),
-  total: 16,
-  polyphonyMap: A.buildArray(16, x => {return 50}),
-  rhythmMap: A.buildArray(16, x => {return x * 4}),
    noteDurationKeyspan: 64,
   noteDurationValues: A.buildArray(16, x => {return (x)}),
   noteDurations: A.buildArray(16, x => {return x * 4}),
@@ -4567,13 +4503,7 @@ export let melodyData = {
   }),
    total: 64,
   polyphonyMap: A.buildArray(16, x => {return 50}),
-  //rhythmMap: A.buildArray(40, x => {return randomRange(0.5, 1.5, 2)}),
   rhythmMap: A.buildArray(16, x => {return x * 4}),
-//   noteValues: chordProgressionScarboroughFair.map(x => {
-//       return x.map(n => {
-//           return n.note
-//       })
-//   }),
 }
 
 export let velocityData = countLetterChanges(generativeParseString('a', {
@@ -4613,28 +4543,9 @@ export let lsystemData = {
   noteDurationValues: A.buildArray(12, x => {return (x)}),
   noteDurations: A.buildArray(12, x => {return x}),
   bools: boolsData,
-//   modeFilter: [new QuantizedMap(12,[0, 2, 4, 5, 7, 9, 11] ,[0, 2, 4, 5, 7, 9, 11]), new QuantizedMap(12,getRelativeMode('dorian'), getRelativeMode('dorian')), new QuantizedMap(12, getRelativeMode('locrian'), getRelativeMode('locrian'))],
-//   modeFilterKeys: [50, 100, 199],
-//   modeFilterKeyspan: 200,
     modeFilter: getRelativeMode('chromatic'),
     modeFilterKeyspan: 12,
     modeFilterKeys: getRelativeMode('chromatic'),
-  //noteValues: generateLsystemMelody('C', 'bluesPentatonic', generationData, 16, 8, 10).map(x => {
-    /*
-  noteValues: generateLsystemMelody('C', 'minorBluesPentatonicScale', generationData, 10, 8, 10).map(x => {
-      return [x.note * x.octave]
-  }),
-  noteValues: lsystemNoteData.map(x => {
-      return x.map(c => {
-          return c.note
-      })
-  }),
-  */
-//   octave: lsystemNoteData.map(x => {
-//       return x.map(c => {
-//           return c.octave
-//       })
-//   }),
   octave: chordProgressionScarboroughFair.map(x => {
       return x[0].octave + 1
   }),
@@ -4647,17 +4558,7 @@ export let lsystemData = {
   noteValues: [0,1,2,3,4,5,6,7,8,9,10,11].map(x => {return [x]}),
   total: 16,
   polyphonyMap: A.buildArray(12, x => {return 50}),
-  //rhythmMap: A.buildArray(40, x => {return randomRange(0.5, 1.5, 2)}),
   rhythmMap: A.buildArray(12, x => {return x}),
-//   octave: A.buildArray(5, x => {return A.buildArray(10, b => {return x + 3})}),
-//   octaveMapKeys: A.buildArray(12, x => {return x * 4}),
-//   octaveMapKeyspan: 20,
-//   noteValues: chordProgressionScarboroughFair.map((x, i) => {
-//       total += generationData[i]
-//       return chordProgressionScarboroughFair[total % (chordProgressionScarboroughFair.length - 1)].map(n => {
-//           return n.note + ((n.octave + 2) * 12)
-//       })
-//   }),
 }
 
 
@@ -4778,7 +4679,6 @@ export let circleOfFifthChords = {
   velocity: A.buildArray(30, x => 90),
    noteDurationKeyspan: 16,
   noteDurationValues: [0, 1, 2, 3],
-//   noteDurations: [0, 4, 8, 12],
   noteDurations: [4, 4, 4, 4],
   bools: boolsData,
   modeFilter: A.buildArray(12, x=> x),
@@ -4790,9 +4690,7 @@ export let circleOfFifthChords = {
       return x.rootNotes
   }),
   total: 12,
-//   polyphonyMap: A.buildArray(12, x => {return 50}),
   rhythmMap: [0, 4, 8, 12],
-//   noteValues: chords,
   rootMap: ['C', 'C', 'C', 'C'],
     noteValuesKeyspan: 12,
 }
@@ -4806,63 +4704,18 @@ export let circleOfFifthMelody = {
     velocity: A.buildArray(30, x => 90),
     noteDurationKeyspan: 18,
     noteDurationValues: A.buildArray(24, x => x/2),
-//     noteDurations: A.buildArray(24, x => x * 0.25),
     noteDurations: A.buildArray(24, x => 0.25),
     bools: boolsData,
     modeFilterKeyspan: 18,
     octave: circleOfFifthMelodySplitNotes.octaveNotes.map(x => {return 3}),
 noteValues: circleOfFifthMelodySplitNotes.rootNotes.map(x => {return [x]}),
-// noteValues: ["IIm9", "IIm9", "V", "V", "IIIm7", "IIIm7", "VIm","VIm"].map(x => {return [x]}),
     total: 18,
-//     polyphonyMap: A.buildArray(18, x => {return 50}),
     rhythmMap:  A.buildArray(12, x => x/2),
-//     noteValues: circleOfFifthMelodyGeneration.notes,
   rootMap: ['C', 'C', 'C', 'C'],
   modeMap: ['ionian', 'phrygian', 'mixolydian'],
   modeMapKeys: [0, 100, 200, 300, 400],
   noteValuesKeyspan: 12,
 }
-
-// let circleOfFifthMelodyGeneration = melodyFromChordProgression(circleOfFifthChords.noteValues, circleOfFifthChords.rhythmMap)
-// let circleOfFifthMelodySplitNotes = separateOctaveAndRoot(circleOfFifthMelodyGeneration.notes)
-// circleOfFifthMelody = {
-//   velocity: A.buildArray(30, x => 90),
-//    noteDurationKeyspan: 12,
-//     noteDurationValues: A.buildArray(24, x => x),
-//     noteDurations: A.buildArray(24, x => 6 * x),
-//   bools: boolsData,
-//   modeFilter: A.buildArray(12, x=> x),
-//   modeFilterKeyspan: 12,
-//   octave: circleOfFifthMelodySplitNotes.octaveNotes.map(x => {return [x]}),
-//   rootNote: circleOfFifthMelodySplitNotes.rootNotes.map(x => {return [x]}),
-//   total: 12,
-//   polyphonyMap: A.buildArray(12, x => {return 50}),
-//   rhythmMap: A.buildArray(12, x => x),
-//   noteValues: circleOfFifthMelodyGeneration.notes,
-// }
-
-// updateMidiOutputList(e)
-//e.changeTempo(250)
-// recordConfigurationDataIntoMusicalEnvironment(lsystemData, 'p1', e)
-//assignPlayerForMusicSynthesizerMidiOutput(1, 'p1')
-//melodyData.noteDuration = A.buildArray(melodyData.noteValues.length, x => {return x})
-
-//recordConfigurationDataIntoMusicalEnvironment(randomMelodyData, 'p1')
-// recordConfigurationDataIntoMusicalEnvironment(circleOfFifthChords, 'p4', e)
-// recordConfigurationDataIntoMusicalEnvironment(randomMelodyData, 'p3', e)
-// recordConfigurationDataIntoMusicalEnvironment(circleOfFifthMelody, 'p3', e)
-
-
-// assignPlayerForMusicSynthesizerMidiOutput(e, 1, {rhythmMapName: 'straight', chordMapName: 'twelveBars-lsystem-scarbrofair'}, 'p1')
-// assignPlayerForMusicSynthesizerMidiOutput(e, 3, {rhythmMapName: 'straight'}, 'p3')
-// assignPlayerForMusicSynthesizerMidiOutput(e, 1, 'p1', {rhythmMapName: 'straight', chordMapName: 'twelveBars-lsystem-scarbrofair'})
-// assignPlayerForMusicSynthesizerMidiOutput(e, 3, 'p3', {rhythmMapName: 'straight'})
-// assignPlayerForMusicSynthesizerMidiOutput(e, 4, 'p4')
-//assignPlayerForMusicSynthesizerMidiOutput(2, 'p2')
-// recordConfigurationDataIntoMusicalEnvironment(melodyData, 'p2', e)
-//assignPlayerForMusicSynthesizerMidiOutput(2,'p2')
-// assignPlayerForMusicSynthesizerMidiOutput(e, 2, 'p3')
-//console.time('p1')
 
 //--------------------------------------------------------------------------
 //Yiler keyboard filtering stuff:
@@ -4971,6 +4824,54 @@ export function activateKeyboardFilter(keyboardName) {
             console.log(err)
         }
     });
+}
+
+//--------------------------------------------------------------------------
+//Key Identifying (Krumhansl and Schmuckler Key Identifying Algorithm)
+//This part of the code probably helped by Chatgpt and/or BardAI/Gemini
+
+export function findVariableWithMaxNumber(obj) {
+  return Object.entries(obj).reduce((max, [key, value]) => value > obj[max] ? key : max, Object.keys(obj)[0]);
+}
+//generated by chatgpt
+
+// https://www.dolmetsch.com/musictheory31.htm
+
+export function compareSimilarityBetweenStrings (stringToCheck, stringToCompare){
+    let comparisonStringToModify = stringToCompare + ' ';
+    Array.from({length: stringToCompare.length}).every(x => {
+        comparisonStringToModify = comparisonStringToModify.slice(0, comparisonStringToModify.length - 1);
+        return !stringToCheck.includes(comparisonStringToModify)
+    })
+    return comparisonStringToModify.length / stringToCompare.length
+}
+//concept checked by chatgpt written by Steve
+
+export function getAllNoteOn (track){
+    let notes = []
+    track.forEach(x => {
+        if (x.subtype == 'noteOn'){
+            notes.push(x.noteNumber)
+        }
+    })
+    return notes
+}
+
+export function findKeyOfChordProgression (midiNotes){
+    let letters;
+//     if (midiNotes.length > 31){
+//         letters = midiNotes.slice(0, 31).map(x => {return midiToRootAndValue(x).root})
+//     }
+//     else{
+        letters = midiNotes.map(x => {return midiToRootAndValue(x).root})
+//     }
+    let letterCounts = _.countBy(letters);
+    let detectedScale = K.Scale.detect(letters, {tonic: findVariableWithMaxNumber(letterCounts)});
+    let scaleSimilarity = {}
+    detectedScale.forEach(x => {
+        scaleSimilarity[x] = compareSimilarityBetweenStrings(K.Scale.get(x).notes, letters)
+    })
+    return K.Scale.get(findVariableWithMaxNumber(scaleSimilarity)).tonic
 }
 
 //--------------------------------------------------------------------------
@@ -5169,14 +5070,16 @@ export function addParsedDataMidiDataToMusicalEnvironment (midiData, parsedData,
         if (playerToCreate.length > playerName.length){
             return new Error('Insufficient player names provided. Make sure the playerName array is filled with at least ' + playerToCreate.length + ' strings.')
         }
-        playerToCreate.forEach((x, i) =>{
+        let playersCreated = playerToCreate.map((x, i) =>{
             assignPlayerForMusicSynthesizerMidiOutput(e, x.name, playerNames[i], x.extraConfig)
             createExtensionPlayers(x.configObj, playerNames[i], e, x.midiOutput, x.name)
             e.rhythmMaps[x.name].values[0] = new QuantizedMap(x.keyspan, x.keys, absoluteToDelta(x.keys))
             e.rhythmMaps[x.name].values[0].values.push(x.keyspan - x.keys[x.keys.length - 1])
+            return playerNames[i]
         })
         e.changeTempo(tempo)
         e.timeSignature = timeSignature
+        return playersCreated
     }
 }
 
