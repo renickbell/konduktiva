@@ -44,6 +44,10 @@ This document works as both a documentation and a tutorial about how to use the 
 
 [Here](https://konduktiva.org/doku.php?id=vim-tmux-setup)
 
+### Tutorials:
+
+[Here](https://konduktiva.org/doku.php?id=start)
+
 ### OS Specific Tips:
 
 #### MacOs:

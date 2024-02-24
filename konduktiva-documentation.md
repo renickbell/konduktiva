@@ -4,7 +4,7 @@ Konduktiva is a JavaScript library for live coding, an improved version of the C
 [Konduktiva website](http://konduktiva.org/doku.php?id=start)
 [Renick Bell's Website](https://renickbell.net/doku.php?id=start)
 
-## Installation
+## Installation:
 
 1. Install [Nodejs](https://nodejs.org/en). If [npm](https://www.npmjs.com/package/npm) does not automatically get installed with Nodejs, [install npm](https://github.com/npm/cli).
 
@@ -19,25 +19,21 @@ Konduktiva is a JavaScript library for live coding, an improved version of the C
 
     2.3. You can close the terminals you have opened prior to this step.
 
-2. Install Konduktiva by using NPM or use git to download the files by typing this command in the terminal:
+2. Install Konduktiva by using NPM:
     ```
-    git clone https://github.com/mrname5/Using-Konduktiva-With-MIDI.git
+    npm i konduktiva
     ```
-    OR
-    ```
-    npm i @renickbell/konduktiva
-    ```
+3. Install a Digital Audio Workstation. [Ardour is recommended](https://ardour.org/)
+## Setting Up Other related software (MIDI routing in device)
 
-3. Open the terminal, move to the directory called using-konduktiva-with-midi. This effect can be achieved by using the ``` cd [directory name command] ``` command or navigate to that directory with the file manager and right click to open a terminal session there. We will call this terminal session t1. Then, run this command:
-    ```
-    node installer.js
-    ```
+[Here](http://konduktiva.org/doku.php?id=first_steps)
 
-4. After that code has finished running, the installation should be complete.
+## Setting Up An Editor (VIM + TMUX)
 
-## About the installer
+[Here](https://konduktiva.org/doku.php?id=vim-tmux-setup)
 
-The installer will install all the necessary dependencies automatically which include, [easymidi](https://www.npmjs.com/package/easymidi), [osc](https://www.npmjs.com/package/osc), [ramda](https://www.npmjs.com/package/ramda), [tasktimer](https://www.npmjs.com/package/tasktimer), [tonal](https://www.npmjs.com/package/tonal), [socket.io](https://www.npmjs.com/package/socket.io), [socket.io-client](https://www.npmjs.com/package/socket.io-client), [http-server](https://www.npmjs.com/package/http-server) and, [array-toolkit](https://www.npmjs.com/package/array-toolkit).
+## Tutorials: 
+[Click here for tutorials about Konduktiva](https://konduktiva.org/doku.php?id=start)
 
 ## Conceptual Overview
 
@@ -126,7 +122,7 @@ Actions functions that can be used are stored here.
 #### chordProgressions: QuantizedMap{}
 Chord progressions that players can use. The keys are the beats/time of when the player should change the playing chord progression.
 
-#### controlChangeMaps: QuanitzedMap{} (experimental)(optional)
+#### controlChangeMaps: QuanitzedMap{} (optional)
 Not filling this in deactivates this specific feature.
 
 Control Change maps players can use. The keys are the beats/time of when to send the actual CC messages in the values.
