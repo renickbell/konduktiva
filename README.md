@@ -42,7 +42,7 @@ This document works as both a documentation and a tutorial about how to use the 
 
 ### Setting Up An Editor (VIM + TMUX)
 
-[Here]()
+[Here](https://konduktiva.org/doku.php?id=vim-tmux-setup)
 
 ### OS Specific Tips:
 
