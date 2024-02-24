@@ -4015,12 +4015,17 @@ export function checkIfSendMidiControlChange (e, b, player){
         return true
     }
     let correctCC = e.controlChangeMaps[player.controlChangeMap].wrapLookup(b)
+    let currentChannel = findChannel(player, b, e)
     checkIfUseVerboseLogging(player, 'correctCC' + correctCC)
     if (player.currentControlChange !== correctCC){
         player.currentControlChange = correctCC
 //         e.midiOutputs[player.midiOutput - 1].send('cc', correctCC)
         correctCC.forEach(x => {
-            e.midiOutputs[player.midiOutput - 1].send('cc', x)
+            e.midiOutputs[player.midiOutput - 1].send('cc', {
+                controller: x.controller,
+                value: x.value,
+                channel: currentChannel
+            })
         })
         checkIfUseVerboseLogging(player, 'CC data sent')
     }
@@ -4295,7 +4300,9 @@ export function createMidiCCPlayer (e, name, keyspan, keys, midiCCs, channels, m
     let player = e.players[name]
     createExtensionPlayerBasics (e, name, keyspan, keys, channels, midiOutput, mapDefaultName)
     e.controlChangeMaps[name] = new QuantizedMap(keyspan, keys, midiCCs)
+    e.rhythmMaps[name] = new QuantizedMap(1, [0], [new QuantizedMap(keyspan, keys, keys.map(x => {return 1}))])
     player.controlChangeMap = name
+    player.rhythmMap = name
 }
 
 export function createMidiProgramPlayer (e, name, keyspan, keys, midiPrograms, channels, midiOutput, mapDefaultName){
@@ -4303,7 +4310,9 @@ export function createMidiProgramPlayer (e, name, keyspan, keys, midiPrograms, c
     let player = e.players[name]
     createExtensionPlayerBasics (e, name, keyspan, keys, channels, midiOutput, mapDefaultName)
     e.midiProgramMaps[name] = new QuantizedMap(keyspan, keys, midiPrograms)
+    e.rhythmMaps[name] = new QuantizedMap(1, [0], [new QuantizedMap(keyspan, keys, keys.map(x => {return 1}))])
     player.midiProgramMap = name
+    player.rhythmMap = name
 }
 
 //This function is modified to set action as send Midi CC messages instead of superDirt

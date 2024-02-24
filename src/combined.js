@@ -4338,12 +4338,17 @@ function checkIfSendMidiControlChange (e, b, player){
         return true
     }
     let correctCC = e.controlChangeMaps[player.controlChangeMap].wrapLookup(b)
+    let currentChannel = findChannel(player, b, e)
     checkIfUseVerboseLogging(player, 'correctCC' + correctCC)
     if (player.currentControlChange !== correctCC){
         player.currentControlChange = correctCC
 //         e.midiOutputs[player.midiOutput - 1].send('cc', correctCC)
         correctCC.forEach(x => {
-            e.midiOutputs[player.midiOutput - 1].send('cc', x)
+            e.midiOutputs[player.midiOutput - 1].send('cc', {
+                controller: x.controller,
+                value: x.value,
+                channel: currentChannel
+            })
         })
         checkIfUseVerboseLogging(player, 'CC data sent')
     }
@@ -4618,7 +4623,9 @@ function createMidiCCPlayer (e, name, keyspan, keys, midiCCs, channels, midiOutp
     let player = e.players[name]
     createExtensionPlayerBasics (e, name, keyspan, keys, channels, midiOutput, mapDefaultName)
     e.controlChangeMaps[name] = new QuantizedMap(keyspan, keys, midiCCs)
+    e.rhythmMaps[name] = new QuantizedMap(1, [0], [new QuantizedMap(keyspan, keys, keys.map(x => {return 1}))])
     player.controlChangeMap = name
+    player.rhythmMap = name
 }
 
 function createMidiProgramPlayer (e, name, keyspan, keys, midiPrograms, channels, midiOutput, mapDefaultName){
@@ -4626,7 +4633,9 @@ function createMidiProgramPlayer (e, name, keyspan, keys, midiPrograms, channels
     let player = e.players[name]
     createExtensionPlayerBasics (e, name, keyspan, keys, channels, midiOutput, mapDefaultName)
     e.midiProgramMaps[name] = new QuantizedMap(keyspan, keys, midiPrograms)
+    e.rhythmMaps[name] = new QuantizedMap(1, [0], [new QuantizedMap(keyspan, keys, keys.map(x => {return 1}))])
     player.midiProgramMap = name
+    player.rhythmMap = name
 }
 
 addToModuleExports({
@@ -5486,8 +5495,14 @@ function addParsedDataMidiDataToMusicalEnvironment (midiData, parsedData, musica
         }
     })
     return function (playerNames){
-        if (playerToCreate.length > playerName.length){
-            return new Error('Insufficient player names provided. Make sure the playerName array is filled with at least ' + playerToCreate.length + ' strings.')
+        let nameTypes = Object.keys(typesOfItemsInArray(playerNames))
+        if (playerNames instanceof Array === false || nameTypes.length !== 1 || nameTypes[0] !== 'string'){
+            throw new Error ('Provide an array with at least ' + playerToCreate.length + ' player name(s) in form of strings.')
+            return false
+        }
+        if (playerToCreate.length > playerNames.length){
+            throw new Error('Insufficient player name(s) provided. Provide an array with at least ' + playerToCreate.length + ' player name(s) in form of strings.')
+            return false         
         }
         let playersCreated = playerToCreate.map((x, i) =>{
             assignPlayerForMusicSynthesizerMidiOutput(e, x.name, playerNames[i], x.extraConfig)
