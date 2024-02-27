@@ -954,8 +954,12 @@ export class MusicalEnvironment {
         let e = this
         if (checkAllItemsType(values, 'array')){
             e[objectName][mapName] = new QuantizedMap(keyspan, keys, values)
+            return true
         }
-        return true
+        else{
+            throw new Error('Expected values array to be filled with arrays which contain numbers')
+            return false
+        }
     }
     createRhythmPatternMap (objectName, mapName, keyspan, keys, values){
         let e = this
@@ -1005,6 +1009,81 @@ export class MusicalEnvironment {
             e[objectName][mapName] = new QuantizedMap(keyspan, keys, values)
         }
     }
+    checkVariableFor (variableName, mapName){
+        this[variableName][mapName] !== undefined
+    }
+    createControlChangeMap (objectName, mapName, keyspan, keys, values){
+        if (checkAllItemsType(values, 'object') === false){
+            throw new Error ('Invalid items in values array. Expected an array filled with objects. The objects should be filled with two variables controller and value. Both should be numbers.')
+        }
+        else if (values.map((x, i) => {
+            let incorrectTypes = false
+            if (typeof x.controller !== 'number' || x.controller < 0 || x.controller > 127){
+                console.log('The controller value of ' + i + ' should a a number 0-127.')
+                incorrectTypes = true
+            }
+            if (typeof x.value !== 'number' || x.value < 0 || x.value > 127){
+                console.log('The value of the variable value ' + i + 'should a a number 0-127.')
+                incorrectTypes = true
+            }
+            if (incorrectTypes === true){
+                return true
+            }
+        }).includes(true)){
+            throw new Error ('Invalid items in values array. Expected objects with two variables controller and value. Both numbers 0-127.')
+        }
+        this.controlChangeMaps[mapName] = new QuantizedMap(keyspan, keys, values)
+    }
+    createChordMap (objectName, mapName, keyspan, keys, values){
+        if (checkAllItemsType(values, 'string') === false){
+            throw new Error ('Invalid items in values array. Expected an array filled with chords in form of strings.')
+        }
+        else if (values.map((x, i) => {
+            if (Chord.getChord(x).empty === true){
+                console.log('Item ' + i + ' of the value array is not a chord')
+                return false
+            }
+            return true
+        }).includes(false)){
+            throw new Error('Items in the value array include variables which are not chords.')
+            return false
+        }
+        this.chordMaps[mapName] = new QuantizedMap(keyspan, keys, values) 
+    }
+    createModeMap (objectName, mapName, keyspan, keys, values){
+        if (checkAllItemsType(values, 'string') === false){
+            throw new Error ('Invalid items in values array. Expected an array filled with names of modeFilters in form of strings.')
+        }
+        else if (values.map((x, i) => {
+            if (this.modeFilters[x] === undefined){
+                console.log('Item ' + i + ' of the value array is not a variable name in modeFilters.')
+                return false
+            }
+            return true
+        }).includes(false)){
+            throw new Error ('Items in the value array include names that are not in modeFilters.')
+        }
+        this.modeMaps[mapName] = new QuantizedMap(keyspan, keys, values)
+    }
+    createRootMap (objectName, mapName, keyspan, keys, values){
+        let reformattedValues = []
+        if (checkAllItemsType(values, 'string') === false){
+            throw new Error ('Invalid items in values array. Expected an array filled with english letters that represent musical letter notation in form of strings.')
+        }
+        else if (values.map((x, i) => {
+            let foundNote = Note.get(x)
+            if (foundNote.empty === true){
+                console.log('Item ' + i + ' of the value array is not an english letter that represents musical letter notation')
+                return false
+            }
+            reformattedValues.push(foundNote.name)
+            return true
+        }).includes(false)){
+            throw new Error('There are items in the value array that are not english letters that represent the musical letter notation.')
+            return false
+        }
+        this.rootMaps[mapName] = new QuantizedMap(keyspan, keys, reformattedValues)
+    }
     addMap (objectName, mapName, keyspan, keys, values){
         let e = this
         this.checkingAddMapToMusicalEnvironmentArguments(objectName, mapName, keyspan, keys, values)
@@ -1023,15 +1102,41 @@ export class MusicalEnvironment {
             case 'chordProgressions':
                 this.createChordProgressionMap(objectName, mapName, keyspan, keys, values)
                 break;
-            case 'song':
+            case 'songMaps':
                 this.createSongMap(objectName, mapName, keyspan, keys, values)
+                break;
+            case 'chordMaps':
+                this.createChordMap(objectName, mapName, keyspan, keys, values)
+                break;
+            case 'controlChangeMaps':
+                this.createControlChangeMap(objectName, mapName, keyspan, keys, values)
+                break;
+            case 'modeMaps':
+                this.createModeMap(objectName, mapName, keyspan, keys, values)
+                break;
+            case 'rootMaps':
+                this.createRootMap(objectName, mapName, keyspan, keys, values)
                 break;
 //             case 'modeFilters':
 //                 this.createModeFilters(objectName, mapName, keyspan, keys, values)
                 break;
-            case 'octaveMap':
-            default:
+             case 'midiInputs':
+                throw new Error('Use the updateMidiInputList function while passing the MusicalEnvironment as an argument without it assigning to anything. Like this: updateMidiInputList(e)')
+                break;
+             case 'midiOutputs':
+                throw new Error('Use the updateMidiOutputList function while passing the MusicalEnvironment as an argument without it assigning to anything. Like this: updateMidiOutputList(e)')
+                break;
+             case 'legatoMaps':
+             case 'modeFilters':
+             case 'octaveMaps':
+             case 'channelMaps':
+             case 'velocityMaps':
+             case 'maxPolyphonyMaps':
+             case 'noteDurationMaps':
                 this.createDefaultMap(objectName, mapName, keyspan, keys, values);
+                break;
+             default:
+                throw new Error(objectName + 'not supported by addMap method. Supported variables include most if not all the variables that end with "Maps". Exceptions include, rhythmPatterns, chordProgressions, modeFilters.');
         }
         console.log('Successfully created ', objectName, ' named ', mapName)
         return true
@@ -1106,7 +1211,7 @@ export class MusicalEnvironment {
             this.players[x].verbose = state
         })
     }
-        findConnectedPlayers (player){
+    findConnectedPlayers (player){
         let playersToPlay = []
         if (e.players[player].controlChangePlayer !== undefined){
             playersToPlay.push(e.players[player].controlChangePlayer)
@@ -2322,25 +2427,25 @@ export function generateChordsV2 (root, octave, progression) {
 
 //Create noteDuration values for noteValueData
 export function createNoteSpans (noteValueData, e){
-    noteValueData.noteDurations = A.resizeArray(noteValueData.noteValues.length, noteValueData.noteDurations)
+    noteValueData.noteDurationKeys = A.resizeArray(noteValueData.noteValues.length, noteValueData.noteDurationKeys)
 //     noteValueData.bools = A.resizeArray(noteValueData.noteValues.length, noteValueData.bools)
     return noteValueData
 }
 
 //Creating notespan values from noteValueData:
 export function createNoteSpanValues (noteValueData, name, e){
-    if (noteValueData.noteDurationValues !== undefined && noteValueData.noteDurationKeyspan !== undefined){
+    if (noteValueData.noteDurations !== undefined && noteValueData.noteDurationKeyspan !== undefined){
         console.log('1aaaa')
-    e.noteDurationMaps[name] = new QuantizedMap(noteValueData.noteDurationKeyspan, noteValueData.noteDurations, noteValueData.noteDurationValues)
+    e.noteDurationMaps[name] = new QuantizedMap(noteValueData.noteDurationKeyspan, noteValueData.noteDurationKeys, noteValueData.noteDurations)
     }
-    else if (noteValueData.noteDurationValues !== undefined && noteValueData.noteDurationKeyspan === undefined){
+    else if (noteValueData.noteDurations !== undefined && noteValueData.noteDurationKeyspan === undefined){
         console.log('2')
-        console.log('noteDurationValues defined')
-    e.noteDurationMaps[name] = new QuantizedMap(noteValueData.noteDurations.length, noteValueData.noteDurations, noteValueData.noteDurationValues)
+        console.log('noteDurations defined')
+    e.noteDurationMaps[name] = new QuantizedMap(noteValueData.noteDurationKeys.length, noteValueData.noteDurationKeys, noteValueData.noteDurations)
     }
     else{
         console.log('3')
-    e.noteDurationMaps[name] = new QuantizedMap(noteValueData.noteDurations.length, A.buildArray(noteValueData.noteDurations.length, x => {return x}), noteValueData.noteDurations)
+    e.noteDurationMaps[name] = new QuantizedMap(noteValueData.noteDurationKeys.length, A.buildArray(noteValueData.noteDurationKeys.length, x => {return x}), noteValueData.noteDurationKeys)
     }
 }
 
@@ -2443,20 +2548,20 @@ export function retreiveDataFromChosenProgressionValuesData (dataToRetreive, cho
 export function conditionalNoteConfigurations (chosenProgression, configurationObj){
     if (chosenProgression.values[0].data[0].noteDuration === undefined){
         let beatCounter = 0
-        configurationObj.noteDurations = []
+        configurationObj.noteDurationKeys = []
         chosenProgression.keys.forEach(x => {
-            configurationObj.noteDurations.push(beatCounter)
+            configurationObj.noteDurationKeys.push(beatCounter)
             beatCounter += x
         })
     }
     else {
-        configurationObj.noteDurations = retreiveDataFromChosenProgressionValuesData('noteDuration', chosenProgression)
+        configurationObj.noteDurationKeys = retreiveDataFromChosenProgressionValuesData('noteDuration', chosenProgression)
     }
-    if (chosenProgression.values[0].data[0].noteDurationValues === undefined){
-        configurationObj.noteDurationValues = chosenProgression.keys
+    if (chosenProgression.values[0].data[0].noteDurations === undefined){
+        configurationObj.noteDurations = chosenProgression.keys
     }
     else {
-        configurationObj.noteDurationValues = retreiveDataFromChosenProgressionValuesData('noteDurationValues', chosenProgression)
+        configurationObj.noteDurations = retreiveDataFromChosenProgressionValuesData('noteDurations', chosenProgression)
     }
     if (chosenProgression.values[0].data[0].keySpan === undefined){
         configurationObj.rhythmMapValues = A.buildArray(chosenProgression.keys.length, x => {
@@ -3123,7 +3228,7 @@ export function recordConfigurationDataIntoMusicalEnvironment (noteValueData, na
 //     createRhythmMap(noteValueData, name)
 //     createMaskMap(noteValueData, name)
     //The problem with your RhythmPattern function is, it starts assigning things to the player it does not write it to the musical environmet
-    e.rhythmPatterns[name] = new RhythmPattern (name, noteValueData.total, noteValueData.noteDurations, noteValueData.bools)
+    e.rhythmPatterns[name] = new RhythmPattern (name, noteValueData.total, noteValueData.noteDurationKeys, noteValueData.bools)
     createChannelMaps(noteValueData, name, e)
     return name
 }
@@ -3162,9 +3267,10 @@ export function addToMusicalEnvironment (e){
 }
     e.chordMaps = generateChordProgressionExamples()
     e.chordMaps['default'] = new QuantizedMap(16, [0,4,8,12],['M','m7','m9','maj9'])
-    e.chordMaps['exampleChords'] = e.chordMaps['default']
+    e.chordMaps['exampleChords'] = R.clone(e.chordMaps['default'])
     e.songMaps = {
-        'twelveBars-lsystem-scarbrofair': new QuantizedMap(15000, [1000, 5000, 10000], ['twelveBars', 'lsystem', 'scarboroughFair'])
+//         'twelveBars-lsystem-scarbrofair': new QuantizedMap(15000, [1000, 5000, 10000], ['twelveBars', 'lsystem', 'scarboroughFair'])
+           'default': new QuantizedMap(4, [0], ['default']),
     }
     e.modeFilters = {}
     populateModeFilters(e)
@@ -3175,7 +3281,7 @@ export function addToMusicalEnvironment (e){
 //     e.notesInputMode = 'relativeScaleDegree'
     e.recordedMessages = {}
      e.messageMaps = {}
-     e.legatoMaps = {'default': new QuantizedMap(16, [0, 4, 8, 12], [0.9, 0.9, 0.9, 0.9])}
+     e.legatoMaps = {'default': new QuantizedMap(16, [0, 4, 8, 12], [1, 1, 1, 1])}
      e.midiProgramMaps = {}
 }
 
@@ -4427,8 +4533,8 @@ export let randomMelodyData = {
       return x[0].octave
   }),
    noteDurationKeyspan: 64,
-  noteDurationValues: A.buildArray(16, x => {return (x)}),
-  noteDurations: A.buildArray(16, x => {return x * 4}),
+  noteDurations: A.buildArray(16, x => {return (x)}),
+  noteDurationKeys: A.buildArray(16, x => {return x * 4}),
   noteValues: noteData.map(x => {
       return x.map(n => {
           return n.note
@@ -4455,8 +4561,8 @@ export let randomMelody1 = {
       return 3
   }),
    noteDurationKeyspan: 64,
-  noteDurationValues: A.buildArray(16, x => {return (x)}),
-  noteDurations: A.buildArray(16, x => {return x * 4}),
+  noteDurations: A.buildArray(16, x => {return (x)}),
+  noteDurationKeys: A.buildArray(16, x => {return x * 4}),
   noteValues: noteData.map(x => {
       return x.note
   }),
@@ -4474,8 +4580,8 @@ export let randomMelody2 = {
       return x[0].octave
   }),
    noteDurationKeyspan: 64,
-  noteDurationValues: A.buildArray(16, x => {return (x)}),
-  noteDurations: A.buildArray(16, x => {return x * 4}),
+  noteDurations: A.buildArray(16, x => {return (x)}),
+  noteDurationKeys: A.buildArray(16, x => {return x * 4}),
   noteValues: noteData.map(x => {
       return x.map(n => {
           return n.note
@@ -4503,8 +4609,8 @@ export let melodyData = {
       return 3
   }),
    noteDurationKeyspan: 64,
-  noteDurationValues: A.buildArray(16, x => {return (x)}),
-  noteDurations: A.buildArray(16, x => {return x * 4}),
+  noteDurations: A.buildArray(16, x => {return (x)}),
+  noteDurationKeys: A.buildArray(16, x => {return x * 4}),
   noteValues: noteData.map(x => {
       return x.map(n => {
           return n.note
@@ -4549,8 +4655,8 @@ export let lsystemData = {
   rootMap: ['C', 'C', 'C', 'C'],
   velocity: velocityData,
    noteDurationKeyspan: 12,
-  noteDurationValues: A.buildArray(12, x => {return (x)}),
-  noteDurations: A.buildArray(12, x => {return x}),
+  noteDurations: A.buildArray(12, x => {return (x)}),
+  noteDurationKeys: A.buildArray(12, x => {return x}),
   bools: boolsData,
     modeFilter: getRelativeMode('chromatic'),
     modeFilterKeyspan: 12,
@@ -4687,8 +4793,8 @@ export let circleOfFifthChords = {
   channelValues: [4],
   velocity: A.buildArray(30, x => 90),
    noteDurationKeyspan: 16,
-  noteDurationValues: [0, 1, 2, 3],
-  noteDurations: [4, 4, 4, 4],
+  noteDurations: [0, 1, 2, 3],
+  noteDurationKeys: [4, 4, 4, 4],
   bools: boolsData,
   modeFilter: A.buildArray(12, x=> x),
   modeFilterKeyspan: 12,
@@ -4712,8 +4818,8 @@ export let circleOfFifthMelody = {
   channelValues: [3],
     velocity: A.buildArray(30, x => 90),
     noteDurationKeyspan: 18,
-    noteDurationValues: A.buildArray(24, x => x/2),
-    noteDurations: A.buildArray(24, x => 0.25),
+    noteDurations: A.buildArray(24, x => x/2),
+    noteDurationKeys: A.buildArray(24, x => 0.25),
     bools: boolsData,
     modeFilterKeyspan: 18,
     octave: circleOfFifthMelodySplitNotes.octaveNotes.map(x => {return 3}),
@@ -5011,8 +5117,8 @@ export function playerForMidiTrack (musicalKey, midiTrack, name, output, ticksPe
         velocity: completedNotesData.completeNotes.map(x => {return x.velocity}),
         bools: midiTrack.map(x => {return true}),
         noteDurationKeyspan: keyspan,
-        noteDurationValues: completedNoteOnEvents.map(x => {return x[0].noteDuration}),
-        noteDurations: keys,
+        noteDurations: completedNoteOnEvents.map(x => {return x[0].noteDuration}),
+        noteDurationKeys: keys,
         rootMapKeys: keys,
         rootMapKeyspan: keyspan,
         octaveMapKeys: keys,
@@ -5296,10 +5402,10 @@ export let simpleMelodyDataTemplate = {
         bools: [true, true, true, true],
         total: 4,
         octave: [5, 6, 7, 8],
-        noteDurations: A.buildArray(12, x => {return x}),
+        noteDurationKeys: A.buildArray(12, x => {return x}),
         noteDurationKeyspan: 12,
-        noteDurationValues: [1, 2, 3, 4],
-        noteDurations: [0, 4, 8, 12],
+        noteDurations: [1, 2, 3, 4],
+        noteDurationKeys: [0, 4, 8, 12],
 }
 
 export function setUpTestMusicalEnvironment (copies = 4){
@@ -5365,14 +5471,14 @@ export function setUpLongMusicalEnvironment (){
     let e = setUpMusicalEnvironmentExamples()
     let longerMelodyData = {
         velocity : A.buildArray(12, x => {return 100}),
-        noteDurations: A.buildArray(12, x => {return x}),
+        noteDurationKeys: A.buildArray(12, x => {return x}),
         bools: A.buildArray(12, x => {return true}),
         rhythmMap: A.buildArray(12, x => {return true}),
         octave: A.buildArray(12, x => {return x}),
         total: 12,
         noteDurationKeyspan: 24,
-        noteDurationValues: A.buildArray(12, x => {return x}),
-        noteDurations: A.buildArray(12, x => {return x * 2}),
+        noteDurations: A.buildArray(12, x => {return x}),
+        noteDurationKeys: A.buildArray(12, x => {return x * 2}),
         noteValues: [[10, 4], [6, 4], [8, 7], [3], [4], [5], [6], [7], [8,], [9],[10],[11]],
         rootMap: A.buildArray(12, x => {return 'C'}),
     }
@@ -5484,4 +5590,23 @@ export function setUpMusicalEnvironment (param, extraInfo){
         return checkStringInputMusicalEnv(param, extraInfo)
     }
     return false
+}
+
+export function configObjCreation (total, keys, octave, root, note, noteDuration){
+    return {
+        total: total,
+        noteValuesKeyspan: total,
+        bools: note.map(x => {return true}),
+        octaveMapKespan: total,
+        noteDurationKeyspan: total,
+        rootMapKeyspan: total,
+        noteValuesKeys: keys,
+        rootMapKeys: keys,
+        octaveMapKeys: keys,
+        noteDurationKeys: keys,
+        noteValues: note,
+        rootMap: root,
+        octaveMap: octave,
+        noteDurations: noteDuration,
+    }
 }
