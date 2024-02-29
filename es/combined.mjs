@@ -5610,3 +5610,60 @@ export function configObjCreation (total, keys, octave, root, note, noteDuration
         noteDurations: noteDuration,
     }
 }
+
+export function emptyConfigObj (){
+    return {
+        total: undefined, //number
+        noteValuesKeyspan: undefined, //number
+        octaveMapKespan: undefined, //number
+        noteDurationKeyspan: undefined, //number
+        rootMapKeyspan: undefined, //number
+        modeFilterKeyspan: undefined, //number
+        modeMapKeyspan: undefined, //number
+        rootMapKeyspan: undefined, //number
+        channelKeyspan: undefined, //number
+
+        noteValuesKeys: undefined, //number
+        rootMapKeys: undefined, //number
+        octaveMapKeys: undefined, //[number]
+        noteDurationKeys: undefined, //[number]
+        velocityKeys: undefined, //[number]
+        modeFilterKeys: undefined, //[number]
+        modeMapKeys: undefined, //[number]
+        rootMapKeys: undefined, //[number]
+        channelKeys: undefined, //[number]
+
+        noteValues: undefined, //[[number],[number]]
+        bools: undefined, //[booleans]
+        rootMap: undefined, //[Musical letter notation]
+        octaveMap: undefined, //[number]
+        noteDurations: undefined, //[number]
+        velocity: undefined, //[number]
+        polyphonyMap: undefined, //[number]
+        modeFilter: undefined, //[number]
+        modeMap: undefined, //[number]
+        rootMap: undefined, //[string]
+        channelValues: undefined, //[number]
+    }
+}
+
+export function configObjCreation (total, keys, octave, root, note, noteDuration){
+    return Object.assign(emptyConfigObj(), {
+        total: total,
+        noteValuesKeyspan: total,
+        bools: note.map(x => {return true}),
+        octaveMapKespan: total,
+        noteDurationKeyspan: total,
+        rootMapKeyspan: total,
+        noteValuesKeys: keys,
+        rootMapKeys: keys,
+        octaveMapKeys: keys,
+        noteDurationKeys: keys,
+        noteValues: note,
+        rootMap: root,
+        octaveMap: octave,
+        noteDurations: noteDuration,
+    })
+}
+
+
