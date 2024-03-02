@@ -1135,6 +1135,22 @@ class MusicalEnvironment {
         }
         this.rootMaps[mapName] = new QuantizedMap(keyspan, keys, reformattedValues)
     }
+    checkSubArrayType(subArray, type){
+        return subArray.every(x => {
+            if (x instanceof Array === false){
+                return false
+            }
+            return checkAllItemsType(x, type)
+        })
+    }
+    createMidiProgramMap(objectName, mapName, keyspan, keys, values){
+        if (checkAllItemsType(value, 'Number') === false && checkSubArrayType(x, 'Number') === false){
+            throw new Error('Expected value array to contain arrays with numbers in it. [[Number], [Number]]')
+        }
+        else{
+            this.midiProgramMaps[mapName] = new QuantizedMap(keyspan, keys, values)
+        }
+    }
     addMap (objectName, mapName, keyspan, keys, values){
         this.checkingAddMapToMusicalEnvironmentArguments(objectName, mapName, keyspan, keys, values)
         switch (objectName){
@@ -3295,10 +3311,10 @@ function assignPlayerForMusicSynthesizerMidiOutput (e, defaultName, playerName, 
 //     }
 //     if (checkIfMidiOutputPlayerExist(playerData.channel, e) === undefined){
     if (checkIfPlayerExists(playerName, e) === undefined){
-        createMidiOutputPlayer(defaultName, e, playerData.channel, playerData.velocityMapName, playerData.noteMapName, playerData.octaveMapName, playerData.rhythmMapName, playerData.polyphonyMapName, playerData.noteDurationMap, playerData.maskMapName, playerData.rhythmPatternName, playerData.chordMapName, playerData.rootMapName, playerData.modeMapName, playerData.legatoMapName, playerData.midiProgramPlayerName, playerData.controlChangePlayerName, playerData.midiOutput, playerName)
+        createMidiOutputPlayer(defaultName, e, playerData.channel, playerData.velocityMapName, playerData.noteMapName, playerData.octaveMapName, playerData.rhythmMapName, playerData.polyphonyMapName, playerData.noteDurationMapName, playerData.maskMapName, playerData.rhythmPatternName, playerData.chordMapName, playerData.rootMapName, playerData.modeMapName, playerData.legatoMapName, playerData.midiProgramPlayerName, playerData.controlChangePlayerName, playerData.midiOutput, playerName)
     }
     else{
-        editMidiOutputPlayer(defaultName, e, playerData.channel, playerData.velocityMapName, playerData.noteMapName, playerData.octaveMapName, playerData.rhythmMapName, playerData.polyphonyMapName, playerData.noteDurationMap, playerData.maskMapName, playerData.rhythmPatternName, playerData.chordMapName, playerData.rootMapName, playerData.modeMapName, playerData.legatoMapName, playerData.midiProgramPlayerName, playerData.controlChangePlayerName, playerData.midiOutput, playerName)
+        editMidiOutputPlayer(defaultName, e, playerData.channel, playerData.velocityMapName, playerData.noteMapName, playerData.octaveMapName, playerData.rhythmMapName, playerData.polyphonyMapName, playerData.noteDurationMapName, playerData.maskMapName, playerData.rhythmPatternName, playerData.chordMapName, playerData.rootMapName, playerData.modeMapName, playerData.legatoMapName, playerData.midiProgramPlayerName, playerData.controlChangePlayerName, playerData.midiOutput, playerName)
     }
 }
 
@@ -3326,7 +3342,7 @@ function checkIfAddChordProgressionMapToPlayer (chordMapName, e){
     }
 }
 
-function generalMidiOutputVariableAssigning (defaultName, e, channel = defaultName, velocityMapName = defaultName, noteMapName = defaultName, octaveMapName = defaultName, rhythmMapName = defaultName, polyphonyMapName = defaultName, noteDurationMap = defaultName, maskMapName = defaultName, rhythmPatternName = defaultName, chordMapName = defaultName, rootMapName = defaultName, modeMapName = defaultName, legatoMapName = defaultName, midiProgramPlayerName = defaultName + 'MidiProgram', controlChangePlayerName = defaultName + 'ControlChange', midiOutput = 1, playerName = 'exampleMidiPlayer' + JSON.stringify(channel)){
+function generalMidiOutputVariableAssigning (defaultName, e, channel = defaultName, velocityMapName = defaultName, noteMapName = defaultName, octaveMapName = defaultName, rhythmMapName = defaultName, polyphonyMapName = defaultName, noteDurationMapName = defaultName, maskMapName = defaultName, rhythmPatternName = defaultName, chordMapName = defaultName, rootMapName = defaultName, modeMapName = defaultName, legatoMapName = defaultName, midiProgramPlayerName = defaultName + 'MidiProgram', controlChangePlayerName = defaultName + 'ControlChange', midiOutput = 1, playerName = 'exampleMidiPlayer' + JSON.stringify(channel)){
     let channelPlayer = e.players[playerName]
     channelPlayer.velocityMap = velocityMapName
     channelPlayer.noteMap = noteMapName
@@ -3357,7 +3373,7 @@ function generalMidiOutputVariableAssigning (defaultName, e, channel = defaultNa
         }
     }
     channelPlayer.polyphonyMap = polyphonyMapName
-    channelPlayer.noteDurationMap = noteDurationMap
+    channelPlayer.noteDurationMap = noteDurationMapName
     channelPlayer.modeMap = modeMapName
     channelPlayer.rootMap = rootMapName
     channelPlayer.chordMap = chordMapName
@@ -3377,7 +3393,7 @@ function generalMidiOutputVariableAssigning (defaultName, e, channel = defaultNa
 //https://stackoverflow.com/a/43363105/19515980
 
 //Create Player:
-function createMidiOutputPlayer (defaultName, e, channel = defaultName, velocityMapName = defaultName, noteMapName = defaultName, octaveMapName = defaultName, rhythmMapName = defaultName, polyphonyMapName = defaultName, noteDurationMap = defaultName, maskMapName = defaultName, rhythmPatternName = defaultName, chordMapName = defaultName, rootMapName = defaultName, modeMapName = defaultName, legatoMapName = defaultName, midiProgramPlayerName = defaultName + 'MidiProgram', controlChangePlayerName = defaultName + 'ControlChange', midiOutput = 1, playerName){
+function createMidiOutputPlayer (defaultName, e, channel = defaultName, velocityMapName = defaultName, noteMapName = defaultName, octaveMapName = defaultName, rhythmMapName = defaultName, polyphonyMapName = defaultName, noteDurationMapName = defaultName, maskMapName = defaultName, rhythmPatternName = defaultName, chordMapName = defaultName, rootMapName = defaultName, modeMapName = defaultName, legatoMapName = defaultName, midiProgramPlayerName = defaultName + 'MidiProgram', controlChangePlayerName = defaultName + 'ControlChange', midiOutput = 1, playerName){
     console.log('Chose to create player')
     setupMidiRhythm(e, playerName, rhythmMapName)
     generalMidiOutputVariableAssigning.apply(null, arguments)
@@ -3387,7 +3403,7 @@ function createMidiOutputPlayer (defaultName, e, channel = defaultName, velocity
 //https://stackoverflow.com/a/43363105/19515980
 
 //Edit Player:
-function editMidiOutputPlayer (defaultName, e, channel = defaultName, velocityMapName = defaultName, noteMapName = defaultName, octaveMapName = defaultName, rhythmMapName = defaultName, polyphonyMapName = defaultName, noteDurationMap = defaultName, maskMapName = defaultName, rhythmPatternName = defaultName, chordMapName = defaultName, rootMapName = defaultName, modeMapName = defaultName, legatoMapName = defaultName, midiProgramPlayerName = defaultName + 'MidiProgam', controlChangePlayerName = defaultName + 'ControlChange', midiOutput = 1, playerName){
+function editMidiOutputPlayer (defaultName, e, channel = defaultName, velocityMapName = defaultName, noteMapName = defaultName, octaveMapName = defaultName, rhythmMapName = defaultName, polyphonyMapName = defaultName, noteDurationMapName = defaultName, maskMapName = defaultName, rhythmPatternName = defaultName, chordMapName = defaultName, rootMapName = defaultName, modeMapName = defaultName, legatoMapName = defaultName, midiProgramPlayerName = defaultName + 'MidiProgam', controlChangePlayerName = defaultName + 'ControlChange', midiOutput = 1, playerName){
     console.log('Chose to edit player')
     generalMidiOutputVariableAssigning.apply(null, arguments)
 }
@@ -3446,13 +3462,50 @@ function createChannelMaps (noteValueData, name, e){
     return false
 }
 
+function createSongMap (noteValueData, name, e){
+    if (noteValueData.songMap === undefined){
+        return false
+    }
+    else if (noteValueData.songMapKeys === undefined && noteValues.songMapKeyspan === undefined){
+        e.addMap(songMaps, name, noteValueData.songMap.length, noteValueData.songMap.map((x, i) => { return i}), noteValueData.songMap)
+    }
+    else {
+        e.addMap('songMaps', name, noteValueData.songMapKeyspan, noteValueData.songMapKeys, noteValueData.songMap)
+    }
+}
+
+function createChordMap (noteValueData, name, e){
+    if (noteValueData.chordMap === undefined){
+        return false
+    }
+    else if (noteValueData.chordMapKeys === undefined || noteValueData.chordMapKeyspan === undefined){
+        e.addMap('chordMaps', name, noteValueData.chordMapKeyspan, noteValueData.chordMapKeys, noteValueData.chordMap)
+    }
+    else{
+        e.addMaps('chordMaps', name, noteValueData.chordMap.length, noteValueData.chordMap.map((x, i) => {return i}), noteValueData.chordMap)
+    }
+}
+
+function createLegatoMap (noteValueData, name, e){
+    if (noteValueData.legatoMap === undefined){
+        return false
+    }
+    else if (noteValueData.legatoMapKeys === undefined && noteValueData.legatoMapKeyspan === undefined){
+        e.addMaps('legatoMaps', name, noteValueData.legatoMapKeyspan, noteValueData.legatoMapKeys, noteValueData.legatoMap)
+    }
+    else {
+        e.addMaps('legatoMaps', name, noteValueData.legatoMap.length, noteValueData.legatoMap.map((x, i) => {return i}), noteValueData.legatoMap)
+    }
+}
+
 //Create maps and other things from noteValue Data and save these new things in the musical environment:
 function recordConfigurationDataIntoMusicalEnvironment (noteValueData, name, e){
     createNoteSpans(noteValueData, e)
-//     console.log('ejrngiekrjgbeirgbekrgjbebr', noteValueData)
     createNoteRelatedMaps(noteValueData, name, e)
     createOctaveMaps(noteValueData, name, e)
-//     e.rootNoteMaps[name] = new QuantizedMap(noteValueData.rootNote.length, A.buildArray(noteValueData.rootNote.length, x => {return x}), noteValueData.rootNote)
+    createSongMap(noteValueData, name, e)
+    createChordMap(noteValueData, name, e)
+    createLegatoMap(noteValueData, name, e)
     if (noteValueData.velocityKeys === undefined){
         e.velocityMaps[name] = new QuantizedMap(noteValueData.velocity.length, A.buildArray(noteValueData.velocity.length, x => {return x}), noteValueData.velocity)
     }
@@ -3462,14 +3515,11 @@ function recordConfigurationDataIntoMusicalEnvironment (noteValueData, name, e){
     if (noteValueData.polyphonyMap !== undefined){
         e.maxPolyphonyMaps[name] = new QuantizedMap(noteValueData.polyphonyMap.length, A.buildArray(noteValueData.polyphonyMap.length, x => {return x}), noteValueData.polyphonyMap, e)
     }
-//     createControlChangePlayers(noteValueData, name, e)
-//     createMidiProgramPlayers(noteValueData, name, e)
     createModeFilters(noteValueData, name, e)
     createModeMaps(noteValueData, name, e)
     createRootMap(noteValueData, name, e)
 //     createRhythmMap(noteValueData, name)
 //     createMaskMap(noteValueData, name)
-    //The problem with your RhythmPattern function is, it starts assigning things to the player it does not write it to the musical environmet
     e.rhythmPatterns[name] = new RhythmPattern (name, noteValueData.total, noteValueData.noteDurationKeys, noteValueData.bools)
     createChannelMaps(noteValueData, name, e)
     return name
@@ -5927,10 +5977,10 @@ function setUpTestMusicalEnvironment (copies = 4){
 function setUpVerySimpleMusicalEnvironment (){
     let e = setUpMusicalEnvironmentExamples()
     let simpleMelodyData = R.clone(simpleMelodyDataTemplate)
-    simpleMelodyData.velocity = [100, 100, 100, 100],
-    simpleMelodyData.rhythmMap = [1, 2, 3, 4],
-    simpleMelodyData.noteValues = [[1], [2], [3], [4]],
-    simpleMelodyData.rootMap = [ 'C', 'C', 'C', 'C' ],
+    simpleMelodyData.velocity = [100, 100, 100, 100]
+    simpleMelodyData.rhythmMap = [1, 2, 3, 4]
+    simpleMelodyData.noteValues = [[1], [2], [3], [4]]
+    simpleMelodyData.rootMap = [ 'C', 'C', 'C', 'C' ]
     recordConfigurationDataIntoMusicalEnvironment(simpleMelodyData, 'p1', e, legatoOnlyConfig)
     assignPlayerForMusicSynthesizerMidiOutput(e, 'p1','exampleMidiPlayer1', legatoOnlyConfig)
     e.players.exampleMidiPlayer1.modeMap = 'default'
@@ -5942,8 +5992,8 @@ function setUpSimpleMusicalEnvironment (){
     let simpleMelodyData = R.clone(simpleMelodyDataTemplate)
     simpleMelodyData.velocity = [120, 40, 80, 65]
     simpleMelodyData.rhythmMap = [0.5, 1.5, 3,1 ]
-    simpleMelodyData.noteValues = [[10, 4], [6, 4], [8, 7], [3]],
-    simpleMelodyData.rootMap = [ 'C', 'D', 'A', 'G'],
+    simpleMelodyData.noteValues = [[10, 4], [6, 4], [8, 7], [3]]
+    simpleMelodyData.rootMap = [ 'C', 'D', 'A', 'G']
     recordConfigurationDataIntoMusicalEnvironment(simpleMelodyData, 'p1', e)
     assignPlayerForMusicSynthesizerMidiOutput(e, 'p1', 'exampleMidiPlayer1', legatoOnlyConfig)
     e.players.exampleMidiPlayer1.polyphonyMap = 'default'
@@ -6090,6 +6140,9 @@ function emptyConfigObj (){
         modeMapKeyspan: undefined, //number
         rootMapKeyspan: undefined, //number
         channelKeyspan: undefined, //number
+        songMapKeyspan: undefined, //number
+        chordMapKeyspan: undefined, //number
+        legatoMapKeyspan: undefined, //number
 
         noteValuesKeys: undefined, //number
         rootMapKeys: undefined, //number 
@@ -6100,6 +6153,9 @@ function emptyConfigObj (){
         modeMapKeys: undefined, //[number]
         rootMapKeys: undefined, //[number]
         channelKeys: undefined, //[number]
+        songMapKeys: undefined, //[number]
+        chordMapKeys: undefined, //[number]
+        legatoMapKeys: undefined, //[number]
 
         noteValues: undefined, //[[number],[number]]
         bools: undefined, //[booleans]
@@ -6112,10 +6168,13 @@ function emptyConfigObj (){
         modeMap: undefined, //[number]
         rootMap: undefined, //[string]
         channelValues: undefined, //[number]
+        songMap: undefined, //[string]
+        chordMap: undefined, //[string]
+        legatoMap: undefined, //[string]
     }
 }
 
-function configObjCreation (total, keys, octave, root, note, noteDuration){
+function configObjCreation (total, keys, octave, root, note, noteDuration, velocity){
     return Object.assign(emptyConfigObj(), {
         total: total,
         noteValuesKeyspan: total,
@@ -6129,9 +6188,32 @@ function configObjCreation (total, keys, octave, root, note, noteDuration){
         noteDurationKeys: keys,
         noteValues: note,
         rootMap: root,
-        octaveMap: octave,
+        octave: octave,
         noteDurations: noteDuration,
+        velocityKeys: keys,
+        velocity: velocity,
     })
+}
+
+function emptyPlayerDataConfigObj (){
+    return {
+        channel: undefined, //number
+        midiOutput: undefined, //number
+        velocityMapName: undefined, //string
+        noteMapName: undefined, //string
+        octaveMapName: undefined, //string
+        rhythmMapName: undefined, //string
+        polyphonyMapName: undefined, //string
+        noteDurationMapName: undefined, //string
+        maskMapName: undefined, //string
+        rhythmPatternName: undefined, //string
+        chordMapName: undefined, //string
+        rootMapName: undefined, //string
+        modeMapName: undefined, //string
+        legatoMapName: undefined, //string
+        midiProgramPlayerName: undefined, //string
+        controlChangePlayerName: undefined, //string
+    }
 }
 
 addToModuleExports({ 
@@ -6150,6 +6232,7 @@ addToModuleExports({
     setUpTestMusicalEnvironment,
     emptyConfigObj,
     configObjCreation,
+    simpleMelodyDataTemplate,
 })
 
 //let K = require('./combined.js')
