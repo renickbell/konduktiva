@@ -1881,16 +1881,16 @@ function samplePattern (allSamples, patternLength, substringArray, poolSize, ste
     // let pool = pickN(poolSize, gatherBySubstring (allSamples, substringArray));
     let pool = A.pickN(poolSize, prePool);
     let stepLengths = [];
-    while (sum(stepLengths) < patternLength) {
+    while (A.sum(stepLengths) < patternLength) {
         stepLengths.push(pick(stepLengthPool))
     };
-    let selectedSampleDirs = stepLengths.map(x => pick(pool));
+    let selectedSampleDirs = stepLengths.map(x => A.pick(pool));
     let selectedSamples = selectedSampleDirs.map((x) => {return {name: x.name, index: randomRangeInt(0,x.number - 1)}});
     let absolutes = deltaToAbsolute(A.takeTo(patternLength,stepLengths));
     return new QuantizedMap(absolutes[0],absolutes[1],selectedSamples)
 }
 
-function playSuperDirtSample (env, player, beat, e) {
+function playSuperDirtSample (env, player, beat) {
     let currentSample = env.samplePatterns[env.players[player].samplePattern].wrapLookup(beat);
     var msg = {
             address: '/play2',
@@ -2548,10 +2548,20 @@ function getChordComponents (values){
     }
 }
 
-function modeMapAndModeFilterFromChordProgression (chordProgression, keyspan, keys, mapName, e){
-    e.modeMaps[mapName] = new QuantizedMap(keyspan, keys, [])
+// function modeMapAndModeFilterFromChordProgression (chordProgression, keyspan, keys, mapName, e){
+//     e.modeMaps[mapName] = new QuantizedMap(keyspan, keys, [])
+//     chordProgression.forEach((x, i) => {
+//         e.modeFilters[mapName + i] = new QuantizedMap(12, x, x)
+//         e.modeMaps[mapName].values.push(mapName + i)
+//     })
+//     return true
+// }
+
+function modeMapAndModeFilterFromChordProgression (mapsName, e){
+    addNoteMapFromChordMap(e, mapsName, mapsName, mapsName)
+    e.modeMaps[mapName] = new QuantizedMap(e.chordMaps[mapsName].keyspan, e.chordMaps[mapsName].keys, [])
     chordProgression.forEach((x, i) => {
-        e.modeFilters[mapName + i] = new QuantizedMap(12, x, x)
+        e.modeFilters[mapsName + i] = new QuantizedMap(12, x, x)
         e.modeMaps[mapName].values.push(mapName + i)
     })
     return true
@@ -3490,11 +3500,11 @@ function createLegatoMap (noteValueData, name, e){
     if (noteValueData.legatoMap === undefined){
         return false
     }
-    else if (noteValueData.legatoMapKeys === undefined && noteValueData.legatoMapKeyspan === undefined){
-        e.addMaps('legatoMaps', name, noteValueData.legatoMapKeyspan, noteValueData.legatoMapKeys, noteValueData.legatoMap)
+    else if (noteValueData.legatoMapKeys !== undefined && noteValueData.legatoMapKeyspan !== undefined){
+        e.addMap('legatoMaps', name, noteValueData.legatoMapKeyspan, noteValueData.legatoMapKeys, noteValueData.legatoMap)
     }
     else {
-        e.addMaps('legatoMaps', name, noteValueData.legatoMap.length, noteValueData.legatoMap.map((x, i) => {return i}), noteValueData.legatoMap)
+        e.addMap('legatoMaps', name, noteValueData.legatoMap.length, noteValueData.legatoMap.map((x, i) => {return i}), noteValueData.legatoMap)
     }
 }
 
@@ -3908,7 +3918,6 @@ function sendMidiData(info, player, note, channel, e){
       velocity: info.velocity,
       channel: channel - 1,
     });
-    //consumeCPU()
     setTimeout(() => {
         e.midiOutputs[player.midiOutput - 1].send('noteoff', {
           note: note,
@@ -5942,6 +5951,25 @@ let simpleMelodyDataTemplate = {
         noteDurationKeys: [0, 4, 8, 12],
 }
 
+let defaultConfigurationObject = {
+  channelKeyspan: 1,
+  channelKeys: [0],
+  channelValues: [1],
+  velocity: A.buildArray(30, x => 90),
+   noteDurationKeyspan: 4,
+  noteDurations: [0, 1, 2, 3],
+  noteDurationKeys: [1, 1, 1, 1],
+  bools: [true, true, true, true],
+  modeFilter: A.buildArray(12, x=> x),
+  octave: [3, 3, 3, 3],
+  noteValues: [[5], [6], [7], [8]],
+  total: 4,
+  rhythmMap: [0, 4, 8, 12],
+  rootMap: ['C', 'C', 'C', 'C'],
+    noteValuesKeyspan: 1,
+    legatoMap: [1, 1, 1, 1]
+}
+
 function setUpTestMusicalEnvironment (copies = 4){
     let e = setUpMusicalEnvironmentExamples()
     let simpleMelodyData = R.clone(simpleMelodyDataTemplate)
@@ -6050,6 +6078,30 @@ function setUpDefaultMusicalEnvironmentOnePlayer (){
     return e
 }
 
+function addDuplicatePlayersWithConfigObj (e, nOfPlayers, configObj, baseName){
+    configObj.channelValues = configObj.channelValues.map(x => {
+        return x - 1
+    })
+    return Array.from({length: nOfPlayers}).map((x, i) => {
+        let currentPlayerName = baseName + (i + 1)
+        configObj.channelValues = configObj.channelValues.map(x => { return (x + 1) % 17})
+        recordConfigurationDataIntoMusicalEnvironment(configObj, currentPlayerName, e)
+        assignPlayerForMusicSynthesizerMidiOutput(e, currentPlayerName, currentPlayerName)
+        return currentPlayerName
+    })
+}
+
+function addDuplicatePlayersWithConfigObjArray (e, playerNames, configObjs){
+    if (playerNames.length !== configObjs.length){
+        throw new Error('playerNames length should be same as configObjs length')
+        return false
+    }
+    return playerNames.map((x, i) => {
+        recordConfigurationDataIntoMusicalEnvironment(configObjs[i], x, e)
+        assignPlayerForMusicSynthesizerMidiOutput(e, x, x)
+        return x
+    })
+}
 
 function setUpKonduktiva (){
     global.udpPort = new osc.UDPPort({
@@ -6119,14 +6171,20 @@ function checkStringInputMusicalEnv (param, extraInfo){
     return false
 }
 
-function setUpMusicalEnvironment (param, extraInfo){
-    if (typeof param === 'number'){
-        return checkNumInputMusicalEnv(param, extraInfo)
-    }
-    else if (typeof param === 'string'){
-        return checkStringInputMusicalEnv(param, extraInfo)
-    }
-    return false
+// function setUpMusicalEnvironment (param, extraInfo){
+//     if (typeof param === 'number'){
+//         return checkNumInputMusicalEnv(param, extraInfo)
+//     }
+//     else if (typeof param === 'string'){
+//         return checkStringInputMusicalEnv(param, extraInfo)
+//     }
+//     return false
+// }
+
+function setUpMusicalEnvironment (configObj, nOfPlayers, baseName){
+    let e = setUpMusicalEnvironmentExamples()
+    addDuplicatePlayersWithConfigObj(e, nOfPlayers, configObj, baseName)
+    return e
 }
 
 function emptyConfigObj (){
@@ -6233,6 +6291,9 @@ addToModuleExports({
     emptyConfigObj,
     configObjCreation,
     simpleMelodyDataTemplate,
+    addDuplicatePlayersWithConfigObj,
+    addDuplicatePlayersWithConfigObjArray,
+    defaultConfigurationObject,
 })
 
 //let K = require('./combined.js')

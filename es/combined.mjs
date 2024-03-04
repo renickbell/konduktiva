@@ -1743,16 +1743,16 @@ export function samplePattern (allSamples, patternLength, substringArray, poolSi
     // let pool = pickN(poolSize, gatherBySubstring (allSamples, substringArray));
     let pool = A.pickN(poolSize, prePool);
     let stepLengths = [];
-    while (sum(stepLengths) < patternLength) {
-        stepLengths.push(pick(stepLengthPool))
+    while (A.sum(stepLengths) < patternLength) {
+        stepLengths.push(A.pick(stepLengthPool))
     };
-    let selectedSampleDirs = stepLengths.map(x => pick(pool));
+    let selectedSampleDirs = stepLengths.map(x => A.pick(pool));
     let selectedSamples = selectedSampleDirs.map((x) => {return {name: x.name, index: randomRangeInt(0,x.number - 1)}});
     let absolutes = deltaToAbsolute(A.takeTo(patternLength,stepLengths));
     return new QuantizedMap(absolutes[0],absolutes[1],selectedSamples)
 }
 
-export function playSuperDirtSample (env, player, beat, e) {
+export function playSuperDirtSample (env, player, beat) {
     let currentSample = env.samplePatterns[env.players[player].samplePattern].wrapLookup(beat);
     var msg = {
             address: '/play2',
@@ -3607,7 +3607,6 @@ export function sendMidiData(info, player, note, channel, e){
       velocity: info.velocity,
       channel: channel - 1,
     });
-    //consumeCPU()
     setTimeout(() => {
         e.midiOutputs[player.midiOutput - 1].send('noteoff', {
           note: note,
@@ -5548,6 +5547,31 @@ export function setUpDefaultMusicalEnvironmentOnePlayer (){
     e.players.exampleMidiPlayer1.polyphonyMap = 'default'
      e.players.exampleMidiPlayer1.modeMap = 'default'
     return e
+}
+
+export function addDuplicatePlayersWithConfigObj (e, nOfPlayers, configObj, baseName){
+    configObj.channelValues = configObj.channelValues.map(x => {
+        return x - 1
+    })
+    return Array.from({length: nOfPlayers}).map((x, i) => {
+        let currentPlayerName = baseName + (i + 1)
+        configObj.channelValues = configObj.channelValues.map(x => { return (x + 1) % 17})
+        recordConfigurationDataIntoMusicalEnvironment(configObj, currentPlayerName, e)
+        assignPlayerForMusicSynthesizerMidiOutput(e, currentPlayerName, currentPlayerName)
+        return currentPlayerName
+    })
+}
+
+export function addDuplicatePlayersWithConfigObjArray (e, playerNames, configObjs){
+    if (playerNames.length !== configObjs.length){
+        throw new Error('playerNames length should be same as configObjs length')
+        return false
+    }
+    return playerNames.map((x, i) => {
+        recordConfigurationDataIntoMusicalEnvironment(configObjs[i], x, e)
+        assignPlayerForMusicSynthesizerMidiOutput(e, x, x)
+        return x
+    })
 }
 
 export function setUpKonduktiva (){
