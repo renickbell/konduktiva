@@ -766,7 +766,7 @@ class MusicalEnvironment {
         this.densityGraphs = {};
         this.rhythmMaps = {};
         this.maskMaps = {};
-        this.superDirtPath = undefined;
+        this.superDirtPath = this.findSuperDirtSamples();
         this.samples = undefined;
         this.sampleKits = {};
         this.samplePatterns = {};
@@ -781,6 +781,21 @@ class MusicalEnvironment {
         this.lookahead = 0.1;
         this.scheduledPlayers = [];
         this.root = "A";
+        this.mapConnectionsToPlayerVariables = {
+            name: 'players',
+            IOIFunc: 'IOIs',
+            densityGraph: 'densityGraphs',
+            action: 'actions',
+            velocityMap: 'velocityMaps',
+            samplePattern: 'samplePatterns',
+            noteMap: 'noteMaps', 
+            octaveMap: 'octaveMaps',
+            channelMap: 'channelMaps',
+            polyphanyMap: 'maxPolyphonyMaps',
+            noteDurationMap: 'noteDurationMaps',
+            modeMap: 'modeMaps',
+            rootMap: 'rootMaps',
+        }
     }
     /**
       * Returns the current beat of the MusicalEnvironment.
@@ -955,6 +970,35 @@ class MusicalEnvironment {
     togglePlayer (p) {
        if (this.players[p].status == 'playing') {this.stop(p)} else {this.play(p)}
     }
+    findSuperDirtSamples (){
+        let foundPath = this.getSuperDirtSamplesPath()
+        if (fs.existsSync(foundPath) === false){
+            throw new Error('Superdirt samples directory not found. Please install the superdirt samples and manually set superdirt directory path by: e.superDirtPath = "filePath"')
+            return undefined
+        }
+        else if (fs.readdirSync(foundPath).length === 0){
+            throw new Error('Superdirt samples directory empty. Please manually set superdirt directory path by: e.superDirtPath = "filePath"')
+            return undefined
+        }
+        else {
+            return foundPath
+        }
+    }
+    //helped by chatgpt
+    getSuperDirtSamplesPath () {
+        let type = os.type()
+        if (type === 'Darwin'){
+            return path.join(os.homedir(), 'Library', 'Application Support', 'SuperCollider', 'downloaded-quarks', 'Dirt-Samples');
+        }
+        else if (type === 'Windows_NT'){
+            return path.join(os.homedir(), 'AppData', 'Local', 'SuperCollider', 'downloaded-quarks', 'Dirt-Samples');
+        }
+        else if (type === 'Linux'){
+            return path.join(os.homedir(), '.local', 'share', 'SuperCollider', 'downloaded-quarks', 'Dirt-Samples');
+        }
+        return undefined
+    }
+    //helped by chatgpt
     checkingAddMapToMusicalEnvironmentArguments (objectName, mapName, keyspan, keys, values){
         if (objectName === undefined || typeof objectName !== 'string'){
             throw new Error('Invalid objectName type. Expected string.')
@@ -1312,6 +1356,9 @@ class MusicalEnvironment {
             return false
         }
         this.playN(this.findConnectedPlayers(player))
+    }
+    checkUndefinedPlayerProperties (playerName){
+        let player = this.players[playerName]
     }
 }
 // addMapToMusicalEnvironment(e, 'rhythmMaps', 'chalk', 10, [0, 1, 2, 3], [4, 5, 6, 7])
@@ -1882,7 +1929,7 @@ function samplePattern (allSamples, patternLength, substringArray, poolSize, ste
     let pool = A.pickN(poolSize, prePool);
     let stepLengths = [];
     while (A.sum(stepLengths) < patternLength) {
-        stepLengths.push(pick(stepLengthPool))
+        stepLengths.push(A.pick(stepLengthPool))
     };
     let selectedSampleDirs = stepLengths.map(x => A.pick(pool));
     let selectedSamples = selectedSampleDirs.map((x) => {return {name: x.name, index: randomRangeInt(0,x.number - 1)}});
@@ -3423,7 +3470,7 @@ function editMidiOutputPlayer (defaultName, e, channel = defaultName, velocityMa
 function createControlChangePlayers (noteValueData, name, e, midiOutput, mapDefaultName){
     if (noteValueData.controlChangePlayer !== undefined && noteValueData.controlChangePlayerKeys !== undefined && noteValueData.controlChangePlayerKeyspan !== undefined){
 //         e.controlChangePlayers[name] = new QuantizedMap(noteValueData.controlChangePlayerKeyspan, noteValueData.controlChangePlayerKeys, noteValueData.controlChangePlayer)
-         createMidiCCPlayer (e, name + 'ControlChange', noteValueData.controlChangePlayerKeyspan, noteValueData.controlChangePlayerKeys, noteValueData.controlChangePlayer, noteValueData.channels, midiOutput, mapDefaultName)
+         createMidiCCPlayer (e, name + 'ControlChange', noteValueData.controlChangePlayerKeyspan, noteValueData.controlChangePlayerKeys, noteValueData.controlChangePlayer, midiOutput, mapDefaultName)
         e.players[name].controlChangePlayer = name + 'ControlChange'
     }
 }
@@ -3431,7 +3478,7 @@ function createControlChangePlayers (noteValueData, name, e, midiOutput, mapDefa
 //HERE name creation is wrong cannot be the same as the orignal player name it should be name + something
 function createMidiProgramPlayers (noteValueData, name, e, midiOutput, mapDefaultName){
     if (noteValueData.midiProgramPlayer !== undefined && noteValueData.midiProgramPlayerKeys !== undefined && noteValueData.midiProgramPlayerKeyspan !== undefined){
-         createMidiProgramPlayer(e, name + 'MidiProgram', noteValueData.midiProgramPlayerKeyspan, noteValueData.midiProgramPlayerKeys, noteValueData.midiProgramPlayer, noteValueData.channels, midiOutput, mapDefaultName)
+         createMidiProgramPlayer(e, name + 'MidiProgram', noteValueData.midiProgramPlayerKeyspan, noteValueData.midiProgramPlayerKeys, noteValueData.midiProgramPlayer, midiOutput, mapDefaultName)
         e.players[name].midiProgramPlayer = name + 'MidiProgram'
     }
 }
@@ -3533,6 +3580,9 @@ function recordConfigurationDataIntoMusicalEnvironment (noteValueData, name, e){
     e.rhythmPatterns[name] = new RhythmPattern (name, noteValueData.total, noteValueData.noteDurationKeys, noteValueData.bools)
     createChannelMaps(noteValueData, name, e)
     return name
+}
+
+function recordOtherConfigurationData (configObjOther, name, e){
 }
 
 function populateModeFilters (e){
@@ -3924,7 +3974,7 @@ function sendMidiData(info, player, note, channel, e){
           velocity: info.velocity,
           channel: channel - 1,
         });
-   }, 1000 * beatsToTime(e.currentTempo,1) * e.legatoMaps[player.legatoMap].wrapLookup(e.currentBeat()))
+   }, 1000 * beatsToTime(e.currentTempo, info.noteDuration) * e.legatoMaps[player.legatoMap].wrapLookup(e.currentBeat()))
 }
 
 //Convert velocity values from 0-1 to midi 0-127:
@@ -4777,7 +4827,7 @@ function createPlaybackPlayer (e, midiOutput, recordedMessagesName){
     player.midiOutput = midiOutput
 }
 
-function createExtensionPlayerBasics (e, name, keyspan, keys, channels, midiOutput, mapDefaultName){
+function createExtensionPlayerBasics (e, name, keyspan, keys, midiOutput, mapDefaultName){
     let player = e.players[name]
     e.rhythmMaps[name] = new QuantizedMap(1, [1], [new QuantizedMap(keyspan, keys, keys.map(x => {return 1}))])
     e.rhythmPatterns[name] = new RhythmPattern (name, keyspan, keys.map((x, i) => {
@@ -4789,20 +4839,20 @@ function createExtensionPlayerBasics (e, name, keyspan, keys, channels, midiOutp
     player.channelMap = mapDefaultName
 }
 
-function createMidiCCPlayer (e, name, keyspan, keys, midiCCs, channels, midiOutput, mapDefaultName){
+function createMidiCCPlayer (e, name, keyspan, keys, midiCCs, midiOutput, mapDefaultName){
     setupMidiCCPlayer(e, name)
     let player = e.players[name]
-    createExtensionPlayerBasics (e, name, keyspan, keys, channels, midiOutput, mapDefaultName)
+    createExtensionPlayerBasics (e, name, keyspan, keys, midiOutput, mapDefaultName)
     e.controlChangeMaps[name] = new QuantizedMap(keyspan, keys, midiCCs)
     e.rhythmMaps[name] = new QuantizedMap(1, [0], [new QuantizedMap(keyspan, keys, keys.map(x => {return 1}))])
     player.controlChangeMap = name
     player.rhythmMap = name
 }
 
-function createMidiProgramPlayer (e, name, keyspan, keys, midiPrograms, channels, midiOutput, mapDefaultName){
+function createMidiProgramPlayer (e, name, keyspan, keys, midiPrograms, midiOutput, mapDefaultName){
     setupMidiProgramPlayer(e, name)
     let player = e.players[name]
-    createExtensionPlayerBasics (e, name, keyspan, keys, channels, midiOutput, mapDefaultName)
+    createExtensionPlayerBasics (e, name, keyspan, keys, midiOutput, mapDefaultName)
     e.midiProgramMaps[name] = new QuantizedMap(keyspan, keys, midiPrograms)
     e.rhythmMaps[name] = new QuantizedMap(1, [0], [new QuantizedMap(keyspan, keys, keys.map(x => {return 1}))])
     player.midiProgramMap = name
@@ -6232,6 +6282,17 @@ function emptyConfigObj (){
     }
 }
 
+function emptyOtherConfigObj (){
+    return {
+        keyspan: undefined, //number
+        keys: undefined, //[number]
+        channelKeyspan: undefined, //number
+        channelKeys: undefined, //[number]
+        channelValues: undefined, //[number]
+    }
+}
+        
+        
 function configObjCreation (total, keys, octave, root, note, noteDuration, velocity){
     return Object.assign(emptyConfigObj(), {
         total: total,

@@ -708,7 +708,7 @@ export function mask (player, maskMap, beat, probability) {
 }
 
 /** Class representing MusicalEnvironments */
-export class MusicalEnvironment {
+class MusicalEnvironment {
     /**
       * Creates MusicalEnvironments. Remember to call setupScheduler(e)
       * @example let e = new MusicalEnvironment()
@@ -725,7 +725,7 @@ export class MusicalEnvironment {
         this.densityGraphs = {};
         this.rhythmMaps = {};
         this.maskMaps = {};
-        this.superDirtPath = undefined;
+        this.superDirtPath = this.findSuperDirtSamples();
         this.samples = undefined;
         this.sampleKits = {};
         this.samplePatterns = {};
@@ -914,12 +914,40 @@ export class MusicalEnvironment {
     togglePlayer (p) {
        if (this.players[p].status == 'playing') {this.stop(p)} else {this.play(p)}
     }
+    findSuperDirtSamples (){
+        let foundPath = this.getSuperDirtSamplesPath()
+        if (fs.existsSync(foundPath) === false){
+            throw new Error('Superdirt samples directory not found. Please install the superdirt samples and manually set superdirt directory path by: e.superDirtPath = "filePath"')
+            return undefined
+        }
+        else if (fs.readdirSync(foundPath).length === 0){
+            throw new Error('Superdirt samples directory empty. Please manually set superdirt directory path by: e.superDirtPath = "filePath"')
+            return undefined
+        }
+        else {
+            return foundPath
+        }
+    }
+    //helped by chatgpt
+    getSuperDirtSamplesPath () {
+        let type = os.type()
+        if (type === 'Darwin'){
+            return path.join(os.homedir(), 'Library', 'Application Support', 'SuperCollider', 'downloaded-quarks', 'Dirt-Samples');
+        }
+        else if (type === 'Windows_NT'){
+            return path.join(os.homedir(), 'AppData', 'Local', 'SuperCollider', 'downloaded-quarks', 'Dirt-Samples');
+        }
+        else if (type === 'Linux'){
+            return path.join(os.homedir(), '.local', 'share', 'SuperCollider', 'downloaded-quarks', 'Dirt-Samples');
+        }
+        return undefined
+    }
+    //helped by chatgpt
     checkingAddMapToMusicalEnvironmentArguments (objectName, mapName, keyspan, keys, values){
-        let e = this
         if (objectName === undefined || typeof objectName !== 'string'){
             throw new Error('Invalid objectName type. Expected string.')
         }
-        else if (e[objectName] === undefined){
+        else if (this[objectName] === undefined){
             throw new Error('Variable does not exist in MusicalEnvironment. Please fill in one of the variables that exist and uses QuantizedMap(s). To check find all variables, do Object.keys(musicalEnvironment)')
         }
         if (mapName === undefined || typeof mapName !== 'string'){
@@ -944,16 +972,18 @@ export class MusicalEnvironment {
     //     console.info('Preliminary checks have passeed.')
     }
     createDefaultRhythmMap (objectName, mapName, keyspan, keys, values){
-        let e = this
         if (checkAllItemsType(values, 'number')) {
-            e.rhythmMaps[mapName] = new QuantizedMap(1, [1], new QuantizedMap(keyspan, keys, values))
+            this.rhythmMaps[mapName] = new QuantizedMap(1, [1], new QuantizedMap(keyspan, keys, values))
+            return true
         }
-        return true
+        else {
+            throw new Error('Expected values to be an array of numbers')
+            return false
+        }
     }
     createSubarrayMap (objectName, mapName, keyspan, keys, values){
-        let e = this
         if (checkAllItemsType(values, 'array')){
-            e[objectName][mapName] = new QuantizedMap(keyspan, keys, values)
+            this[objectName][mapName] = new QuantizedMap(keyspan, keys, values)
             return true
         }
         else{
@@ -961,32 +991,43 @@ export class MusicalEnvironment {
             return false
         }
     }
-    createRhythmPatternMap (objectName, mapName, keyspan, keys, values){
-        let e = this
-        if (checkAllItemsType(values, 'boolean')){
-            e.rhythmPatterns[mapName] = new QuantizedMap(keyspan, keys, values)
+    createNoteMaps (objectName, mapName, keyspan, keys, values){
+        if (checkAllItemsType(values, 'array') === false){
+            throw new Error('Expected values array to be filled with arrays which contain numbers')
+            return false
         }
+        else if (values.map((x, i) => {return checkAllItemsType(x, 'number')}).includes(false)){
+            throw new Error('Expected items in arrays in values to be filled with numbers. ex. [[number], [number]]')
+            return false
+        }
+        this[objectName][mapName] = new QuantizedMap(keyspan, keys, values)
         return true
+    }
+    createRhythmPatternMap (objectName, mapName, keyspan, keys, values){
+        if (checkAllItemsType(values, 'boolean')){
+            this.rhythmPatterns[mapName] = new QuantizedMap(keyspan, keys, values)
+            return true
+        }
+        else {
+            throw new Error('Expected an values array to be filled with booleans true or false')
+            return false
+        }
     }
     createDefaultMaskMap (objectName, mapName, keyspan, keys, values){
-        let e = this
         if (checkAllItemsType(values, 'boolean')){
-            e.maskMaps[mapName] = new QuantizedMap(keyspan, keys, A.flipBooleans(values))
+            this.maskMaps[mapName] = new QuantizedMap(keyspan, keys, A.flipBooleans(values))
+            return true
         }
-        return true
-    }
-    createChordProgressionMap (objectName, mapName, keyspan, keys, values){
-        let e = this
-        if (checkAllItemsType(values, 'object') && checkChordProgressionDataType(values)){
-            e.chordMaps[mapName] = new QuantizedMap(keyspan, keys, values)
+        else {
+            throw new Error('Expected an values array to be filled with booleans true or false')
+            return false
         }
     }
     createSongMap (objectName, mapName, keyspan, keys, values){
-        let e = this
         if (checkAllItemsType(values, 'string') === false){
             throw new Error ('Invalid items in values array. Expected an array filled with strings.')
         }
-        else if (values.every((x, i) => {if (e.chordMaps[x] === undefined){
+        else if (values.every((x, i) => {if (this.chordMaps[x] === undefined){
             throw new Error (x + ' is not a property name of musicalEnvironment.chordProgressions. Fix index ' + i)
             return false
             }
@@ -995,18 +1036,16 @@ export class MusicalEnvironment {
             throw new Error ('Invalid items in values array. Expected name of a property in musicalEnvironment.chordProgressions')
                 }
         else {
-            e.songMaps[mapName] = new QuantizedMap(keyspan, keys, values)
+            this.songMaps[mapName] = new QuantizedMap(keyspan, keys, values)
         }
         return true
     }
     createDefaultMap (objectName, mapName, keyspan, keys, values){
-        let e = this
-            e[objectName][mapName] = new QuantizedMap(keyspan, keys, values)
+            this[objectName][mapName] = new QuantizedMap(keyspan, keys, values)
     }
     createModeFilters (objectName, mapName, keyspan, keys, values){
-        let e = this;
         if(checkAllItemsType(values, 'QuantizedMap')){
-            e[objectName][mapName] = new QuantizedMap(keyspan, keys, values)
+            this[objectName][mapName] = new QuantizedMap(keyspan, keys, values)
         }
     }
     checkVariableFor (variableName, mapName){
@@ -1048,7 +1087,7 @@ export class MusicalEnvironment {
             throw new Error('Items in the value array include variables which are not chords.')
             return false
         }
-        this.chordMaps[mapName] = new QuantizedMap(keyspan, keys, values) 
+        this.chordMaps[mapName] = new QuantizedMap(keyspan, keys, values)
     }
     createModeMap (objectName, mapName, keyspan, keys, values){
         if (checkAllItemsType(values, 'string') === false){
@@ -1084,23 +1123,35 @@ export class MusicalEnvironment {
         }
         this.rootMaps[mapName] = new QuantizedMap(keyspan, keys, reformattedValues)
     }
+    checkSubArrayType(subArray, type){
+        return subArray.every(x => {
+            if (x instanceof Array === false){
+                return false
+            }
+            return checkAllItemsType(x, type)
+        })
+    }
+    createMidiProgramMap(objectName, mapName, keyspan, keys, values){
+        if (checkAllItemsType(value, 'Number') === false && checkSubArrayType(x, 'Number') === false){
+            throw new Error('Expected value array to contain arrays with numbers in it. [[Number], [Number]]')
+        }
+        else{
+            this.midiProgramMaps[mapName] = new QuantizedMap(keyspan, keys, values)
+        }
+    }
     addMap (objectName, mapName, keyspan, keys, values){
-        let e = this
         this.checkingAddMapToMusicalEnvironmentArguments(objectName, mapName, keyspan, keys, values)
         switch (objectName){
             case'rhythmMaps':
                 this.createDefaultRhythmMap(objectName, mapName, keyspan, keys, values)
                 break;
             case 'noteMaps':
-                this.createSubarrayMap(objectName, mapName, keyspan, keys, values)
+                this.createNoteMaps(objectName, mapName, keyspan, keys, values)
                 break;
             case 'rhythmPatterns':
                 this.createRhythmPatternMap(objectName, mapName, keyspan, keys, values)
             case 'maskMaps':
                 this.createDefaultMaskMap(objectName, mapName, keyspan, keys, values)
-                break;
-            case 'chordProgressions':
-                this.createChordProgressionMap(objectName, mapName, keyspan, keys, values)
                 break;
             case 'songMaps':
                 this.createSongMap(objectName, mapName, keyspan, keys, values)
@@ -1121,10 +1172,10 @@ export class MusicalEnvironment {
 //                 this.createModeFilters(objectName, mapName, keyspan, keys, values)
                 break;
              case 'midiInputs':
-                throw new Error('Use the updateMidiInputList function while passing the MusicalEnvironment as an argument without it assigning to anything. Like this: updateMidiInputList(e)')
+                throw new Error('Use the updateMidiInputList function while passing the MusicalEnvironment as an argument without it assigning to anything. Like this: updateMidiInputList(nameOfMusicalEnvironment)')
                 break;
              case 'midiOutputs':
-                throw new Error('Use the updateMidiOutputList function while passing the MusicalEnvironment as an argument without it assigning to anything. Like this: updateMidiOutputList(e)')
+                throw new Error('Use the updateMidiOutputList function while passing the MusicalEnvironment as an argument without it assigning to anything. Like this: updateMidiOutputList(nameOfMusicalEnvironment)')
                 break;
              case 'legatoMaps':
              case 'modeFilters':
@@ -3232,11 +3283,11 @@ export function createLegatoMap (noteValueData, name, e){
     if (noteValueData.legatoMap === undefined){
         return false
     }
-    else if (noteValueData.legatoMapKeys === undefined && noteValueData.legatoMapKeyspan === undefined){
-        e.addMaps('legatoMaps', name, noteValueData.legatoMapKeyspan, noteValueData.legatoMapKeys, noteValueData.legatoMap)
+    else if (noteValueData.legatoMapKeys !== undefined && noteValueData.legatoMapKeyspan !== undefined){
+        e.addMap('legatoMaps', name, noteValueData.legatoMapKeyspan, noteValueData.legatoMapKeys, noteValueData.legatoMap)
     }
     else {
-        e.addMaps('legatoMaps', name, noteValueData.legatoMap.length, noteValueData.legatoMap.map((x, i) => {return i}), noteValueData.legatoMap)
+        e.addMap('legatoMaps', name, noteValueData.legatoMap.length, noteValueData.legatoMap.map((x, i) => {return i}), noteValueData.legatoMap)
     }
 }
 
@@ -5441,6 +5492,25 @@ export let simpleMelodyDataTemplate = {
         noteDurationKeys: [0, 4, 8, 12],
 }
 
+export let defaultConfigurationObject = {
+  channelKeyspan: 1,
+  channelKeys: [0],
+  channelValues: [1],
+  velocity: A.buildArray(30, x => 90),
+   noteDurationKeyspan: 4,
+  noteDurations: [0, 1, 2, 3],
+  noteDurationKeys: [1, 1, 1, 1],
+  bools: [true, true, true, true],
+  modeFilter: A.buildArray(12, x=> x),
+  octave: [3, 3, 3, 3],
+  noteValues: [[5], [6], [7], [8]],
+  total: 4,
+  rhythmMap: [0, 4, 8, 12],
+  rootMap: ['C', 'C', 'C', 'C'],
+    noteValuesKeyspan: 1,
+    legatoMap: [1, 1, 1, 1]
+}
+
 export function setUpTestMusicalEnvironment (copies = 4){
     let e = setUpMusicalEnvironmentExamples()
     let simpleMelodyData = R.clone(simpleMelodyDataTemplate)
@@ -5640,14 +5710,20 @@ function checkStringInputMusicalEnv (param, extraInfo){
     return false
 }
 
-export function setUpMusicalEnvironment (param, extraInfo){
-    if (typeof param === 'number'){
-        return checkNumInputMusicalEnv(param, extraInfo)
-    }
-    else if (typeof param === 'string'){
-        return checkStringInputMusicalEnv(param, extraInfo)
-    }
-    return false
+// export function setUpMusicalEnvironment (param, extraInfo){
+//     if (typeof param === 'number'){
+//         return checkNumInputMusicalEnv(param, extraInfo)
+//     }
+//     else if (typeof param === 'string'){
+//         return checkStringInputMusicalEnv(param, extraInfo)
+//     }
+//     return false
+// }
+
+export function setUpMusicalEnvironment (configObj, nOfPlayers, baseName){
+    let e = setUpMusicalEnvironmentExamples()
+    addDuplicatePlayersWithConfigObj(e, nOfPlayers, configObj, baseName)
+    return e
 }
 
 function emptyConfigObj (){
