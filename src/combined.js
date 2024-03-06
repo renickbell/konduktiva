@@ -769,7 +769,7 @@ class MusicalEnvironment {
         this.superDirtPath = this.findSuperDirtSamples();
         this.samples = undefined;
         this.sampleKits = {};
-        this.samplePatterns = {};
+        this.samplePatterns = {'default': new QuantizedMap(4, [0], [{ name: '808bd', index: 4}])},
         this.samplePatternCount = 0;
         this.samplePatternStore = {};
         this.currentDensityGraphs = [];
@@ -795,6 +795,9 @@ class MusicalEnvironment {
             noteDurationMap: 'noteDurationMaps',
             modeMap: 'modeMaps',
             rootMap: 'rootMaps',
+            chordMap: 'chordMaps',
+            legatoMap: 'legatoMaps',
+            midiOutput: 'midiOutputs',
         }
     }
     /**
@@ -1357,8 +1360,29 @@ class MusicalEnvironment {
         }
         this.playN(this.findConnectedPlayers(player))
     }
+    verifyMapConnectionsToPlayerVariablesObject (playerToVerifyWith){
+        let player = this.players[playerToVerifyWith]
+        Object.keys(this.mapConnectionsToPlayerVariables).forEach(x => {
+            if (player[x] === undefined){
+                checkIfUseVerboseLogging(player, 'Player variable ' + x + ' is undefined')
+            }
+            else if (e[this.mapConnectionsToPlayerVariables[x]] === undefined){
+                checkIfUseVerboseLogging(player, 'Variable ' + e[this.mapConnectionsToPlayerVariables[x]] + ' not found in current MusicalEnvironment')
+            }
+        })
+    }
     checkUndefinedPlayerProperties (playerName){
         let player = this.players[playerName]
+        return Object.keys(this.mapConnectionsToPlayerVariables).map(x => {
+            if (player[x] === undefined){
+                checkIfUseVerboseLogging(player, 'Player variable ' + x + ' is undefined')
+                return x
+            }
+        }).filter(item => item !== undefined)
+    }
+    replaceUndefinedPlayerPropertiesWith (playerName, replaceWith = 'default'){
+        let player = this.players[playerName]
+        this.checkUndefinedPlayerProperties(playerName).forEach(x => {player[x] = replaceWith})
     }
 }
 // addMapToMusicalEnvironment(e, 'rhythmMaps', 'chalk', 10, [0, 1, 2, 3], [4, 5, 6, 7])
@@ -6137,6 +6161,7 @@ function addDuplicatePlayersWithConfigObj (e, nOfPlayers, configObj, baseName){
         configObj.channelValues = configObj.channelValues.map(x => { return (x + 1) % 17})
         recordConfigurationDataIntoMusicalEnvironment(configObj, currentPlayerName, e)
         assignPlayerForMusicSynthesizerMidiOutput(e, currentPlayerName, currentPlayerName)
+        e.replaceUndefinedPlayerPropertiesWith(currentPlayerName)
         return currentPlayerName
     })
 }
@@ -6149,6 +6174,7 @@ function addDuplicatePlayersWithConfigObjArray (e, playerNames, configObjs){
     return playerNames.map((x, i) => {
         recordConfigurationDataIntoMusicalEnvironment(configObjs[i], x, e)
         assignPlayerForMusicSynthesizerMidiOutput(e, x, x)
+        e.replaceUndefinedPlayerPropertiesWith(currentPlayerName)
         return x
     })
 }

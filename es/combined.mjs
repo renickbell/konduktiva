@@ -708,7 +708,7 @@ export function mask (player, maskMap, beat, probability) {
 }
 
 /** Class representing MusicalEnvironments */
-class MusicalEnvironment {
+export class MusicalEnvironment {
     /**
       * Creates MusicalEnvironments. Remember to call setupScheduler(e)
       * @example let e = new MusicalEnvironment()
@@ -728,7 +728,7 @@ class MusicalEnvironment {
         this.superDirtPath = this.findSuperDirtSamples();
         this.samples = undefined;
         this.sampleKits = {};
-        this.samplePatterns = {};
+        this.samplePatterns = {'default': new QuantizedMap(4, [0], [{ name: '808bd', index: 4}])},
         this.samplePatternCount = 0;
         this.samplePatternStore = {};
         this.currentDensityGraphs = [];
@@ -740,6 +740,24 @@ class MusicalEnvironment {
         this.lookahead = 0.1;
         this.scheduledPlayers = [];
         this.root = "A";
+        this.mapConnectionsToPlayerVariables = {
+            name: 'players',
+            IOIFunc: 'IOIs',
+            densityGraph: 'densityGraphs',
+            action: 'actions',
+            velocityMap: 'velocityMaps',
+            samplePattern: 'samplePatterns',
+            noteMap: 'noteMaps',
+            octaveMap: 'octaveMaps',
+            channelMap: 'channelMaps',
+            polyphanyMap: 'maxPolyphonyMaps',
+            noteDurationMap: 'noteDurationMaps',
+            modeMap: 'modeMaps',
+            rootMap: 'rootMaps',
+            chordMap: 'chordMaps',
+            legatoMap: 'legatoMaps',
+            midiOutput: 'midiOutputs',
+        }
     }
     /**
       * Returns the current beat of the MusicalEnvironment.
@@ -1300,6 +1318,30 @@ class MusicalEnvironment {
             return false
         }
         this.playN(this.findConnectedPlayers(player))
+    }
+    verifyMapConnectionsToPlayerVariablesObject (playerToVerifyWith){
+        let player = this.players[playerToVerifyWith]
+        Object.keys(this.mapConnectionsToPlayerVariables).forEach(x => {
+            if (player[x] === undefined){
+                checkIfUseVerboseLogging(player, 'Player variable ' + x + ' is undefined')
+            }
+            else if (e[this.mapConnectionsToPlayerVariables[x]] === undefined){
+                checkIfUseVerboseLogging(player, 'Variable ' + e[this.mapConnectionsToPlayerVariables[x]] + ' not found in current MusicalEnvironment')
+            }
+        })
+    }
+    checkUndefinedPlayerProperties (playerName){
+        let player = this.players[playerName]
+        return Object.keys(this.mapConnectionsToPlayerVariables).map(x => {
+            if (player[x] === undefined){
+                checkIfUseVerboseLogging(player, 'Player variable ' + x + ' is undefined')
+                return x
+            }
+        }).filter(item => item !== undefined)
+    }
+    replaceUndefinedPlayerPropertiesWith (playerName, replaceWith = 'default'){
+        let player = this.players[playerName]
+        this.checkUndefinedPlayerProperties(playerName).forEach(x => {player[x] = replaceWith})
     }
 }
 // addMapToMusicalEnvironment(e, 'rhythmMaps', 'chalk', 10, [0, 1, 2, 3], [4, 5, 6, 7])
@@ -5628,6 +5670,7 @@ export function addDuplicatePlayersWithConfigObj (e, nOfPlayers, configObj, base
         configObj.channelValues = configObj.channelValues.map(x => { return (x + 1) % 17})
         recordConfigurationDataIntoMusicalEnvironment(configObj, currentPlayerName, e)
         assignPlayerForMusicSynthesizerMidiOutput(e, currentPlayerName, currentPlayerName)
+        e.replaceUndefinedPlayerPropertiesWith(currentPlayerName)
         return currentPlayerName
     })
 }
@@ -5640,6 +5683,7 @@ export function addDuplicatePlayersWithConfigObjArray (e, playerNames, configObj
     return playerNames.map((x, i) => {
         recordConfigurationDataIntoMusicalEnvironment(configObjs[i], x, e)
         assignPlayerForMusicSynthesizerMidiOutput(e, x, x)
+        e.replaceUndefinedPlayerPropertiesWith(currentPlayerName)
         return x
     })
 }
