@@ -3495,7 +3495,9 @@ function createControlChangePlayers (noteValueData, name, e, midiOutput, mapDefa
     if (noteValueData.controlChangePlayer !== undefined && noteValueData.controlChangePlayerKeys !== undefined && noteValueData.controlChangePlayerKeyspan !== undefined){
 //         e.controlChangePlayers[name] = new QuantizedMap(noteValueData.controlChangePlayerKeyspan, noteValueData.controlChangePlayerKeys, noteValueData.controlChangePlayer)
          createMidiCCPlayer (e, name + 'ControlChange', noteValueData.controlChangePlayerKeyspan, noteValueData.controlChangePlayerKeys, noteValueData.controlChangePlayer, midiOutput, mapDefaultName)
-        e.players[name].controlChangePlayer = name + 'ControlChange'
+        if (e.players[name] !== undefined){
+            e.players[name].controlChangePlayer = name + 'ControlChange'
+        }
     }
 }
 
@@ -3503,7 +3505,9 @@ function createControlChangePlayers (noteValueData, name, e, midiOutput, mapDefa
 function createMidiProgramPlayers (noteValueData, name, e, midiOutput, mapDefaultName){
     if (noteValueData.midiProgramPlayer !== undefined && noteValueData.midiProgramPlayerKeys !== undefined && noteValueData.midiProgramPlayerKeyspan !== undefined){
          createMidiProgramPlayer(e, name + 'MidiProgram', noteValueData.midiProgramPlayerKeyspan, noteValueData.midiProgramPlayerKeys, noteValueData.midiProgramPlayer, midiOutput, mapDefaultName)
-        e.players[name].midiProgramPlayer = name + 'MidiProgram'
+        if (e.players[name] !== undefined){
+            e.players[name].midiProgramPlayer = name + 'MidiProgram'
+        }
     }
 }
 
@@ -3606,7 +3610,20 @@ function recordConfigurationDataIntoMusicalEnvironment (noteValueData, name, e){
     return name
 }
 
-function recordOtherConfigurationData (configObjOther, name, e){
+// function recordOtherConfigurationData (configObjOther, name, e){
+//     createChannelMaps(configObjOther, name, e)
+//     createMaskMap(configObjOther, name, e)
+//     e.rhythmPatterns[name] = new RhythmPattern (name, configObjOther.total, configObjOther.keys, configObjOther.bools)
+// }
+
+function recordControlChangeConfigurationData (controlChangeConfigurationObject, name, e){
+    createChannelMaps(controlChangeConfigurationObject, name, e)
+    createControlChangePlayers(controlChangeConfigurationObject, name, e, controlChangeConfigurationObject.midiOutput, name)
+}
+
+function recordMidiProgramConfigurationData (midiProgramConfigurationObject, name, e){
+    createChannelMaps(midiProgramConfigurationObject, name, e)
+    createMidiProgramPlayers(midiProgramConfigurationObject, name, e, midiProgramConfigurationObject.midiOutput, name)
 }
 
 function populateModeFilters (e){
@@ -3869,6 +3886,8 @@ addToModuleExports({
   typesOfItemsInArray,
     addChordProgression,
     populateModeFilters,
+    recordControlChangeConfigurationData, 
+    recordMidiProgramConfigurationData,
 })
 
 // --------------------------------------------------------------------------
@@ -6315,10 +6334,28 @@ function emptyOtherConfigObj (){
         channelKeyspan: undefined, //number
         channelKeys: undefined, //[number]
         channelValues: undefined, //[number]
+        bools: undefined, //[booleans]
+        rhythmMap: undefined, //[number]
+        midiOutput: undefined, //number
     }
 }
-        
-        
+
+function emptyControlChangeConfigurationObject (){
+    return Object.assign(emptyOtherConfigObj(), {
+        controlChangePlayer: undefined, /*[{channel: number, controller: number, value: number}]*/
+        controlChangePlayerKeys: undefined, //[number]
+        controlChangePlayerKeyspan: undefined, //number
+    })
+}
+
+function emptyMidiProgramConfigurationObject (){
+    return Object.assign(emptyOtherConfigObj(), {
+        midiProgramPlayer: undefined, /*[{channel: number, controller: number, value: number}]*/
+        midiProgramPlayerKeys: undefined, //[number]
+        midiProgramPlayerKeyspan: undefined, //number
+    })
+}
+
 function configObjCreation (total, keys, octave, root, note, noteDuration, velocity){
     return Object.assign(emptyConfigObj(), {
         total: total,
@@ -6381,6 +6418,9 @@ addToModuleExports({
     addDuplicatePlayersWithConfigObj,
     addDuplicatePlayersWithConfigObjArray,
     defaultConfigurationObject,
+    emptyOtherConfigObj,
+    emptyControlChangeConfigurationObject,
+    emptyMidiProgramConfigurationObject,
 })
 
 //let K = require('./combined.js')
@@ -6388,4 +6428,3 @@ addToModuleExports({
 
 //REPLACE the whole midi.js for await import version for verbose to work. Also replace musicSynthesizerMidiOutput with exampleMidiPlayer.
 //Remove related addMapToMusicalEnvironment function and replace musicalEnvironment class.
-

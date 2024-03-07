@@ -3242,16 +3242,20 @@ export function editMidiOutputPlayer (defaultName, e, channel = defaultName, vel
 export function createControlChangePlayers (noteValueData, name, e, midiOutput, mapDefaultName){
     if (noteValueData.controlChangePlayer !== undefined && noteValueData.controlChangePlayerKeys !== undefined && noteValueData.controlChangePlayerKeyspan !== undefined){
 //         e.controlChangePlayers[name] = new QuantizedMap(noteValueData.controlChangePlayerKeyspan, noteValueData.controlChangePlayerKeys, noteValueData.controlChangePlayer)
-         createMidiCCPlayer (e, name + 'ControlChange', noteValueData.controlChangePlayerKeyspan, noteValueData.controlChangePlayerKeys, noteValueData.controlChangePlayer, noteValueData.channels, midiOutput, mapDefaultName)
-        e.players[name].controlChangePlayer = name + 'ControlChange'
+         createMidiCCPlayer (e, name + 'ControlChange', noteValueData.controlChangePlayerKeyspan, noteValueData.controlChangePlayerKeys, noteValueData.controlChangePlayer, midiOutput, mapDefaultName)
+        if (e.players[name] !== undefined){
+            e.players[name].controlChangePlayer = name + 'ControlChange'
+        }
     }
 }
 
 //HERE name creation is wrong cannot be the same as the orignal player name it should be name + something
 export function createMidiProgramPlayers (noteValueData, name, e, midiOutput, mapDefaultName){
     if (noteValueData.midiProgramPlayer !== undefined && noteValueData.midiProgramPlayerKeys !== undefined && noteValueData.midiProgramPlayerKeyspan !== undefined){
-         createMidiProgramPlayer(e, name + 'MidiProgram', noteValueData.midiProgramPlayerKeyspan, noteValueData.midiProgramPlayerKeys, noteValueData.midiProgramPlayer, noteValueData.channels, midiOutput, mapDefaultName)
-        e.players[name].midiProgramPlayer = name + 'MidiProgram'
+         createMidiProgramPlayer(e, name + 'MidiProgram', noteValueData.midiProgramPlayerKeyspan, noteValueData.midiProgramPlayerKeys, noteValueData.midiProgramPlayer, midiOutput, mapDefaultName)
+        if (e.players[name] !== undefined){
+            e.players[name].midiProgramPlayer = name + 'MidiProgram'
+        }
     }
 }
 
@@ -3358,6 +3362,16 @@ export function recordConfigurationDataIntoMusicalEnvironment (noteValueData, na
     e.rhythmPatterns[name] = new RhythmPattern (name, noteValueData.total, noteValueData.noteDurationKeys, noteValueData.bools)
     createChannelMaps(noteValueData, name, e)
     return name
+}
+
+export function recordControlChangeConfigurationData (controlChangeConfigurationObject, name, e){
+    createChannelMaps(controlChangeConfigurationObject, name, e)
+    createControlChangePlayers(controlChangeConfigurationObject, name, e, controlChangeConfigurationObject.midiOutput, name)
+}
+
+export function recordMidiProgramConfigurationData (midiProgramConfigurationObject, name, e){
+    createChannelMaps(midiProgramConfigurationObject, name, e)
+    createMidiProgramPlayers(midiProgramConfigurationObject, name, e, midiProgramConfigurationObject.midiOutput, name)
 }
 
 export function populateModeFilters (e){
@@ -4515,7 +4529,7 @@ export function createPlaybackPlayer (e, midiOutput, recordedMessagesName){
     player.midiOutput = midiOutput
 }
 
-export function createExtensionPlayerBasics (e, name, keyspan, keys, channels, midiOutput, mapDefaultName){
+export function createExtensionPlayerBasics (e, name, keyspan, keys, midiOutput, mapDefaultName){
     let player = e.players[name]
     e.rhythmMaps[name] = new QuantizedMap(1, [1], [new QuantizedMap(keyspan, keys, keys.map(x => {return 1}))])
     e.rhythmPatterns[name] = new RhythmPattern (name, keyspan, keys.map((x, i) => {
@@ -4527,20 +4541,20 @@ export function createExtensionPlayerBasics (e, name, keyspan, keys, channels, m
     player.channelMap = mapDefaultName
 }
 
-export function createMidiCCPlayer (e, name, keyspan, keys, midiCCs, channels, midiOutput, mapDefaultName){
+export function createMidiCCPlayer (e, name, keyspan, keys, midiCCs, midiOutput, mapDefaultName){
     setupMidiCCPlayer(e, name)
     let player = e.players[name]
-    createExtensionPlayerBasics (e, name, keyspan, keys, channels, midiOutput, mapDefaultName)
+    createExtensionPlayerBasics (e, name, keyspan, keys, midiOutput, mapDefaultName)
     e.controlChangeMaps[name] = new QuantizedMap(keyspan, keys, midiCCs)
     e.rhythmMaps[name] = new QuantizedMap(1, [0], [new QuantizedMap(keyspan, keys, keys.map(x => {return 1}))])
     player.controlChangeMap = name
     player.rhythmMap = name
 }
 
-export function createMidiProgramPlayer (e, name, keyspan, keys, midiPrograms, channels, midiOutput, mapDefaultName){
+export function createMidiProgramPlayer (e, name, keyspan, keys, midiPrograms, midiOutput, mapDefaultName){
     setupMidiProgramPlayer(e, name)
     let player = e.players[name]
-    createExtensionPlayerBasics (e, name, keyspan, keys, channels, midiOutput, mapDefaultName)
+    createExtensionPlayerBasics (e, name, keyspan, keys, midiOutput, mapDefaultName)
     e.midiProgramMaps[name] = new QuantizedMap(keyspan, keys, midiPrograms)
     e.rhythmMaps[name] = new QuantizedMap(1, [0], [new QuantizedMap(keyspan, keys, keys.map(x => {return 1}))])
     player.midiProgramMap = name
@@ -5813,6 +5827,27 @@ function emptyConfigObj (){
         chordMap: undefined, //[string]
         legatoMap: undefined, //[string]
     }
+}
+
+export function emptyOtherConfigObj (){
+    return {
+        keyspan: undefined, //number
+        keys: undefined, //[number]
+        channelKeyspan: undefined, //number
+        channelKeys: undefined, //[number]
+        channelValues: undefined, //[number]
+        bools: undefined, //[booleans]
+        rhythmMap: undefined, //[number]
+        midiOutput: undefined, //number
+    }
+}
+
+export function emptyControlChangeConfigurationObject (){
+    return Object.assign(emptyOtherConfigObj(), {
+        controlChangePlayer: undefined, /*[{channel: number, controller: number, value: number}]*/
+        controlChangePlayerKeys: undefined, //[number]
+        controlChangePlayerKeyspan: undefined, //number
+    })
 }
 
 export function configObjCreation (total, keys, octave, root, note, noteDuration){
