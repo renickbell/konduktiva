@@ -2419,14 +2419,39 @@ export async function generateLsystemByAssigningNumberToLetter (mode, octaves,le
 // --------------------------------------------------------------------------
 //chords.mjs:
 
-export function addNoteMapFromChordMap(e, rootMapName, chordMapName, noteMapName){
+export function addNoteMapFromChordMap(e, rootMapName, chordMapName, noteMapName) {
     let keyspan = e.rootMaps[rootMapName].keyspan;
     let keys = e.rootMaps[rootMapName].keys;
     let rootArray = e.rootMaps[rootMapName].values;
     let chords = [];
-    rootArray.forEach(root => chords.push(Chord.get(root + e.chordMaps[chordMapName].values[rootArray.indexOf(root)])));
+    let chordMapIndex = 0;
+    rootArray.forEach(root => {
+        chords.push(Chord.get(root + e.chordMaps[chordMapName].values[chordMapIndex]));
+        chordMapIndex += 1;
+    });
     let chordsIntervals = chords.map(c => c.intervals.map(x => Interval.semitones(x)));
     e.noteMaps[noteMapName] = new QuantizedMap(keyspan, keys, chordsIntervals);
+}
+
+export function addNoteMapFromChordMapKeyVersion(e, rootMapName, chordMapName, noteMapName, key) {
+    let keyNote = key.slice(0, 2).replace(/\s/g, '');
+    let newRootMap = new QuantizedMap(1, [0], [keyNote]);
+    let keyspan = e.rootMaps[rootMapName].keyspan;
+    let keys = e.rootMaps[rootMapName].keys;
+    let rootArray = e.rootMaps[rootMapName].values;
+    let newNoteArray = [];
+    let chordMapIndex = 0;
+    console.log(rootArray)
+    rootArray.forEach(root => {
+        console.log(chordMapIndex)
+        console.log(e.chordMaps[chordMapName].values[chordMapIndex])
+        newNoteArray.push(Chord.get(root + e.chordMaps[chordMapName].values[chordMapIndex]).notes.map(n => noteToScaleDegree(n.includes("#") ? Note.enharmonic(n) : n, Scale.get(keyNote + " chromatic").notes.map(chromaticScaleNote => chromaticScaleNote.includes("#") ? Note.enharmonic(chromaticScaleNote) : chromaticScaleNote)) - 1).sort(function(a, b) {
+            return a - b;
+        }));
+        chordMapIndex += 1;
+    });
+    e.noteMaps[noteMapName + "KeyVersion"] = new QuantizedMap(keyspan, keys, newNoteArray);
+    e.rootMaps[rootMapName + "KeyVersion"] = newRootMap;
 }
 
 export function getChordComponents (values){
@@ -2528,16 +2553,16 @@ export function createNoteSpans (noteValueData, e){
 //Creating notespan values from noteValueData:
 export function createNoteSpanValues (noteValueData, name, e){
     if (noteValueData.noteDurations !== undefined && noteValueData.noteDurationKeyspan !== undefined){
-        console.log('1aaaa')
+//         console.log('1aaaa')
     e.noteDurationMaps[name] = new QuantizedMap(noteValueData.noteDurationKeyspan, noteValueData.noteDurationKeys, noteValueData.noteDurations)
     }
     else if (noteValueData.noteDurations !== undefined && noteValueData.noteDurationKeyspan === undefined){
-        console.log('2')
-        console.log('noteDurations defined')
+//         console.log('2')
+//         console.log('noteDurations defined')
     e.noteDurationMaps[name] = new QuantizedMap(noteValueData.noteDurationKeys.length, noteValueData.noteDurationKeys, noteValueData.noteDurations)
     }
     else{
-        console.log('3')
+//         console.log('3')
     e.noteDurationMaps[name] = new QuantizedMap(noteValueData.noteDurationKeys.length, A.buildArray(noteValueData.noteDurationKeys.length, x => {return x}), noteValueData.noteDurationKeys)
     }
 }
@@ -2545,7 +2570,6 @@ export function createNoteSpanValues (noteValueData, name, e){
 //Create quantizedMaps that have to do with notes and other things related to note:
 export function createNoteRelatedMaps (noteValueData, name, e){
     createNoteSpanValues(noteValueData, name, e)
-    console.log(name, e)
     if (noteValueData.noteValuesKeys === undefined){
         noteValueData.noteValuesKeys = A.buildArray(noteValueData.noteValues.length, x => {return x})
     }
@@ -2854,11 +2878,19 @@ export function generateScarboroughFairValues (){
 //rhythm.mjs:
 
 //Create rhythm map related things:
-export function createRhythmMap (noteValueData, name, e){
-    if (typeof noteValueData.rhythmMap !== 'string'){
-        //let generatedRhythmPattern = new QuantizedMap(1, [1], [new QuantizedMap(noteValueData.total, quantizedKeys, noteValueData.rhythmMap)])
-        let generatedRhythmPattern = new QuantizedMap(1, [1], [new QuantizedMap(noteValueData.total, noteValueData.noteDuration, noteValueData.rhythmMap)])
-        e.rhythmMaps[name] = generatedRhythmPattern
+export function configureRhythmMapVariables (noteValueData, name, e){
+    if (A.isArrayAscending(noteValueData.rhythmMap) === true){
+        console.log("\x1b[31m" + 'Possible issue: rhythmMap should be the time of each note. Not in absolute time. Right now rhythmMap is ascending.' + "\x1b[0m")
+    }
+    if (noteValueData.rhythmMap !== undefined){
+        let qData = K.deltaToAbsolute(noteValueData.rhythmMap)
+//         e.addMap('rhythmMap', name, qData[0], qData[1], noteValueData.rhythmMap)
+        return {keyspan: qData[0], keys: qData[1], values: noteValueData.rhythmMap}
+    }
+    else if (noteValueData.total !== undefined && noteValueData.noteDuration !== undefined){
+//         console.log('second')
+//         e.addMap('rhythmMap', name, noteValueData.total, noteValueData.noteDuration, [...absoluteToDelta(noteValueData.noteDuration), ...noteValueData.total - noteValueData.noteDuration[noteValueData.noteDuration.length]])
+        return {keyspan: noteValueData.total, keys: noteValueData.noteDuration, values: [...absoluteToDelta(noteValueData.noteDuration), ...noteValueData.total - noteValueData.noteDuration[noteValueData.noteDuration.length]]}
     }
 }
 
@@ -3272,7 +3304,7 @@ export function createModeFilters (noteValueData, name, e){
         return false
     }
     let keySpan = noteValueData.modeFilterKeyspan
-    console.log('keySpan', keySpan)
+//     console.log('keySpan', keySpan)
     if (keySpan === undefined){
         keySpan = modeArray[modeArray.length - 1] + 2
     }
@@ -3359,7 +3391,8 @@ export function recordConfigurationDataIntoMusicalEnvironment (noteValueData, na
     createRootMap(noteValueData, name, e)
 //     createRhythmMap(noteValueData, name)
 //     createMaskMap(noteValueData, name)
-    e.rhythmPatterns[name] = new RhythmPattern (name, noteValueData.total, noteValueData.noteDurationKeys, noteValueData.bools)
+    let rhythmMapData = configureRhythmMapVariables(noteValueData)
+    e.rhythmPatterns[name] = new RhythmPattern (name, rhythmMapData.keyspan, rhythmMapData.keys, rhythmMapData.values)
     createChannelMaps(noteValueData, name, e)
     return name
 }
@@ -3566,17 +3599,18 @@ export function checkAllItemsType (inputArray, type){
     }
 }
 
-export function addChordProgression (e, mapName, keyspan, keys, values){
-    let roots = []
-    let chords = []
-    values.forEach(x => {
-        let both = Chord.tokenize(x)
-        if (both[1].length == 0) {both[1] = 'M'}
-        roots.push(both[0])
-        chords.push(both[1])
-    })
-    e.rootMaps[mapName] = new QuantizedMap(keyspan, keys, roots)
-    e.chordMaps[mapName] = new QuantizedMap(keyspan, keys, chords)
+export function addChordProgression(e, mapName, keyspan, keys, values) {
+    //let chordSemitones = values.map(c => c.intervals.map(x => Interval.semitones(x)));
+    let chordRoots = values.map(c2 => c2.tonic);
+    let chordQualities = values.map(c3 => c3.aliases[0]);
+    e.rootMaps[mapName] = new QuantizedMap(keyspan, keys, chordRoots);
+    //e.noteMaps[mapName] = new QuantizedMap(keyspan, keys, chordSemitones);
+    e.chordMaps[mapName] = new QuantizedMap(keyspan, keys, chordQualities);
+}
+
+export function addChordProgressionFromRomanNumeral(musicalEnvironment, progressionName, progressionKeyspan, progressionKeys, progression, key) {
+    let chordObjs = Progression.fromRomanNumerals(key, progression).map(chord => Chord.get(chord));
+    addChordProgression(musicalEnvironment, progressionName, progressionKeyspan, progressionKeys, chordObjs)
 }
 
 export function isLowerCase(string) {
@@ -3597,10 +3631,6 @@ export function romanToUpperCase (roman) {
 export function romanToChordSymbols (key,progression) {
     let revisedProgression = progression.map(c => romanToUpperCase(c))
     return Progression.fromRomanNumerals(key, revisedProgression).map(chord => Chord.get(chord).symbol);
-}
-
-export function addChordProgressionFromRomanNumeral(e, mapName, keyspan, keys, progression, k) {
-    return addChordProgression (e, mapName, keyspan, keys, romanToChordSymbols(k, progression))
 }
 
 //--------------------------------------------------------------------------
@@ -3705,22 +3735,23 @@ export function checkIfUseVerboseLogging (player){
     return false
 }
 
-export function sendMidiData(info, player, note, channel, e){
-   // add2Log(note)
+export function sendMidiData(info, player, note, channel) {
+    // add2Log(note)
     //add2Log('--------------------------------------------------------------------------')
-   checkIfUseVerboseLogging(player, 'note', note, 'velocity: ', info.velocity, 'channel', channel - 1, 'midiOutput', player.midiOutput - 1)
+    console.log(info.noteDuration)
+    checkIfUseVerboseLogging(player, 'note', note, 'velocity: ', info.velocity, 'channel', channel - 1, 'midiOutput', player.midiOutput - 1)
     e.midiOutputs[player.midiOutput - 1].send('noteon', {
-      note: note,
-      velocity: info.velocity,
-      channel: channel - 1,
+        note: note,
+        velocity: info.velocity,
+        channel: channel - 1,
     });
     setTimeout(() => {
         e.midiOutputs[player.midiOutput - 1].send('noteoff', {
-          note: note,
-          velocity: info.velocity,
-          channel: channel - 1,
+            note: note,
+            velocity: info.velocity,
+            channel: channel - 1,
         });
-   }, 1000 * beatsToTime(e.currentTempo,1) * e.legatoMaps[player.legatoMap].wrapLookup(e.currentBeat()))
+    }, 1000 * beatsToTime(e.currentTempo, info.noteDuration) * e.legatoMaps[player.legatoMap].wrapLookup(e.currentBeat()))
 }
 
 //Convert velocity values from 0-1 to midi 0-127:
@@ -4205,7 +4236,7 @@ export function sendMidiProgramMessages (playerName, b, e){
 export function getNoteInfoToSend(player, b, midiOutput) {
     checkIfUseVerboseLogging(player, player.name, ' using this noteMap: ', player.noteMap)
     return {
-        noteDuration: e.rhythmMaps[player.rhythmMap].values[0].wrapLookup(b),
+        noteDuration: e.noteDurationMaps[player.noteDurationMap].wrapLookup(b),
         velocity: convertVelocityToMidiValues(e.velocityMaps[player.velocityMap].wrapLookup(b)),
         //         noteValues:  e.noteMaps[player.noteMap].wrapLookup(e.noteDurationMaps[player.noteDurationMap].wrapLookup(b)),
         noteValues: e.noteMaps[player.noteMap].wrapLookup(b),
@@ -5561,7 +5592,7 @@ export let defaultConfigurationObject = {
   octave: [3, 3, 3, 3],
   noteValues: [[5], [6], [7], [8]],
   total: 4,
-  rhythmMap: [0, 4, 8, 12],
+  rhythmMap: [1,1,1,1],
   rootMap: ['C', 'C', 'C', 'C'],
     noteValuesKeyspan: 1,
     legatoMap: [1, 1, 1, 1]
@@ -5675,7 +5706,7 @@ export function setUpDefaultMusicalEnvironmentOnePlayer (){
     return e
 }
 
-export function addDuplicatePlayersWithConfigObj (e, nOfPlayers, configObj, baseName){
+export function addDuplicatePlayersWithConfigObj (e, nOfPlayers, configObj, baseName, extraConfig){
     configObj.channelValues = configObj.channelValues.map(x => {
         return x - 1
     })
@@ -5683,20 +5714,20 @@ export function addDuplicatePlayersWithConfigObj (e, nOfPlayers, configObj, base
         let currentPlayerName = baseName + (i + 1)
         configObj.channelValues = configObj.channelValues.map(x => { return (x + 1) % 17})
         recordConfigurationDataIntoMusicalEnvironment(configObj, currentPlayerName, e)
-        assignPlayerForMusicSynthesizerMidiOutput(e, currentPlayerName, currentPlayerName)
+        assignPlayerForMusicSynthesizerMidiOutput(e, currentPlayerName, currentPlayerName, extraConfig)
         e.replaceUndefinedPlayerPropertiesWith(currentPlayerName)
         return currentPlayerName
     })
 }
 
-export function addDuplicatePlayersWithConfigObjArray (e, playerNames, configObjs){
+export function addDuplicatePlayersWithConfigObjArray (e, playerNames, configObjs, extraConfigs){
     if (playerNames.length !== configObjs.length){
         throw new Error('playerNames length should be same as configObjs length')
         return false
     }
     return playerNames.map((x, i) => {
         recordConfigurationDataIntoMusicalEnvironment(configObjs[i], x, e)
-        assignPlayerForMusicSynthesizerMidiOutput(e, x, x)
+        assignPlayerForMusicSynthesizerMidiOutput(e, x, x, extraConfigs[i])
         e.replaceUndefinedPlayerPropertiesWith(currentPlayerName)
         return x
     })
@@ -5778,9 +5809,9 @@ function checkStringInputMusicalEnv (param, extraInfo){
 //     return false
 // }
 
-export function setUpMusicalEnvironment (configObj, nOfPlayers, baseName){
+export function setUpMusicalEnvironment (configObj, nOfPlayers, baseName, extraConfig){
     let e = setUpMusicalEnvironmentExamples()
-    addDuplicatePlayersWithConfigObj(e, nOfPlayers, configObj, baseName)
+    addDuplicatePlayersWithConfigObj(e, nOfPlayers, configObj, baseName, extraConfig)
     return e
 }
 
@@ -5826,6 +5857,7 @@ function emptyConfigObj (){
         songMap: undefined, //[string]
         chordMap: undefined, //[string]
         legatoMap: undefined, //[string]
+        rhythmMap: undefined, //[number]
     }
 }
 

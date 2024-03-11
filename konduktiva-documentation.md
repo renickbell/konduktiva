@@ -117,72 +117,90 @@ You populate the MusicalEnvironment with Players, IOI functions, and action func
 The titles of each variable in this documentation are aimed at giving as much information as possible. For example, the first title "bools: boolean[]". "bools" is the variable name and "boolean[]" tells you that the variable bools is supposed to be an array full of booleans.
 
 #### actions: function{}
-Actions functions that can be used are stored here.
+Actions functions that can be used are stored here. [Learn more here](https://konduktiva.org/doku.php?id=action-functions)
+
+Connected to player variable: action
 #### beatOfChangeToCurrentTempo: number
-#### chordProgressions: QuantizedMap{}
-Chord progressions that players can use. The keys are the beats/time of when the player should change the playing chord progression.
+#### channelMaps: QuantizedMap{}
+Channel Maps that players can use. These maps control which channel player should send midi info to at a given time.
 
-#### controlChangeMaps: QuanitzedMap{} (optional)
-Not filling this in deactivates this specific feature.
+Connected to player variable: channelMap
+#### chordMaps: QuantizedMap{}
+Chord maps that players can use. These maps control which chords a player should use at a given time. The values are letter musical notation. (eg. M or m7)
 
-Control Change maps players can use. The keys are the beats/time of when to send the actual CC messages in the values.
-#### currentBeatsPerMeasure: number
-Shows the current beats per measure. Default is 4.
+Connected to player variable: chordMap
+#### controlChangeMaps: QuantizedMap{}
+Control change maps that players can use. These map control which control change midi messages a player should send at a given time. The values are the midi controlChange information in form of objects with the variables controller and, value.
+
+Connected to control change player variable: controlChangeMap
 #### currentDensityGraphs: string[]
 An array of densityGraph names. The acutal densityGraphs are stored in the [densityGraphs variable](#densityGraphs).
 #### currentTempo: 
 Returns the current tempo of the MusicalEnvironment. To change the tempo use the [changeTempo method](#changeTempo).
+#### currentBeatsPerMeasure: number
+Shows the current beats per measure. Default is 4.
 #### densityGraphs: object{}
 An object filled with densityGraphs. The actual graphs are in form of QuantizedMaps. So, it is a QuantizedMap in an object in another object.
 #### IOIs: function{}
 IOI function are stored here.
+#### legatoMaps: QuantizedMap{}
+Controls how long each note plays for. Similar to noteDurationMaps. Works with noteDuration. This is the equation used for calculating a duration of a note. noteDuration * legatoMap.
 #### lookahead: number
 Returns the lookahead time.
 #### maskMaps: QuantizedMap{}
-maskMaps are basically the booleans. The keys are the time and the values are trues or falses. If it is a true for a specific time, the action function will be called. If it is a false, action function will not be called.
+maskMaps are basically the booleans. The keys are the time and the values are trues or falses. If it is a true for a specific time, the action function will be called. If it is a false, action function will not be called. To supress events.
 #### maxPolyphonyMaps: QuantizedMap{} (optional)
 Not filling this in will deactivate this specific feature.
 
 Sets the amount of midi notes a player is allowed to play at a given beat. The keys are the beats and the values are the amount of midi notes the player is allowed to play.
-#### modeFilters: QuantizedMap{}
-The mode players should filter. 
-#### modeMaps: QuantizedMap{}
-The keys and values of modeFilters should be at a given beat. The modeMaps values are strings which are names of modes. The modes currently available as of the time of writing are, ionian, dorian, phrygian, lydian, mixolydian, aeolian, locrian. To get all of the Modes available to you, run this line of code after loading Konduktiva into nodejs. ``` Mode.all().forEach(x => console.log(x.name)) ``` This will list all the modes the tonal library has available.
-#### noteDurationMaps: QuantizedMap{}
-These QuantizeMaps store how long each note should play for at a given beat. They are the note spans. The keys are the beats and the values are the 
-CONFIRMING WITH BELL ON HOLD
 
+#### midiInputs: Object{}
+The midiInputs that Konduktiva/Easymidi can detect.
+#### midiOutputs: Object{}
+the midiOutputs that Konduktiva/Easymidi can detect.
+#### midiProgramMaps: QuantizedMap{}
+Used by the players that send Midi Program messages. Controls which Midi program messages to send at a given time.
+#### modeFilters: QuantizedMap{}
+The mode players should be filtered through. It passes the note to filter through the modeFilter QuantizedMap via wrapLookup method.
+#### modeMaps: QuantizedMap{}
+The modeFilter that the player should use.
+#### noteDurationMaps: QuantizedMap{}
+These QuantizeMaps store how long each note should play for at a given beat. They are the note spans. Works with legatoMaps. This is the equation used for calculating a duration of a note. noteDuration * legatoMap.
 #### noteMaps: QuantizedMap{}
 Stores the noteValues. The keys is the beats and the values are the notes to play.
 #### notesInputMode: string
 Two options ```relativeSemitone``` or ```relativeScaleDegree```. This changes how the action function uses the noteMaps
 #### octaveMaps: QuantizedMap{}
 Stores the octaves the action function should use at a given beat. The keys are the beats and the values are the octaves to use.
-#### outputs: object[]
-An array full of midi outputs that can be used by easymidi. To update this list run this function ```updateMidiOutputList(e)```. Replace ```e``` with your MusicalEnvironment variable name.
 #### players: object[]
 An array full of player objects. Find out more by looking at the [player](#Players-and-the-two-important-functions-they-reference:-IOI-functions-and-action-functions) section.
+#### recordedMessages: QuantizedMap{}
+For use in recording midi inputs.
 #### rhythmMaps: QuantizedMap{}
-CHECK WITH BELL
+Controls when a note is played (keys) and how long each note should play for (values).
 #### rhythmPatterns: QuantizedMap{}
-Needed to call ```rhythmPattern.add(e, playerName) for things to work correctly. Ask bell.
+Needed to call ```rhythmPattern.add(e, playerName) for things to work correctly. To create events.
 #### root: string
-The root letter. By default it is 'A'c
+The root letter. By default it is 'A'.
 #### rootMaps: QuantizedMap{}
 Stores the root English letters. The keys are the beats and the values are the English letters.
 #### sampleKits
+superDirt stuff.
 #### samplePatternCount
+superDirt stuff.
 #### samplePatternStore
-#### samplePatterns
+superDirt stuff.
+#### samplePatterns: QuantizedMap{}
+superDirt instrument QuantizedMap.
 #### samples
 #### scheduledPlayers
+Players that are schedules to play stored in an array.
+#### songMaps: QuantizedMap{}
+Controls which chordMap a player is using
 #### scheduler
-Tasktimer? ASK BELL
-#### song: QuantizedMap{} (optional)
-Not filling this in deactivates this specific feature.
-
-The chord progression a player should play at a given beat. The keys are the beats and the values are the chord progression names in form of strings. The action function will check if the chordProgression map is playing the correct chord progression according to this.c
+Tasktimer
 #### superDirtPath
+Location of the superDirt samples.
 #### timeOfChangeToCurrentTempo
 #### velocityMaps: QuantizedMap{}
 Controls the midi velocity variable from 0-127 at a given beat. The keys are the beats and the values are the velocity.
@@ -280,7 +298,7 @@ console.log(e.getIOIFunc('snare')) //[Function: defaultIOI]
 ---
 
 ### scheduleEvents
-ASK BELL
+schedules events.
 string -> 
 
 Returns the IOI function of a specific player in this MusicalEnvironment. Not meant to be called by user.
@@ -585,6 +603,41 @@ Player name
 ```
 e.togglePlayer('musicSynthesizerSession1')
 ```
+
+### findSuperDirtSamples
+-> String
+
+Checks if superDirt samples exists at the location(file path) they are supposed to be at.
+
+#### Syntax 
+```
+e.findSuperDirtSamples()
+```
+
+#### Parameters
+#### Examples:
+```
+e.findSuperDirtSamples()
+//'/home/steve/.local/share/SuperCollider/downloaded-quarks/Dirt-Samples'
+```
+
+### getSuperDirtSamplesPath
+-> String
+
+Returns the path of where superDirt samples should be on a specific system.
+
+#### Syntax
+```
+e.getSuperDirtSamplesPath()
+```
+
+#### Parameters
+#### Examples
+```
+e.getSuperDirtSamplesPath()
+//'/home/steve/.local/share/SuperCollider/downloaded-quarks/Dirt-Samples'
+```
+
 ### checkingAddMapToMusicalEnvironmentArguments
 
 String -> String ->  Number, [Number] -> [[Number]]|[Number] -> 
@@ -663,6 +716,9 @@ The values of the new QuantizedMap.
 e.createSubarrayMap('rhythmMaps', 'chalk', 10, [0, 1, 2, 3], [4, 5, 6, 7])
 //true
 ```
+
+### createNoteMaps
+
 
 ### createRhythmPatternMap 
 String -> String ->  Number, [Number] -> [Boolean] -> Boolean
