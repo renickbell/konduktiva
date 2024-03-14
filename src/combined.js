@@ -76,6 +76,7 @@ mergedFunctions._ = _
 module.exports = mergedFunctions
 // --------------------------------------------------------------------------
 //Konduktiva-revised-2.js
+
 /**
   * Returns the current year, month, and day (yyMMdd)
   * @example console.log(ymd()) //'230821'
@@ -748,6 +749,12 @@ function mask (player, maskMap, beat, probability) {
     return maskVal
 }
 
+function logRedError (){
+    console.log("\x1b[31m", Object.values(arguments).join(), "\x1b[0m")
+    return true
+}
+//color logging: https://stackoverflow.com/questions/9781218/how-to-change-node-jss-console-font-color/41407246#41407246
+
 /** Class representing MusicalEnvironments */
 class MusicalEnvironment {
     /**
@@ -799,6 +806,8 @@ class MusicalEnvironment {
             legatoMap: 'legatoMaps',
             midiOutput: 'midiOutputs',
         }
+        this.tasksQueue = {}
+        this.websocketTaskPlayer = undefined
     }
     /**
       * Returns the current beat of the MusicalEnvironment.
@@ -1298,7 +1307,29 @@ class MusicalEnvironment {
         return env
     }
     //helped by chatgpt
+    startWebsocketTaskPlayer (){
+        let taskPlayer = this.players[this.websocketTaskPlayer] 
+        if (taskPlayer === undefined){
+            logRedError('websocketTaskPlayer is not defined. Controlling MusicalEnvironment from the browser will not be available.')
+            return false
+        }
+        if (this.tasksQueue[taskPlayer.assignedTask] === undefined){
+//             console.log("\x1b[31m", , "\x1b[0m")
+            logRedError('assignedTask in player is undefined or points to an undefined tasksQueue. Controlling MusicalEnvironment from the browser will not be available.')
+            return false
+        }
+        if (taskPlayer.rhythmMap === undefined || this.rhythmMaps[taskPlayer.rhythmMap] === undefined){
+            logRedError('rhythmMap is undefined. Controlling MusicalEnvironment from the browser will not be available')
+            return false
+        }
+        if (taskPlayer.status === 'stopped'){
+            this.play(this.websocketTaskPlayer)
+        }
+        return true
+    }
     sendClientEnvInfo (clientIndex, server){
+        this.startWebsocketTaskPlayer()
+        wss.connectedMusicalEnvironment = this
         if (server !== undefined || typeof wss.address().port !== 'number'){
             console.log(server + ' is not a websocket server')
             return false
@@ -1607,6 +1638,7 @@ addToModuleExports({
   ymd,
    version,
     checkKonduktivaVersionNumber,
+    logRedError
 })
 
 // --------------------------------------------------------------------------
@@ -3095,7 +3127,7 @@ addToModuleExports({
 //Create rhythm map related things:
 function configureRhythmMapVariables (noteValueData, name, e){
     if (A.isArrayAscending(noteValueData.rhythmMap) === true){
-        console.log("\x1b[31m" + 'Possible issue: rhythmMap should be the time of each note. Not in absolute time. Right now rhythmMap is ascending.' + "\x1b[0m")
+        logRedError('Possible issue: rhythmMap should be the time of each note. Not in absolute time. Right now rhythmMap is ascending.')
     }
     if (noteValueData.rhythmMap !== undefined){
         let qData = K.deltaToAbsolute(noteValueData.rhythmMap)
@@ -3247,7 +3279,7 @@ function removeClient (clientToRemove){
 }
 
 function wipeClientData (clientToRemove){
-    console.log("\x1b[31m", 'Removing Client', clientToRemove.index, 'data')
+    console.log("\x1b[31m", 'Removing Client', clientToRemove.index, 'data', "\x1b[0m")
     console.log('clientToRemove.index', clientToRemove.index)
     clients = A.safeSplice(clients, 1, clientToRemove.index)
 //     for (let i = 0; i < clients.length - clientToRemove.index; i++) {
@@ -3336,7 +3368,7 @@ addToModuleExports({
   removeClient,
   sendMessageToClients,
   visualizeVolume,
-  wipeClientData
+  wipeClientData,
 })
 
 // --------------------------------------------------------------------------
@@ -3495,7 +3527,7 @@ function generalMidiOutputVariableAssigning (defaultName, e, channel = defaultNa
     channelPlayer.legatoMap = legatoMapName
     e.rhythmPatterns[rhythmPatternName].add(e, playerName)
     if (e.midiOutputs[midiOutput - 1] === undefined){
-        console.log("\x1b[31m",'Extra outputs required.')
+        logRedError('Extra outputs required.')
         throw new Error('Extra outputs required')
             //color logging from: https://stackoverflow.com/questions/9781218/how-to-change-node-jss-console-font-color/41407246#41407246
     }
@@ -3507,6 +3539,7 @@ function generalMidiOutputVariableAssigning (defaultName, e, channel = defaultNa
 
 //https://stackoverflow.com/a/43363105/19515980
 
+//color logging: https://stackoverflow.com/questions/9781218/how-to-change-node-jss-console-font-color/41407246#41407246
 //Create Player:
 function createMidiOutputPlayer (defaultName, e, channel = defaultName, velocityMapName = defaultName, noteMapName = defaultName, octaveMapName = defaultName, rhythmMapName = defaultName, polyphonyMapName = defaultName, noteDurationMapName = defaultName, maskMapName = defaultName, rhythmPatternName = defaultName, chordMapName = defaultName, rootMapName = defaultName, modeMapName = defaultName, legatoMapName = defaultName, midiProgramPlayerName = defaultName + 'MidiProgram', controlChangePlayerName = defaultName + 'ControlChange', midiOutput = 1, playerName){
     console.log('Chose to create player')
@@ -3673,6 +3706,12 @@ function populateModeFilters (e){
     })
 }
 //Converting names to actual semitones helped by chatgpt
+
+function setUpBasicTaskPlayer (e){
+    setupTaskPlayer(e, 'taskTrooper', 'straight')
+    e.players.taskTrooper.assignedTask = 'trooperTask'
+    e.tasksQueue.trooperTask = []
+}
 
 function addToMusicalEnvironment (e){
     e.channelMaps = {'default': new QuantizedMap(4, [0], [1])}
@@ -4038,7 +4077,7 @@ function checkIfUseVerboseLogging (player){
 function sendMidiData(info, player, note, channel) {
     // add2Log(note)
     //add2Log('--------------------------------------------------------------------------')
-    console.log(info.noteDuration)
+//     console.log(info.noteDuration)
     checkIfUseVerboseLogging(player, 'note', note, 'velocity: ', info.velocity, 'channel', channel - 1, 'midiOutput', player.midiOutput - 1)
     e.midiOutputs[player.midiOutput - 1].send('noteon', {
         note: note,
@@ -4102,6 +4141,16 @@ function setupMidiProgramPlayer (env, sequenceName, rhythmPatternName = 'default
     env.players[sequenceName].maskMap = 'default'
     //env.players[playerName].samplePattern = playerName;
     env.players[sequenceName].action = 'sendMidiProgramMessages';
+    env.players[sequenceName].rhythmMap = rhythmPatternName
+    return sequenceName
+}
+
+//This function is modified to set action as send Midi CC messages instead of superDirt
+function setupTaskPlayer (env, sequenceName, rhythmPatternName = 'default') {
+    env.players[sequenceName] = new Player(sequenceName);
+    env.players[sequenceName].maskMap = 'default'
+    //env.players[playerName].samplePattern = playerName;
+    env.players[sequenceName].action = 'completePendingTask';
     env.players[sequenceName].rhythmMap = rhythmPatternName
     return sequenceName
 }
@@ -4572,6 +4621,20 @@ function sendMidiProgramMessages (playerName, b, e){
     return true
 }
 
+function completePendingTask (playerName, b, e){
+    let player = e.players[playerName]
+    let currentTaskList = e.tasksQueue[player.assignedTask]
+    if (currentTaskList === undefined){
+        logRedError('Player: ', playerName, 'using did not failed to run completePendingTask action function.', "\x1b[0m", '\nThe action function completePendingTask requires assignedTask variable to be defined within the player. It should be defined with a variable in the tasks object in the MusicalEnvironment in form of a string.')
+    }
+    let currentTask = currentTaskList[0]
+    if (currentTask !== undefined){
+        currentTask.func(currentTask.info, b, e)
+        e.tasksQueue[player.assignedTask].shift()
+    }
+}
+//color logging: https://stackoverflow.com/questions/9781218/how-to-change-node-jss-console-font-color/41407246#41407246
+
 // END OF NEW BELL MIDI FUNCTIONS
 
 function getNoteInfoToSend(player, b, midiOutput) {
@@ -4983,10 +5046,28 @@ addToModuleExports({
     createMidiCCPlayer,
     createMidiProgramPlayer,
     createExtensionPlayerBasics,
+    setupTaskPlayer,
 })
 
 // --------------------------------------------------------------------------
 //example-websocket-midiOutput.js:
+
+function schedulePlayerAction (info, action){
+    if (wss.connectedMusicalEnvironment === undefined){
+        logRedError('Signal from websocketserver to' + action + ' player will be ignored. No MusicalEnvironmentConnected.', "\x1b[0m", '\nConnect MusicalEnvironment by opening the musical-environment-viewer/index.html file in the browser and run the sendClientEnvInfo method of the MusicalEnvironment in nodejs with no arguments')
+        return false
+    }
+    else {
+        info.action = action
+        wss.connectedMusicalEnvironment.tasksQueue[wss.assignedTasksArray].push({func: websocketSignalPlayer, info: info})
+    }
+}
+//color logging: https://stackoverflow.com/questions/9781218/how-to-change-node-jss-console-font-color/41407246#41407246
+
+function websocketSignalPlayer (info){
+    wss.connectedMusicalEnvironment[info.action](info.playerName)
+    return true
+}
 
 let clients = [];
 
@@ -5003,12 +5084,22 @@ let commands = [
         func: function (info){
             newResponseTimes.push(info.date)
         }
+    },{
+        action: 'play',
+        func: function (info){
+            schedulePlayerAction(info, 'play')
+        }
+    },{
+        action: 'stop',
+        func: function (info){
+            schedulePlayerAction(info, 'stop')
+        }
     }
 ];
 
-let wss;
+let wss = false
 function createDefaultWebsocketServer () {
-    if (wss !== undefined){
+    if (wss !== undefined && wss !== false){
         wss.close()
     }
     wss = new WebSocketServer.Server({ port: 8080});
@@ -5036,6 +5127,10 @@ function createDefaultWebsocketServer () {
     return wss
 }
 
+function connectVariableToCurrentWss (){
+    return wss
+}
+
 //Finding port of websocket helped by chatgpt
 function changeWebsocketServerPort (newPort, wss){
     if (wss.address().port === newPort){
@@ -5053,7 +5148,7 @@ function changeWebsocketServerPort (newPort, wss){
 }
 
 addToModuleExports({
-clients, commands, newResponseTimes, createDefaultWebsocketServer, wss, changeWebsocketServerPort
+clients, commands, newResponseTimes, createDefaultWebsocketServer, wss, changeWebsocketServerPort, connectVariableToCurrentWss
 })
 
 // --------------------------------------------------------------------------
@@ -6046,6 +6141,11 @@ function setUpMusicalEnvironmentExamples (){
     e.actions.sendPlaybackMessage = sendPlaybackMessage
     e.actions.sendMidiCCMessages = sendMidiCCMessages
     e.actions.sendMidiProgramMessages = sendMidiProgramMessages
+    e.actions.completePendingTask = completePendingTask
+    if (wss.connectedMusicalEnvironment === undefined){
+        wss.connectedMusicalEnvironment = e
+        wss.assignedTasksArray = 'trooperTask'
+    }
     return e
 }
 
@@ -6315,6 +6415,8 @@ function checkStringInputMusicalEnv (param, extraInfo){
 function setUpMusicalEnvironment (configObj, nOfPlayers, baseName, extraConfig){
     let e = setUpMusicalEnvironmentExamples()
     addDuplicatePlayersWithConfigObj(e, nOfPlayers, configObj, baseName, extraConfig)
+    setUpBasicTaskPlayer(e)
+    e.websocketTaskPlayer = 'taskTrooper'
     return e
 }
 

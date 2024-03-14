@@ -121,6 +121,17 @@ let animateFuncs={
 
 //The shapes in the shapes array are the only SVG.js shapes that the can be manipulated from the server side. So, to enable shape usage from server side, a shape must be pushed into the shape array.
 
+//--------------------------------------------------------------------------
+//Konduktiva commands:
+
+function playPlayer (playerName){
+    ws.send(JSON.stringify({action: 'play', info: {playerName: playerName}}))
+}
+
+function stopPlayer (playerName){
+    ws.send(JSON.stringify({action: 'stop', info: {playerName: playerName}}))
+}
+
 // --------------------------------------------------------------------------
 // Display info funcs:
 
@@ -216,17 +227,30 @@ function checkIfVariableIncludesQuantizedMap(parsedVariable){
     return true
 }
 
+function formatObjectString(inputString) {
+    let result = '';
+    let index = inputString.indexOf('},');
+    while (index !== -1) {
+        result += inputString.slice(0, index + 1) + '}\n\n';
+        inputString = inputString.slice(index + 1);
+        index = inputString.indexOf('},');
+    }
+    return result + inputString;
+}
+//helped by chatgpt
+
 function displayObjectInfo (parsedVarable, name){
     infoAreaTransition()
     console.log(parsedVarable)
     setTimeout(() => {
         console.log('if QMap', checkIfVariableIncludesQuantizedMap(parsedVarable))
-    if (checkIfVariableIncludesQuantizedMap(parsedVarable) === true){
-        document.getElementById('infoArea').innerHTML = '<p><b>Variable Name: </b>' + name + '</p><p><b>Length: </b>' + Object.keys(parsedVarable).length + '</p><p><b>Content: <br></b><div id="graphArea"></div></p>'
-        displayQuantizedMaps(parsedVarable)
-    }
+        if (checkIfVariableIncludesQuantizedMap(parsedVarable) === true){
+            document.getElementById('infoArea').innerHTML = '<p><b>Variable Name: </b>' + name + '</p><p><b>Length: </b>' + Object.keys(parsedVarable).length + '</p><p><b>Content: <br></b><div id="graphArea"></div></p>'
+            displayQuantizedMaps(parsedVarable)
+        }
         else{
-        document.getElementById('infoArea').innerHTML = '<p><b>Variable Name: </b>' + name + '</p><p><b>Length: </b>' + Object.keys(parsedVarable).length + '</p><p><b>Content: <br></b><code>' + JSON.stringify(parsedVarable) + '</code></p>'
+            document.getElementById('infoArea').innerHTML = '<p><b>Variable Name: </b>' + name + '</p><p><b>Length: </b>' + Object.keys(parsedVarable).length + '</p><p><b>Content: <br></b><code>' + JSON.stringify(parsedVarable) + '</code></p>'
+            document.getElementsByTagName('code')[0].innerText = formatObjectString(JSON.stringify(parsedVarable)) 
          }
     }, 100)
 }
