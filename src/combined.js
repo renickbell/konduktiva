@@ -4078,6 +4078,7 @@ function sendMidiData(info, player, note, channel) {
     // add2Log(note)
     //add2Log('--------------------------------------------------------------------------')
 //     console.log(info.noteDuration)
+    checkIfUseVerboseLogging(player, info)
     checkIfUseVerboseLogging(player, 'note', note, 'velocity: ', info.velocity, 'channel', channel - 1, 'midiOutput', player.midiOutput - 1)
     e.midiOutputs[player.midiOutput - 1].send('noteon', {
         note: note,
@@ -6321,6 +6322,13 @@ function addDuplicatePlayersWithConfigObj (e, nOfPlayers, configObj, baseName, e
     })
 }
 
+function createPlayerBasedOnInfo (e, name, configObj, extraConfig){
+    recordConfigurationDataIntoMusicalEnvironment(configObj, name, e)
+    assignPlayerForMusicSynthesizerMidiOutput(e, name, name, extraConfig)
+    return true
+}
+
+
 function addDuplicatePlayersWithConfigObjArray (e, playerNames, configObjs, extraConfigs){
     if (playerNames.length !== configObjs.length){
         throw new Error('playerNames length should be same as configObjs length')
@@ -6561,6 +6569,7 @@ addToModuleExports({
     emptyOtherConfigObj,
     emptyControlChangeConfigurationObject,
     emptyMidiProgramConfigurationObject,
+    createPlayerBasedOnInfo
 })
 
 //let K = require('./combined.js')

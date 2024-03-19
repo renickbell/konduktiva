@@ -71,7 +71,7 @@ let commands=[
     },
     {action:'animationExample', func: function (){shapes.push(draw.circle(100).fill('blue').move(200,200))}},
     {action:'reload', func: function (){document.location.reload()}},
-    {action: 'showMusicalEnvInfo', func: function (info){currentEnv = info;console.log('MusicalEnvironment info received.');generateItemsAccordingToCurrentEnv();displayMusicEnvMainPage()}},
+    {action: 'showMusicalEnvInfo', func: function (info){currentEnv = info;console.log('MusicalEnvironment info received.');currentEnv.players = JSON.parse(currentEnv.players);generateItemsAccordingToCurrentEnv();displayMusicEnvMainPage()}},
 ]
 
 /*
@@ -158,6 +158,7 @@ function displayMusicEnvMainPage (){
     infoAreaTransition()
     setTimeout(() => {
         document.getElementById('infoArea').innerHTML = '<p><b> Type: </b>' + checkMusicalEnvType(currentEnv) + '</p><p><b> noteInputMode: </b>' + currentEnv.notesInputMode + '</p><p><b>currentTempo: </b>' + currentEnv.currentTempo + '</p>';
+        displayPlayerControls()
     }, 100)
 }
 
@@ -270,6 +271,89 @@ function highlightSelectedVariable (name){
         }
     }
 }
+
+function statusIconAction (e){
+    console.log('yotriggered', e.target)
+    let playerName = e.target.parentElement.correspondingPlayer
+    console.log('playerName', playerName)
+    let players = currentEnv.players
+    let playerStatus = players[playerName].status
+    console.log(playerStatus)
+    if (playerStatus === 'stopped'){
+        e.target.innerText = '▮▮'
+        players[playerName].status = 'playing'
+        playPlayer(playerName)
+    }
+    else{
+        e.target.innerText = ' ▶'
+        players[playerName].status = 'stopped'
+        stopPlayer(playerName)
+    }
+    return true
+}
+
+function returnPlayerStateIcon (state){
+    let pausedIcon = document.createElement('div')
+    pausedIcon.className = 'playerControlsIcon'
+    pausedIcon.fontSize = '100%'
+    if (state === 'stopped'){
+        pausedIcon.innerText = ' ▶'
+    }
+    else{
+        pausedIcon.innerText = '▮▮'
+    }
+    pausedIcon.onpointerdown = statusIconAction
+        console.log(pausedIcon)
+    return pausedIcon
+}
+ 
+function returnShowMoreIcon (){
+    let moreIcon = document.createElement('div')
+    moreIcon.className = 'playerControlsIcon'
+    moreIcon.innerText = '▾'
+    return moreIcon
+}
+
+ function displayPlayerControls (){
+     let players = currentEnv.players
+     let allControls = document.createElement('div')
+     allControls.id = 'allPlayerControls'
+         Object.keys(players).map(x => {
+             let currentPlayer = players[x]
+             let playerControl = document.createElement('div')
+             playerControl.correspondingPlayer = currentPlayer.name
+             playerControl.className = 'playerControl'
+             playerControl.innerText = currentPlayer.name
+//              playerControl.style.fontSize = 100 - (2 * currentPlayer.name.length) + '%'
+               playerControl.style.width = (currentPlayer.name.length * 1.2) + 6 + '%'
+             playerControl.appendChild(returnPlayerStateIcon(currentPlayer.status))
+//              playerControl.innerText += '    ▾'
+             playerControl.appendChild(returnShowMoreIcon())
+             allControls.appendChild(playerControl)
+         })
+     document.getElementById('infoArea').appendChild(allControls)
+ }
+ //play pause icons: https://www.w3schools.com/charsets/ref_utf_geometric.asp
+// function displayPlayerControls (players){
+//     let allControls = document.createElement('div')
+//     allControls.id = 'allPlayerControls'
+//         Object.keys(players).map(x => {
+//         let currentPlayer = players[x]
+//         let playerControl = document.createElement('div')
+//             playerControl.className = 'playerControl'
+//             playerControl.innerText = currentPlayer.name
+//             if (currentPlayer.status === 'stopped'){
+//                 playerControl.innerText += '   ▶'
+//             }
+//             else {
+//                 playerControl.innerText += '   ▮ ▮'
+//             }
+//             playerControl.innerText += '    ▾'
+//             allControls.appendChild(playerControl)
+//         })
+//     document.getElementById('infoArea').appendChild(allControls)
+// }
+// 
 
 function displayVariable (name){
     toggleSide()
@@ -387,7 +471,7 @@ function handleResize (){
     else {
         document.getElementById('side').style.display = 'block'
     }
-    if (document.getElementById('graphArea') !== undefined){
+    if (document.getElementById('graphArea') !== undefined && document.getElementById('graphArea') !== null){
         document.getElementsByClassName('plot-container plotly')[0].remove()
         Plotly.newPlot('graphArea', graphInfo.data, graphInfo.layout);
     }

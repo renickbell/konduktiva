@@ -753,7 +753,7 @@ export class MusicalEnvironment {
             action: 'actions',
             velocityMap: 'velocityMaps',
             samplePattern: 'samplePatterns',
-            noteMap: 'noteMaps', 
+            noteMap: 'noteMaps',
             octaveMap: 'octaveMaps',
             channelMap: 'channelMaps',
             polyphanyMap: 'maxPolyphonyMaps',
@@ -1113,7 +1113,7 @@ export class MusicalEnvironment {
             throw new Error('Items in the value array include variables which are not chords.')
             return false
         }
-        this.chordMaps[mapName] = new QuantizedMap(keyspan, keys, values) 
+        this.chordMaps[mapName] = new QuantizedMap(keyspan, keys, values)
     }
     createModeMap (objectName, mapName, keyspan, keys, values){
         if (checkAllItemsType(values, 'string') === false){
@@ -1266,7 +1266,7 @@ export class MusicalEnvironment {
     }
     //helped by chatgpt
     startWebsocketTaskPlayer (){
-        let taskPlayer = this.players[this.websocketTaskPlayer] 
+        let taskPlayer = this.players[this.websocketTaskPlayer]
         if (taskPlayer === undefined){
             logRedError('websocketTaskPlayer is not defined. Controlling MusicalEnvironment from the browser will not be available.')
             return false
@@ -3423,6 +3423,7 @@ export function recordConfigurationDataIntoMusicalEnvironment (noteValueData, na
 //     createRhythmMap(noteValueData, name)
 //     createMaskMap(noteValueData, name)
     let rhythmMapData = configureRhythmMapVariables(noteValueData)
+    console.log(rhythmMapData)
     e.rhythmPatterns[name] = new RhythmPattern (name, rhythmMapData.keyspan, rhythmMapData.keys, rhythmMapData.values)
     createChannelMaps(noteValueData, name, e)
     return name
@@ -3449,6 +3450,12 @@ export function populateModeFilters (e){
     })
 }
 //Converting names to actual semitones helped by chatgpt
+
+export function setUpBasicTaskPlayer (e){
+    setupTaskPlayer(e, 'taskTrooper', 'straight')
+    e.players.taskTrooper.assignedTask = 'trooperTask'
+    e.tasksQueue.trooperTask = []
+}
 
 export function addToMusicalEnvironment (e){
     e.channelMaps = {'default': new QuantizedMap(4, [0], [1])}
@@ -3564,7 +3571,7 @@ export function checkChordProgressionDataType (values){
         throw new Error('invalid values type. expected array. check values')
     }
     return values.every((x, i) => {
-        console.log(findItemType(x.data))
+//         console.log(findItemType(x.data))
         if (findItemType(x.data) !== 'Array'){
             throw new error('invalid data type. expected number. check values[' + i + '].data.')
         }
@@ -3770,7 +3777,6 @@ export function checkIfUseVerboseLogging (player){
 export function sendMidiData(info, player, note, channel) {
     // add2Log(note)
     //add2Log('--------------------------------------------------------------------------')
-    console.log(info.noteDuration)
     checkIfUseVerboseLogging(player, 'note', note, 'velocity: ', info.velocity, 'channel', channel - 1, 'midiOutput', player.midiOutput - 1)
     e.midiOutputs[player.midiOutput - 1].send('noteon', {
         note: note,
@@ -5588,7 +5594,7 @@ export function giveWorkerWork(workerCode){
 //--------------------------------------------------------------------------
 //other functions:
 
-let exampleMusicalEnvironmentsExtraConfig = {
+export let exampleMusicalEnvironmentsExtraConfig = {
     rhythmMapName: 'straight',
     velocityMapName: 'default',
     polyphonyMapName: 'default',
@@ -5601,17 +5607,19 @@ let exampleMusicalEnvironmentsExtraConfig = {
     midiOutput: 1,
 }
 
-let legatoOnlyConfig = {
+export let legatoOnlyConfig = {
     midiOutput: 1,
     legatoMapName: 'default',
     midiProgramPlayerName: false,
     controlChangePlayerName: false,
 }
 
-function setUpMusicalEnvironmentExamples (){
+export function setUpMusicalEnvironmentExamples (){
     let e = new MusicalEnvironment()
     setUpDefaultRhythmMapsToMusicalEnvironment(e)
     setUpDefaultActionToMusicalEnvironment(e)
+    udpPort.open();
+    createDefaultWebsocketServer()
     setUpDefaultMaskMapsForMusicalEnvironment(e)
     setUpDefaultIOIsForMusicalEnvironment(e)
     setUpDefaultCurrentDensityGraphsForMusicalEnvironment(e)
@@ -5627,8 +5635,14 @@ function setUpMusicalEnvironmentExamples (){
     e.actions.sendPlaybackMessage = sendPlaybackMessage
     e.actions.sendMidiCCMessages = sendMidiCCMessages
     e.actions.sendMidiProgramMessages = sendMidiProgramMessages
+    e.actions.completePendingTask = completePendingTask
+    if (wss.connectedMusicalEnvironment === undefined){
+        wss.connectedMusicalEnvironment = e
+        wss.assignedTasksArray = 'trooperTask'
+    }
     return e
 }
+
 
 export function setUpDefaultMusicalEnvironmentFourPlayers (){
     let e = setUpMusicalEnvironmentExamples()
@@ -5894,6 +5908,8 @@ function checkStringInputMusicalEnv (param, extraInfo){
 export function setUpMusicalEnvironment (configObj, nOfPlayers, baseName, extraConfig){
     let e = setUpMusicalEnvironmentExamples()
     addDuplicatePlayersWithConfigObj(e, nOfPlayers, configObj, baseName, extraConfig)
+    setUpBasicTaskPlayer(e)
+    e.websocketTaskPlayer = 'taskTrooper'
     return e
 }
 
