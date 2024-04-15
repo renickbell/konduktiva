@@ -3,6 +3,7 @@
     "array-toolkit": "^3.4.2",
     "easymidi": "^3.1.0",
     "http-server": "^*",
+    "konduktiva": "^2.5.5",
     "lodash": "^4.17.21",
     "midi-file-io": "^3.1.3",
     "midi-json-parser": "^8.1.35",
@@ -18,7 +19,7 @@
     "type-check": "^*"
   },
   "name": "konduktiva",
-  "version": "2.5.2",
+  "version": "2.5.6",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/renickbell/konduktiva.git"

@@ -598,6 +598,20 @@ class QuantizedMap {
             return false
         }
     }
+    musicalWrapLookup (time){
+        if (time % this.keyspan === 0){
+            return this.values[this.values.length - 1]
+        }
+        else {
+            return this.wrapLookup(time)
+        }
+    }
+    musicalWrapLookup (time){
+        if (time % this.keyspan === 0){
+            return this.values[this.values.length - 1]
+        }
+        return this.wrapLookup(time)
+    }
 }
 
 /**
@@ -4410,7 +4424,7 @@ addToModuleExports({
 
 let highTimes = 0
 let normalTimes = 0
-function sendMidiData(info, player, note, channel) {
+function sendMidiData(info, player, note, channel, e, b) {
     // add2Log(note)
     //add2Log('--------------------------------------------------------------------------')
 //     console.log(info.noteDuration)
@@ -4425,7 +4439,8 @@ function sendMidiData(info, player, note, channel) {
 //        addLog(JSON.stringify(info))
     checkIfUseVerboseLogging(player, 'note', note, 'velocity: ', info.velocity, 'channel', channel - 1, 'midiOutput', player.midiOutput - 1)
     checkIfUseVerboseLogging(player, 'duration: ', 1000 * beatsToTime(e.currentTempo, info.noteDuration) * e.legatoMaps[player.legatoMap].wrapLookup(e.currentBeat()))
-    e.midiOutputs[player.midiOutput - 1].send('noteon', {
+console.log('TIME: ', beatsToTime(e.currentTempo, e.rhythmMaps[player.rhythmMap].values[0].wrapLookup(b)) * e.legatoMaps[player.legatoMap].wrapLookup(b) * 1000)
+e.midiOutputs[player.midiOutput - 1].send('noteon', {
         note: note,
         velocity: info.velocity,
         channel: channel - 1,
@@ -4436,7 +4451,7 @@ function sendMidiData(info, player, note, channel) {
             velocity: info.velocity,
             channel: channel - 1,
         });
-    }, 1000 * beatsToTime(e.currentTempo, info.noteDuration) * e.legatoMaps[player.legatoMap].wrapLookup(e.currentBeat()))
+    }, beatsToTime(e.currentTempo, e.rhythmMaps[player.rhythmMap].values[0].wrapLookup(b)) * e.legatoMaps[player.legatoMap].wrapLookup(b) * 1000)
 }
 
 //Convert velocity values from 0-1 to midi 0-127:
@@ -4718,7 +4733,7 @@ function callMusicSynthesizerRhythm (e, b, midiOutput){
     info = calculateFinalNoteValue(info, player)
 //     console.log('FINAL playing finaValues', info.finalValues)
     info.finalValues.forEach((x, i) => {
-        sendMidiData(info, player, x, findChannel(player, b, e), e)
+        sendMidiData(info, player, x, findChannel(player, b, e), e, b)
     })
     return true
 }
@@ -4894,7 +4909,7 @@ function sendChordMidiInfo (playerName, b, e){
 //     checkIfSendMidiControlChange(e, b, player)
     info.finalValues.forEach((x, i) => {
 //         addLog('beat: ' + b)
-        sendMidiData(info, player, x, findChannel(player, b, e), e)
+        sendMidiData(info, player, x, findChannel(player, b, e), e, b)
     });
     return true
 }
@@ -4911,7 +4926,7 @@ function sendNotesMidiInfo (playerName, b, e){
 //     checkIfSendMidiControlChange(e, b, player)
     info.finalValues.forEach((x, i) => {
         let chann = findChannel(player, b, e)
-        sendMidiData(info, player, x, chann, e)
+        sendMidiData(info, player, x, chann, e, b)
     })
     return true
 }
@@ -4981,10 +4996,10 @@ function completePendingTask (playerName, b, e){
 // END OF NEW BELL MIDI FUNCTIONS
 
 function getNoteInfoToSend(player, b, midiOutput) {
-//     beats.push(b)
+//      beats.push(b)
 //     beats.push(b, b% keyspan, chord)
     checkIfUseVerboseLogging(player, player.name, ' using this noteMap: ', player.noteMap)
-    checkIfUseVerboseLogging(player, 'CRAP: beat: ', b, 'should be 0: ' , b%e.rhythmMaps[player.rhythmMap].keyspan)
+    checkIfUseVerboseLogging(player, 'CRAP: beat: ', b, 'should be 0: ' , b%e.rhythmMaps[player.rhythmMap].keyspan, 'chordName: ', e.chordMaps[player.chordMap].wrapLookup(b))
     return {
         noteDuration: e.noteDurationMaps[player.noteDurationMap].wrapLookup(b),
         velocity: convertVelocityToMidiValues(e.velocityMaps[player.velocityMap].wrapLookup(b)),
