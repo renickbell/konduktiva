@@ -4728,7 +4728,7 @@ function callMusicSynthesizerRhythm (e, b, midiOutput){
     info = calculateFinalNoteValue(info, player)
 //     console.log('FINAL playing finaValues', info.finalValues)
     info.finalValues.forEach((x, i) => {
-        sendMidiData(info, player, x, findChannel(player, cb, e), e, cb)
+        sendMidiData(info, player, x, findChannel(player, cb, e), e, b)
     })
     return true
 }
@@ -4906,7 +4906,7 @@ function sendChordMidiInfo (playerName, b, e){
 //     checkIfSendMidiControlChange(e, b, player)
     info.finalValues.forEach((x, i) => {
 //         addLog('beat: ' + b)
-        sendMidiData(info, player, x, findChannel(player, cb, e), e, cb)
+        sendMidiData(info, player, x, findChannel(player, cb, e), e, b)
     });
     return true
 }
@@ -4926,7 +4926,7 @@ function sendNotesMidiInfo (playerName, b, e){
 //     checkIfSendMidiControlChange(e, b, player)
     info.finalValues.forEach((x, i) => {
         let chann = findChannel(player, cb, e)
-        sendMidiData(info, player, x, chann, e, cb)
+        sendMidiData(info, player, x, chann, e, b)
     })
     return true
 }
