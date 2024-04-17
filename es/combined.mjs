@@ -881,7 +881,7 @@ export class MusicalEnvironment {
         this.actions = {"default": function (midiOutput, b, e){
                 console.log('Hi this is the default action function being triggered')
                 console.log('This is the midiOutput: ', midiOutput)
-                console.log('This is the beat: ', b)
+                console.log('This is the beat: ', this.currentBeat())
             }
         };
         this.IOIs = {};
@@ -2204,7 +2204,8 @@ export function samplePattern (allSamples, patternLength, substringArray, poolSi
 }
 
 export function playSuperDirtSample (env, player, beat) {
-    let currentSample = env.samplePatterns[env.players[player].samplePattern].wrapLookup(beat);
+    let cb = e.currentBeat()
+    let currentSample = env.samplePatterns[env.players[player].samplePattern].wrapLookup(cb);
     var msg = {
             address: '/play2',
             args: [
@@ -3231,19 +3232,20 @@ export function generateScarboroughFairValues (){
 //Create rhythm map related things:
 export function configureRhythmMapVariables (noteValueData, name, e){
     if (A.isArrayAscending(noteValueData.rhythmMap) === true){
-        console.log("\x1b[31m" + 'Possible issue: rhythmMap should be the time of each note. Not in absolute time. Right now rhythmMap is ascending.' + "\x1b[0m")
+        logRedError('Possible issue: rhythmMap should be the time of each note. Not in absolute time. Right now rhythmMap is ascending.')
     }
     if (noteValueData.rhythmMap !== undefined){
-        let qData = K.deltaToAbsolute(noteValueData.rhythmMap)
+        let qData = deltaToAbsolute(noteValueData.rhythmMap)
 //         e.addMap('rhythmMap', name, qData[0], qData[1], noteValueData.rhythmMap)
-        return {keyspan: qData[0], keys: qData[1], values: noteValueData.rhythmMap}
+        return {keyspan: qData[0], IOIs: noteValueData.rhythmMap, bools: noteValueData.bools}
     }
     else if (noteValueData.total !== undefined && noteValueData.noteDuration !== undefined){
 //         console.log('second')
 //         e.addMap('rhythmMap', name, noteValueData.total, noteValueData.noteDuration, [...absoluteToDelta(noteValueData.noteDuration), ...noteValueData.total - noteValueData.noteDuration[noteValueData.noteDuration.length]])
-        return {keyspan: noteValueData.total, keys: noteValueData.noteDuration, values: [...absoluteToDelta(noteValueData.noteDuration), ...noteValueData.total - noteValueData.noteDuration[noteValueData.noteDuration.length]]}
+        return {keyspan: noteValueData.total, IOIs: noteValueData.noteDuration, values: [...absoluteToDelta(noteValueData.noteDuration), ...noteValueData.total - noteValueData.noteDuration[noteValueData.noteDuration.length]], bools: noteValueData.bools}
     }
 }
+
 
 //Create mask map from note value data:
 export function createMaskMap (noteValueData, name, e){
@@ -3742,10 +3744,11 @@ export function recordConfigurationDataIntoMusicalEnvironment (noteValueData, na
 //     createMaskMap(noteValueData, name)
     let rhythmMapData = configureRhythmMapVariables(noteValueData)
     console.log(rhythmMapData)
-    e.rhythmPatterns[name] = new RhythmPattern (name, rhythmMapData.keyspan, rhythmMapData.keys, rhythmMapData.bools)
+    e.rhythmPatterns[name] = new RhythmPattern (name, rhythmMapData.keyspan, rhythmMapData.IOIs, rhythmMapData.bools)
     createChannelMaps(noteValueData, name, e)
     return name
 }
+
 
 export function recordControlChangeConfigurationData (controlChangeConfigurationObject, name, e){
     createChannelMaps(controlChangeConfigurationObject, name, e)
@@ -4088,11 +4091,17 @@ export function checkIfUseVerboseLogging (player){
     return false
 }
 
-export function sendMidiData(info, player, note, channel) {
+export function sendMidiData(info, player, note, channel, e, b) {
     // add2Log(note)
     //add2Log('--------------------------------------------------------------------------')
+//     console.log(info.noteDuration)
+    checkIfUseVerboseLogging(player, info)
+//     addLog({data:info, beat: b})
+//        addLog(JSON.stringify(info))
     checkIfUseVerboseLogging(player, 'note', note, 'velocity: ', info.velocity, 'channel', channel - 1, 'midiOutput', player.midiOutput - 1)
-    e.midiOutputs[player.midiOutput - 1].send('noteon', {
+    checkIfUseVerboseLogging(player, 'duration: ', 1000 * beatsToTime(e.currentTempo, info.noteDuration) * e.legatoMaps[player.legatoMap].wrapLookup(e.currentBeat()))
+checkIfUseVerboseLogging(player, 'TIME: ', beatsToTime(e.currentTempo, e.rhythmMaps[player.rhythmMap].values[0].wrapLookup(b)) * e.legatoMaps[player.legatoMap].wrapLookup(b) * 1000)
+e.midiOutputs[player.midiOutput - 1].send('noteon', {
         note: note,
         velocity: info.velocity,
         channel: channel - 1,
@@ -4103,7 +4112,7 @@ export function sendMidiData(info, player, note, channel) {
             velocity: info.velocity,
             channel: channel - 1,
         });
-    }, 1000 * beatsToTime(e.currentTempo, info.noteDuration) * e.legatoMaps[player.legatoMap].wrapLookup(e.currentBeat()))
+    }, beatsToTime(e.currentTempo, b  - e.currentBeat()) * e.legatoMaps[player.legatoMap].wrapLookup(b) * 1000)
 }
 
 //Convert velocity values from 0-1 to midi 0-127:
@@ -4168,17 +4177,17 @@ export function filterMode (note, e, b, player){
     }
 }
 
-export function filterPolyphany (e, b, player, info){
-    let playerPolyphany = e.maxPolyphonyMaps[player.polyphonyMap]
-    if (playerPolyphany === undefined){
+export function filterpolyphony (e, b, player, info){
+    let playerpolyphony = e.maxPolyphonyMaps[player.polyphonyMap]
+    if (playerpolyphony === undefined){
         return info
     }
-    let maxPolyphanyAmount = playerPolyphany.wrapLookup(b)
-    checkIfUseVerboseLogging(player, 'POLYPHANY: ', info.noteValues.length, maxPolyphanyAmount, info.noteValues.length > maxPolyphanyAmount)
-    if (info.noteValues.length > maxPolyphanyAmount){
-//         for (let i = 0; i < maxPolyphanyAmount - info.noteDuration.length; i++) {
-        info.noteValues = info.noteValues.slice(0, maxPolyphanyAmount)
-        checkIfUseVerboseLogging(player, 'CUT DOWN notes playing to:' + maxPolyphanyAmount)
+    let maxpolyphonyAmount = playerpolyphony.wrapLookup(b)
+    checkIfUseVerboseLogging(player, 'polyphony: ', info.noteValues.length, maxpolyphonyAmount, info.noteValues.length > maxpolyphonyAmount)
+    if (info.noteValues.length > maxpolyphonyAmount){
+//         for (let i = 0; i < maxpolyphonyAmount - info.noteDuration.length; i++) {
+        info.noteValues = info.noteValues.slice(0, maxpolyphonyAmount)
+        checkIfUseVerboseLogging(player, 'CUT DOWN notes playing to:' + maxpolyphonyAmount)
     }
     return info
 }
@@ -4336,7 +4345,7 @@ export function createMapsFromMode (variableName, name, e, keyspan, keys, values
 export function callMusicSynthesizerRhythm (e, b, midiOutput){
     let player = e.players[midiOutput]
     let info = getNoteInfoToSend(player, b, midiOutput)
-    info = filterPolyphany(e, b, player, info)
+    info = filterpolyphony(e, b, player, info)
     /*
     console.log('first step look up', e.noteDurationMaps[player.noteDurationMap].wrapLookup(b))
     console.log('b', b)
@@ -4494,47 +4503,54 @@ export function findChannel (player, b, e){
 }
 
 export function sendChordMidiInfo (playerName, b, e){
+//     b = e.currentBeat()
+    let cb = e.currentBeat()
     let player = e.players[playerName];
-    let info = getNoteInfoToSend(player, b, playerName);
+    let info = getNoteInfoToSend(player, cb, playerName);
     info.noteValues = undefined;
     let chordMap = player.chordMap;
-    let chord = e.chordMaps[chordMap].wrapLookup(b);
+    let chord = e.chordMaps[chordMap].wrapLookup(cb);
     info.noteValues = Chord.getChord(chord).intervals.map(x => Interval.semitones(x));
-    info = filterPolyphany(e, b, player, info);
+    info = filterpolyphony(e, cb, player, info);
 //     console.log(info)
     checkIfUseVerboseLogging(player, 'sendChordMidiInfo: ' + info)
     info.noteValues = info.noteValues.map(x => {
-        return filterMode(x, e, b, player)
+        return filterMode(x, e, cb, player)
     });
     info = calculateFinalNoteValue(info, player);
 //     checkIfSendMidiControlChange(e, b, player)
     info.finalValues.forEach((x, i) => {
-        sendMidiData(info, player, x, findChannel(player, b, e), e)
+//         addLog('beat: ' + b)
+        sendMidiData(info, player, x, findChannel(player, cb, e), e, cb)
     });
     return true
 }
 
 //only thing diffferent is I am getting all the info at once.
 export function sendNotesMidiInfo (playerName, b, e){
+//     console.log('check if b is beat', b, e.currentBeat(), b === e.currentBeat())
+//     b = e.currentBeat()
+    let cb = e.currentBeat()
     let player = e.players[playerName]
-    let info = getNoteInfoToSend(player, b, playerName)
-    info = filterPolyphany(e, b, player, info)
+    let info = getNoteInfoToSend(player, cb, playerName)
+    info = filterpolyphony(e, cb, player, info)
     info.noteValues = info.noteValues.map(x => {
-        return filterMode(x, e, b, player)
+        return filterMode(x, e, cb, player)
     })
     info = calculateFinalNoteValue(info, player)
 //     checkIfSendMidiControlChange(e, b, player)
     info.finalValues.forEach((x, i) => {
-        let chann = findChannel(player, b, e)
-        sendMidiData(info, player, x, chann, e)
+        let chann = findChannel(player, cb, e)
+        sendMidiData(info, player, x, chann, e, cb)
     })
     return true
 }
 
 export function sendMidiCCMessages (playerName, b, e){
+    let cb = e.currentBeat()
     let player = e.players[playerName]
-    let CCMessages = e.controlChangeMaps[player.controlChangeMap].wrapLookup(b)
-    let channel = e.channelMaps[player.channelMap].wrapLookup(b)
+    let CCMessages = e.controlChangeMaps[player.controlChangeMap].wrapLookup(cb)
+    let channel = e.channelMaps[player.channelMap].wrapLookup(cb)
     if (CCMessages instanceof Array){
         CCMessages.forEach(x => {
            checkIfUseVerboseLogging(player, 'Playing Midi CC message.\n controller', x.controller, 'value: ', x.value, 'channel', channel - 1, 'midiOutput', player.midiOutput - 1)
@@ -4557,9 +4573,10 @@ export function sendMidiCCMessages (playerName, b, e){
 }
 
 export function sendMidiProgramMessages (playerName, b, e){
+    let cb = e.currentBeat()
     let player = e.players[playerName]
-    let midiProgam = e.midiProgramMaps[player.midiProgramMap].wrapLookup(b)
-    let channel = e.channelMaps[player.channelMap].wrapLookup(b)
+    let midiProgam = e.midiProgramMaps[player.midiProgramMap].wrapLookup(cb)
+    let channel = e.channelMaps[player.channelMap].wrapLookup(cb)
     if (midiProgam instanceof Array){
         midiProgam.forEach(x => {
            checkIfUseVerboseLogging(player, 'Playing Midi program.\n number', x,  'channel', channel - 1, 'midiOutput', player.midiOutput - 1)
@@ -4579,7 +4596,8 @@ export function sendMidiProgramMessages (playerName, b, e){
     return true
 }
 
-function completePendingTask (playerName, b, e){
+export function completePendingTask (playerName, b, e){
+    let cb = e.currentBeat()
     let player = e.players[playerName]
     let currentTaskList = e.tasksQueue[player.assignedTask]
     if (currentTaskList === undefined){
@@ -4587,11 +4605,12 @@ function completePendingTask (playerName, b, e){
     }
     let currentTask = currentTaskList[0]
     if (currentTask !== undefined){
-        currentTask.func(currentTask.info, b, e)
+        currentTask.func(currentTask.info, cb, e)
         e.tasksQueue[player.assignedTask].shift()
     }
 }
 //color logging: https://stackoverflow.com/questions/9781218/how-to-change-node-jss-console-font-color/41407246#41407246
+
 
 // END OF NEW BELL MIDI export functionS
 
@@ -4852,16 +4871,16 @@ export function convertQuantizedMapToRelativeForm (map){
 }
 
 export function sendPlaybackMessage (p, b, e){
+    let cb = e.currentBeat()
     let midiOutput = p
 //     console.log(typeof e, b, midiOutput)
 //     if ((mask(p, e.maskMaps[e.players[p].maskMap] ,(e.currentBeat()),1)) != true) {
         let player = e.players[midiOutput]
-        let dataToSend = e.recordedMessages[player.recordedMessages].wrapLookup(b)
+        let dataToSend = e.recordedMessages[player.recordedMessages].wrapLookup(cb)
     console.log('data to send', dataToSend)
         e.midiOutputs[player.midiOutput - 1].send(dataToSend._type, dataToSend)
 //     }
 }
-
 
 export function generateQuantizedMapFromAbsoluteNumberArray (numbers){
     let numbersLength = numbers.length - 1
