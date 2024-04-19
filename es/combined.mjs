@@ -3518,6 +3518,11 @@ export function checkIfAddToDissonanceRecorder (beat, note, indexOfBeat){
 //HERE
 //Change function so if the thing is undefined do not use velocityMapName use defaultName pass defaultName as another argument.
 export function assignPlayerForMusicSynthesizerMidiOutput (e, defaultName, playerName, playerData = {}){
+    if (typeof playerName !== 'string'){
+        logRedError('playerName needs to be a string in order to create or configure a player.')
+        return new Error('playerName needs to be a string')
+    }
+     console.log(playerData)
 //     else if (defaultName !== undefined && playerData.velocityMapName === undefined){
 //         playerData.velocityMapName = defaultName
 //     }
@@ -3555,7 +3560,7 @@ export function checkIfAddChordProgressionMapToPlayer (chordMapName, e){
     }
 }
 
-export function generalMidiOutputVariableAssigning (defaultName, e, channel = defaultName, velocityMapName = defaultName, noteMapName = defaultName, octaveMapName = defaultName, rhythmMapName = defaultName, polyphonyMapName = defaultName, noteDurationMapName = defaultName, maskMapName = defaultName, rhythmPatternName = defaultName, chordMapName = defaultName, rootMapName = defaultName, modeMapName = defaultName, legatoMapName = defaultName, midiProgramPlayerName = defaultName + 'MidiProgram', controlChangePlayerName = defaultName + 'ControlChange', midiOutput = 1, playerName = 'exampleMidiPlayer' + JSON.stringify(channel)){
+export function generalMidiOutputVariableAssigning (defaultName, e, channel = defaultName, velocityMapName = 'default', noteMapName = 'default', octaveMapName = 'default', rhythmMapName = 'default', polyphonyMapName = 'default', noteDurationMapName = 'default', maskMapName = 'default', rhythmPatternName = 'default', chordMapName = 'default', rootMapName = 'default', modeMapName = 'default', legatoMapName = 'default', midiProgramPlayerName = defaultName + 'MidiProgram', controlChangePlayerName = defaultName + 'ControlChange', midiOutput = 1, playerName){
     let channelPlayer = e.players[playerName]
     channelPlayer.velocityMap = velocityMapName
     channelPlayer.noteMap = noteMapName
@@ -3573,7 +3578,7 @@ export function generalMidiOutputVariableAssigning (defaultName, e, channel = de
         channelPlayer.midiProgramPlayer = midiProgramPlayerName
         e.players[midiProgramPlayerName].channel = channel
         e.players[midiProgramPlayerName].channelMap = channel
-        if (e.channelMaps[channel] === undefined){
+        if (e.channelMaps[channel] === undefined){ 
             e.players[midiProgramPlayerName].channelMap = 'default'
         }
     }
@@ -3581,7 +3586,7 @@ export function generalMidiOutputVariableAssigning (defaultName, e, channel = de
         channelPlayer.controlChangePlayer = controlChangePlayerName
         e.players[controlChangePlayerName].channel = channel
         e.players[controlChangePlayerName].channelMap = channel
-        if (e.channelMaps[channel] === undefined){
+        if (e.channelMaps[channel] === undefined){ 
             e.players[controlChangePlayerName].channelMap = 'default'
         }
     }
@@ -3605,8 +3610,9 @@ export function generalMidiOutputVariableAssigning (defaultName, e, channel = de
 
 //https://stackoverflow.com/a/43363105/19515980
 
+//color logging: https://stackoverflow.com/questions/9781218/how-to-change-node-jss-console-font-color/41407246#41407246
 //Create Player:
-export function createMidiOutputPlayer (defaultName, e, channel = defaultName, velocityMapName = defaultName, noteMapName = defaultName, octaveMapName = defaultName, rhythmMapName = defaultName, polyphonyMapName = defaultName, noteDurationMapName = defaultName, maskMapName = defaultName, rhythmPatternName = defaultName, chordMapName = defaultName, rootMapName = defaultName, modeMapName = defaultName, legatoMapName = defaultName, midiProgramPlayerName = defaultName + 'MidiProgram', controlChangePlayerName = defaultName + 'ControlChange', midiOutput = 1, playerName){
+export function createMidiOutputPlayer (defaultName, e, channel, velocityMapName, noteMapName, octaveMapName, rhythmMapName = 'default', polyphonyMapName, noteDurationMapName, maskMapName, rhythmPatternName, chordMapName, rootMapName, modeMapName, legatoMapName, midiProgramPlayerName, controlChangePlayerName, midiOutput, playerName){
     console.log('Chose to create player')
     setupMidiRhythm(e, playerName, rhythmMapName)
     generalMidiOutputVariableAssigning.apply(null, arguments)
@@ -3615,11 +3621,10 @@ export function createMidiOutputPlayer (defaultName, e, channel = defaultName, v
 //https://stackoverflow.com/a/43363105/19515980
 
 //Edit Player:
-export function editMidiOutputPlayer (defaultName, e, channel = defaultName, velocityMapName = defaultName, noteMapName = defaultName, octaveMapName = defaultName, rhythmMapName = defaultName, polyphonyMapName = defaultName, noteDurationMapName = defaultName, maskMapName = defaultName, rhythmPatternName = defaultName, chordMapName = defaultName, rootMapName = defaultName, modeMapName = defaultName, legatoMapName = defaultName, midiProgramPlayerName = defaultName + 'MidiProgam', controlChangePlayerName = defaultName + 'ControlChange', midiOutput = 1, playerName){
+export function editMidiOutputPlayer (defaultName, e, channel, velocityMapName, noteMapName, octaveMapName, rhythmMapName, polyphonyMapName, noteDurationMapName, maskMapName, rhythmPatternName, chordMapName, rootMapName, modeMapName, legatoMapName, midiProgramPlayerName, controlChangePlayerName, midiOutput, playerName){
     console.log('Chose to edit player')
     generalMidiOutputVariableAssigning.apply(null, arguments)
 }
-
 
 //HERE name creation is wrong cannot be the same as the orignal player name it should be name + something
 export function createControlChangePlayers (noteValueData, name, e, midiOutput, mapDefaultName){
@@ -5755,11 +5760,24 @@ export function addParsedDataMidiDataToMusicalEnvironment (midiData, parsedData,
         }
     })
     return function (playerNames){
-        if (playerToCreate.length > playerName.length){
-            return new Error('Insufficient player names provided. Make sure the playerName array is filled with at least ' + playerToCreate.length + ' strings.')
+        let nameTypes = Object.keys(typesOfItemsInArray(playerNames))
+        if (playerNames instanceof Array === false || nameTypes.length !== 1 || nameTypes[0] !== 'string'){
+            throw new Error ('Provide an array with at least ' + playerToCreate.length + ' player name(s) in form of strings.')
+            return false
         }
+        if (playerToCreate.length > playerNames.length){
+            throw new Error('Insufficient player name(s) provided. Provide an array with at least ' + playerToCreate.length + ' player name(s) in form of strings.')
+            return false         
+        }
+        let mapLocationsToSetAsDefault = ['rhythmMap', 'maskMap', 'velocityMap', 'noteMap', 'octaveMap', 'channelMap', 'noteDurationMap', 'rootMap', 'chordMap']
         let playersCreated = playerToCreate.map((x, i) =>{
+            mapLocationsToSetAsDefault.forEach(m => {
+                if (x.extraConfig[m + 'Name'] === undefined){
+                    x.extraConfig[m + 'Name'] = x.name
+                }
+            })
             assignPlayerForMusicSynthesizerMidiOutput(e, x.name, playerNames[i], x.extraConfig)
+            e.rhythmPatterns[x.name].add(e, x.name)
             createExtensionPlayers(x.configObj, playerNames[i], e, x.midiOutput, x.name)
             e.rhythmMaps[x.name].values[0] = new QuantizedMap(x.keyspan, x.keys, absoluteToDelta(x.keys))
             e.rhythmMaps[x.name].values[0].values.push(x.keyspan - x.keys[x.keys.length - 1])
@@ -6123,23 +6141,24 @@ export function addDuplicatePlayersWithConfigObj (e, nOfPlayers, configObj, base
         configObj.channelValues = configObj.channelValues.map(x => { return (x + 1) % 17})
         recordConfigurationDataIntoMusicalEnvironment(configObj, currentPlayerName, e)
         assignPlayerForMusicSynthesizerMidiOutput(e, 'default', currentPlayerName, extraConfig)
+        e.players[currentPlayerName].channelMap = currentPlayerName
         e.replaceUndefinedPlayerPropertiesWith(currentPlayerName)
         return currentPlayerName
     })
 }
 
-export function addDuplicatePlayersWithConfigObjArray (e, playerNames, configObjs, extraConfigs){
-    if (playerNames.length !== configObjs.length){
-        throw new Error('playerNames length should be same as configObjs length')
-        return false
-    }
-    return playerNames.map((x, i) => {
-        recordConfigurationDataIntoMusicalEnvironment(configObjs[i], x, e)
-        assignPlayerForMusicSynthesizerMidiOutput(e, x, x, extraConfigs[i])
-        e.replaceUndefinedPlayerPropertiesWith(currentPlayerName)
-        return x
-    })
-}
+// export function addDuplicatePlayersWithConfigObjArray (e, playerNames, configObjs, extraConfigs){
+//     if (playerNames.length !== configObjs.length){
+//         throw new Error('playerNames length should be same as configObjs length')
+//         return false
+//     }
+//     return playerNames.map((x, i) => {
+//         recordConfigurationDataIntoMusicalEnvironment(configObjs[i], x, e)
+//         assignPlayerForMusicSynthesizerMidiOutput(e, x, x, extraConfigs[i])
+//         e.replaceUndefinedPlayerPropertiesWith(currentPlayerName)
+//         return x
+//     })
+// }
 
 export function setUpKonduktiva (){
     global.udpPort = new osc.UDPPort({
