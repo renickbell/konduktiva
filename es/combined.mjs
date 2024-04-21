@@ -683,15 +683,15 @@ export function getNextOnsets2 (ioiFunc, beat, limitBeat, output) {
     }
 }
 
-export function getNextOnsets3 (ioiFunc, player, beat, limitBeat, output) {
+export function getNextOnsets3 (ioiFunc, player, beat, limitBeat, output, e) {
     if (beat > limitBeat) {
         return output
     }
     else {
         // replace getNextOnset with generalized IOIFunc here?
-        let nextOnset = ioiFunc(player, beat);
+        let nextOnset = ioiFunc(player, beat, e);
         output = output.concat(nextOnset)
-        return getNextOnsets3 (ioiFunc, player, beat+nextOnset, limitBeat, output)
+        return getNextOnsets3 (ioiFunc, player, beat+nextOnset, limitBeat, output, e)
     }
 }
 
@@ -1002,7 +1002,7 @@ export class MusicalEnvironment {
     scheduleEvents (player) {
 //         console.log("scheduling " + player);
         let ioiFunc = this.getIOIFunc (player);
-        let onsets = getNextOnsets3(ioiFunc,player, this.currentBeat(), this.currentBeat() + timeToBeats(this.currentTempo,this.lookahead),[]);
+        let onsets = getNextOnsets3(ioiFunc,player, this.currentBeat(), this.currentBeat() + timeToBeats(this.currentTempo,this.lookahead),[], this);
         let onsetsAfterLastScheduled = onsets.filter(x => x > this.players[player].lastScheduledTime);
 //         console.log('onsetsAfterLastScheduled', onsetsAfterLastScheduled)
         if (player.verbose == true) {
@@ -1640,6 +1640,7 @@ export class MusicalEnvironment {
         })
     }
     findConnectedPlayers (player){
+        let e = this
         let playersToPlay = []
         if (e.players[player].controlChangePlayer !== undefined){
             playersToPlay.push(e.players[player].controlChangePlayer)
@@ -1650,6 +1651,7 @@ export class MusicalEnvironment {
         return playersToPlay
     }
     playWithConnected (player){
+        let e = this
         if (e.players[player] === undefined){
             throw new Error('Player '+ player + ' not found. Could not run playWithConnected')
             return false
@@ -1658,6 +1660,7 @@ export class MusicalEnvironment {
         this.playN([...this.findConnectedPlayers(player), player])
     }
     stopWithConnected (player){
+        let e = this
         if (e.players[player] === undefined){
             throw new Error('Player '+ player + ' not found. Could not run stopWithConnected')
             return false
@@ -1665,6 +1668,7 @@ export class MusicalEnvironment {
         this.stopN([...this.findConnectedPlayers(player), player])
     }
     stopConnected (player){
+        let e = this
         if (e.players[player] === undefined){
             throw new Error('Player '+ player + ' not found. Could not run stopConnected')
             return false
@@ -1672,6 +1676,7 @@ export class MusicalEnvironment {
         this.stopN(this.findConnectedPlayers(player))
     }
     playConnected (player){
+        let e = this
         if (e.players[player] === undefined){
             throw new Error('Player '+ player + ' not found. Could not run playConnected')
             return false
@@ -1679,6 +1684,7 @@ export class MusicalEnvironment {
         this.playN(this.findConnectedPlayers(player))
     }
     verifyMapConnectionsToPlayerVariablesObject (playerToVerifyWith){
+        let e = this
         let player = this.players[playerToVerifyWith]
         Object.keys(this.mapConnectionsToPlayerVariables).forEach(x => {
             if (player[x] === undefined){
@@ -1865,7 +1871,7 @@ export function simpleRhythmPattern (env, rhythmPatternArgObj) {
 // --------------------------------------------------------------------------
 //testingKonduktiva-revised.mjs:
 
-export function defaultIOI (player, beat) {
+export function defaultIOI (player, beat, e) {
     return getIOI (e, player, beat)
 }
 
@@ -1890,7 +1896,6 @@ export function setUpDefaultCurrentDensityGraphsForMusicalEnvironment (e){
     e.currentDensityGraphs = ['lowGlobal','defaultTechno']
     e.currentDensityGraphs = ['mediumGlobal','defaultTechno']
 }
-
 
 // let {linearFunctionArrayFromPoints} = await import('./konduktiva-revised-2.mjs')
 export function setUpDefaultDensityGraphsForMusicalEnvironment (e){
@@ -2109,7 +2114,7 @@ export function runTime (tsm, time) {
     return func(time%(tsm.keyspan))
 }
 
-export function changeRhythmPattern (env, players, rhythm) {
+export function changeRhythmPattern (env, players, rhythm, e) {
     players.forEach(p => e.players[p].rhythmMap = rhythm)
 }
 
@@ -2121,7 +2126,7 @@ export function setUpDefaultMaskMapsForMusicalEnvironment (e){
 //e.actions.superDirt = (p,b) => playSuperDirtSample (e,p,b)
 
 export function setUpDefaultActionToMusicalEnvironment (e){
-    e.actions.superDirt = (p,b) => {if ((mask(p, e.maskMaps[e.players[p].maskMap] ,(e.currentBeat()),1)) != true) {playSuperDirtSample (e,p,b)}}
+    e.actions.superDirt = (p,b, e) => {if ((mask(p, e.maskMaps[e.players[p].maskMap] ,(e.currentBeat()),1)) != true) {playSuperDirtSample (e,p,b)}}
 }
 
 
@@ -2204,7 +2209,7 @@ export function samplePattern (allSamples, patternLength, substringArray, poolSi
 }
 
 export function playSuperDirtSample (env, player, beat) {
-    let cb = e.currentBeat()
+    let cb = env.currentBeat()
     let currentSample = env.samplePatterns[env.players[player].samplePattern].wrapLookup(cb);
     var msg = {
             address: '/play2',
@@ -4152,7 +4157,7 @@ export function setupPlaybackPlayer (env, sequenceName, rhythmPatternName = 'def
 }
 
 //Action export function:
-export function musicSynthesizerCaller (p,b) {if ((mask(p, e.maskMaps[e.players[p].maskMap] ,(e.currentBeat()),1)) != true) {callMusicSynthesizerRhythm(e, b, p);}}
+export function musicSynthesizerCaller (p,b, e) {if ((mask(p, e.maskMaps[e.players[p].maskMap] ,(e.currentBeat()),1)) != true) {callMusicSynthesizerRhythm(e, b, p);}}
 // e.actions.midiSequencedRhythm = musicSynthesizerCaller
 
 // //Action export function:
@@ -4217,7 +4222,7 @@ export function convertRomanNumeralsToMidi (info){
     return info
 }
 
-export function calculateFinalNoteValue (info){
+export function calculateFinalNoteValue (info, e){
     if (info.finalValues === undefined){
         checkIfUseVerboseLogging(e, 'finalNote not detected', info.finalNote)
         info.finalValues = info.noteValues.map(x => {
@@ -4349,7 +4354,7 @@ export function createMapsFromMode (variableName, name, e, keyspan, keys, values
 //Gather and sort information and prepare to send through midi:
 export function callMusicSynthesizerRhythm (e, b, midiOutput){
     let player = e.players[midiOutput]
-    let info = getNoteInfoToSend(player, b, midiOutput)
+    let info = getNoteInfoToSend(player, b, midiOutput, e)
     info = filterpolyphony(e, b, player, info)
     /*
     console.log('first step look up', e.noteDurationMaps[player.noteDurationMap].wrapLookup(b))
@@ -4511,7 +4516,7 @@ export function sendChordMidiInfo (playerName, b, e){
 //     b = e.currentBeat()
     let cb = e.currentBeat()
     let player = e.players[playerName];
-    let info = getNoteInfoToSend(player, cb, playerName);
+    let info = getNoteInfoToSend(player, cb, playerName, e);
     info.noteValues = undefined;
     let chordMap = player.chordMap;
     let chord = e.chordMaps[chordMap].wrapLookup(cb);
@@ -4522,7 +4527,7 @@ export function sendChordMidiInfo (playerName, b, e){
     info.noteValues = info.noteValues.map(x => {
         return filterMode(x, e, cb, player)
     });
-    info = calculateFinalNoteValue(info, player);
+    info = calculateFinalNoteValue(info, player, e);
 //     checkIfSendMidiControlChange(e, b, player)
     info.finalValues.forEach((x, i) => {
 //         addLog('beat: ' + b)
@@ -4537,12 +4542,12 @@ export function sendNotesMidiInfo (playerName, b, e){
 //     b = e.currentBeat()
     let cb = e.currentBeat()
     let player = e.players[playerName]
-    let info = getNoteInfoToSend(player, cb, playerName)
+    let info = getNoteInfoToSend(player, cb, playerName, e)
     info = filterpolyphony(e, cb, player, info)
     info.noteValues = info.noteValues.map(x => {
         return filterMode(x, e, cb, player)
     })
-    info = calculateFinalNoteValue(info, player)
+    info = calculateFinalNoteValue(info, player, e)
 //     checkIfSendMidiControlChange(e, b, player)
     info.finalValues.forEach((x, i) => {
         let chann = findChannel(player, cb, e)
@@ -4619,7 +4624,7 @@ export function completePendingTask (playerName, b, e){
 
 // END OF NEW BELL MIDI export functionS
 
-export function getNoteInfoToSend(player, b, midiOutput) {
+export function getNoteInfoToSend(player, b, midiOutput, e) {
     checkIfUseVerboseLogging(player, player.name, ' using this noteMap: ', player.noteMap)
     return {
         noteDuration: e.noteDurationMaps[player.noteDurationMap].wrapLookup(b),
@@ -4746,7 +4751,7 @@ export function sortArrays(arrayA, arrayB) {
     };
 }
 
-export function yilerNoteOnFilter (inputNote){
+export function yilerNoteOnFilter (inputNote, e){
         try {
         let chordCorrespondingScale;
         let chordRelativeSemitone = e.noteMaps.p4.wrapLookup((e.currentBeat()+ 1)/4)
@@ -4794,7 +4799,7 @@ export function yilerNoteOnFilter (inputNote){
     }
 }
 
-export function yilerNoteOffFilter (inputNote){
+export function yilerNoteOffFilter (inputNote, e){
         try {
         let octave = Note.fromMidi(inputNote).charAt(Note.fromMidi(inputNote).length - 1)
         let noteBeingPlayed = Note.fromMidi(inputNote).slice(0, -1)
@@ -4825,10 +4830,10 @@ export function receiveMessagesFromInput (e, inputIndex, outputIndex, recordMess
         let currentInput = e.midiInputs[inputIndex]
         if (deltaTime._type === 'noteon'){
             console.log('erge', deltaTime)
-            deltaTime.note = yilerNoteOnFilter(deltaTime.note)
+            deltaTime.note = yilerNoteOnFilter(deltaTime.note, e)
         }
         else if (deltaTime._type === 'noteoff'){
-            deltaTime.note = yilerNoteOffFilter(deltaTime.note)
+            deltaTime.note = yilerNoteOffFilter(deltaTime.note, e)
         }
         if (currentInput.outputIndex !== undefined){
             e.midiOutputs[currentInput.outputIndex].send(deltaTime._type, deltaTime)
@@ -4845,7 +4850,7 @@ export function receiveMessagesFromInput (e, inputIndex, outputIndex, recordMess
     currentInput.outputPort.on('message', currentInput.inputFunc)
 }
 
-export function addInputMessageToRecordedMessages (inputIndex, recordedMessagesName){
+export function addInputMessageToRecordedMessages (inputIndex, recordedMessagesName, e){
     e.recordedMessages[recordedMessagesName] = e.midiInputs[inputIndex].recordedMessages
     let messages = e.recordedMessages[recordedMessages]
     let relativeKeys = [0]
@@ -5058,22 +5063,21 @@ export let commands = [
     }
 ];
 
-let wss; 
-// Creating connection using websocket
+let wss = false
 export function createDefaultWebsocketServer () {
-    if (wss !== undefined){
+    if (wss !== undefined && wss !== false){
         wss.close()
     }
-    wss = new WebSocketServer.Server({ port: 8080}); 
+    wss = new WebSocketServer.Server({ port: 8080});
     wss.on("connection", (ws) => {
         console.log("new client connected");
         addNewClients()
         ws.onmessage = (e) => {
             console.log('data received')
-            let data = JSON.parse(e.data)
+            let data = JSON.parse(wss.connectedMusicalEnvironment.data)
             if (data != undefined) {
                 //console.log("command received",e.target, e.data);
-                receiveCommands(data, e.target);
+                receiveCommands(data, wss.connectedMusicalEnvironment.target);
             }
         };
         // handling what to do when clients disconnects from server
@@ -5472,7 +5476,7 @@ export let filteredOutput = new easymidi.Output('filteredOut', true);
 //     };
 // }
 // 
-export function activateKeyboardFilter(keyboardName) {
+export function activateKeyboardFilter(keyboardName, e) {
     keyboard = new easymidi.Input(keyboardName);
     keyboard.on('noteon', function(event) {
         try {
@@ -5574,7 +5578,7 @@ export function findKeyOfChordProgression (midiNotes){
 //--------------------------------------------------------------------------
 //MIDI-reading:
 
-export function getDataFromMidiFile (midiFileData){
+export function getDataFromMidiFile (midiFileData, e){
     let tempos = []
     let timeSignatures = []
     let endsOfTracks = []
@@ -5792,7 +5796,7 @@ export function addParsedDataMidiDataToMusicalEnvironment (midiData, parsedData,
 export function addMidiFileToMusicalEnvironment (filePath, musicalKey, e){
     let midiFile = fs.readFileSync(filePath, 'binary')
     let midiData = midiFileIO.parseMidiBuffer(midiFile);
-    let parsedData = getDataFromMidiFile(midiData)
+    let parsedData = getDataFromMidiFile(midiData, e)
     return addParsedDataMidiDataToMusicalEnvironment(midiData, parsedData, musicalKey, filePath, e)
 //     return parsedData
 }

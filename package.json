@@ -19,7 +19,7 @@
     "type-check": "^*"
   },
   "name": "konduktiva",
-  "version": "2.5.8",
+  "version": "2.5.9",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/renickbell/konduktiva.git"
