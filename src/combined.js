@@ -22,9 +22,8 @@ const A = require('array-toolkit')
 const R = require('ramda')
 const midiFileIO = require('midi-file-io');
 const { Worker, isMainThread, parentPort } = require('worker_threads');
-// const A = require('./github-array-toolkit-package/array-toolkit/array-toolkit.mjs')
 const os = require('os')
-const _ = require('lodash');
+const lodash = require('lodash');
 
 // --------------------------------------------------------------------------
 //Exporting dependencies:
@@ -33,13 +32,9 @@ let mergedFunctions = {}
 mergedFunctions.R = require('ramda')
 let perf= require('perf_hooks');
 mergedFunctions.performance = perf.performance
-// const {TaskTimer} = require('tasktimer')
 mergedFunctions.TaskTimer = TaskTimer
-// const {TaskTimer} = require('tasktimer')
-//const easymidi = require('easymidi');
 mergedFunctions.fs = require('fs')
 mergedFunctions.path = require('path')
-// let oscDefault = require("osc");
 mergedFunctions.osc = osc
 mergedFunctions.v8 = require('v8');
 mergedFunctions.A = require('array-toolkit')
@@ -71,7 +66,7 @@ mergedFunctions.Worker = Worker
 mergedFunctions.isMainThread = isMainThread
 mergedFunctions.parentPort = parentPort
 mergedFunctions.os = os
-mergedFunctions._ = _
+mergedFunctions.lodash = lodash
 
 module.exports = mergedFunctions
 // --------------------------------------------------------------------------
@@ -6044,7 +6039,7 @@ function findKeyOfChordProgression (midiNotes){
 //     else{
         letters = midiNotes.map(x => {return midiToRootAndValue(x).root})
 //     }
-    let letterCounts = _.countBy(letters);
+    let letterCounts = lodash.countBy(letters);
     let detectedScale = K.Scale.detect(letters, {tonic: findVariableWithMaxNumber(letterCounts)});
     let scaleSimilarity = {}
     detectedScale.forEach(x => {

@@ -29,7 +29,7 @@ export const {
 } = require("tonal")
 export const midiFileIO = require('midi-file-io');
 export const { Worker, isMainThread, parentPort } = require('worker_threads');
-export const _ = require('lodash');
+export const lodash = require('lodash');
 
 // --------------------------------------------------------------------------
 //konduktiva-revised-2.mjs:
@@ -5566,7 +5566,7 @@ export function findKeyOfChordProgression (midiNotes){
 //     else{
         letters = midiNotes.map(x => {return midiToRootAndValue(x).root})
 //     }
-    let letterCounts = _.countBy(letters);
+    let letterCounts = lodash.countBy(letters);
     let detectedScale = K.Scale.detect(letters, {tonic: findVariableWithMaxNumber(letterCounts)});
     let scaleSimilarity = {}
     detectedScale.forEach(x => {
