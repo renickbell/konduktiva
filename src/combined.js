@@ -347,16 +347,18 @@ function variousLsystems(baseName,n,patternLength,rules,generations,replacementV
 
 /**
   * Turns off all notes on a specific channel for the output.
-  * @param {number} channelNum - Channel to send off to.
+  * @param e - MusicalEnvironment
 */
-function allNotesOff(channelNum) {
-  Array.from({ length: 128 }, (_, noteNumber) => {
-    output.send('noteoff', {
-      note: noteNumber,
-      velocity: 0,
-      channel: channelNum,
-    });
-  });
+function allNotesOff(e) {
+    e.midiOutputs.forEach(x => {
+      Array.from({ length: 16 }, (_, i) => {
+        x.send('cc', {
+            controller: 123,
+            value: 0,
+            channel: i,
+        });
+      });
+    })
 }
 
 //--------------------------------------------------------------------------
@@ -593,20 +595,6 @@ class QuantizedMap {
             return false
         }
     }
-    musicalWrapLookup (time){
-        if (time % this.keyspan === 0){
-            return this.values[this.values.length - 1]
-        }
-        else {
-            return this.wrapLookup(time)
-        }
-    }
-    musicalWrapLookup (time){
-        if (time % this.keyspan === 0){
-            return this.values[this.values.length - 1]
-        }
-        return this.wrapLookup(time)
-    }
 }
 
 /**
@@ -759,13 +747,6 @@ function logRedError (){
     return true
 }
 //color logging: https://stackoverflow.com/questions/9781218/how-to-change-node-jss-console-font-color/41407246#41407246
-
-function addAAfterFunction(str) {
-    let words = str.split(" ");
-    let i = words.indexOf('function')
-    words[i] += ' a'
-    return words.join(' ')
-}
 
 function checkIfObjectCompatibleWithQuantizedMap (item){
     if (item instanceof Object === false || item instanceof QuantizedMap){
@@ -1763,8 +1744,6 @@ class MusicalEnvironment {
     }
 }
 
-// addMapToMusicalEnvironment(e, 'rhythmMaps', 'chalk', 10, [0, 1, 2, 3], [4, 5, 6, 7])
-
 /**
   * Sets up the scheduler for the MusicalEnvironment.
   * @param musicalEnv - Variable name of MusicalEnvironment class.
@@ -1988,7 +1967,6 @@ addToModuleExports({
     logRedError,
     checkIfObjectCompatibleWithQuantizedMap,
     checkArrayForQuantizedMapAndConvert,
-    addAAfterFunction,
     checkIfStringIsAFunction,
     checkIfStringIsArrowFunction,
     checkIfVariableIsInString,
@@ -2249,13 +2227,9 @@ function setUpDefaultMaskMapsForMusicalEnvironment (e){
     e.maskMaps.default = new QuantizedMap(4,[0],[false])
 }
 
-
-//e.actions.superDirt = (p,b) => playSuperDirtSample (e,p,b)
-
 function setUpDefaultActionToMusicalEnvironment (e){
     e.actions.superDirt = (p,b) => {if ((mask(p, e.maskMaps[e.players[p].maskMap] ,(e.currentBeat()),1)) != true) {playSuperDirtSample (e,p,b)}}
 }
-
 
 function setUpDefaultRhythmMapsToMusicalEnvironment (e) {
     e.rhythmMaps.straight = new QuantizedMap(1,[1],[new QuantizedMap(4,[0,1,2,3],[1,1,1,1])])
@@ -2264,18 +2238,6 @@ function setUpDefaultRhythmMapsToMusicalEnvironment (e) {
     e.rhythmMaps.straight2 = new QuantizedMap(1,[1],[new QuantizedMap(4,[0].concat(A.runningSum(0,straightEights)),[0.5].concat(straightEights))])
     e.rhythmMaps.straight3 = new QuantizedMap(1,[1],[new QuantizedMap(4,[0].concat(A.runningSum(0,straight16ths)),[0.25].concat(straight16ths))])
 }
-
-
-// function setUpDefaultMusicalEnvironment (e){
-//     setUpDefaultRhythmMapsToMusicalEnvironment(e)
-//     setUpDefaultActionToMusicalEnvironment(e)
-//     setUpDefaultMaskMapsForMusicalEnvironment(e)
-//     setUpDefaultIOIsForMusicalEnvironment(e)
-//     setUpDefaultCurrentDensityGraphsForMusicalEnvironment(e)
-//     setUpDefaultDensityGraphsForMusicalEnvironment(e)
-// }
-
-// setUpDefaultMusicalEnvironment(e)
 
 addToModuleExports({
   aDensityFuncTSM,
@@ -2293,11 +2255,6 @@ addToModuleExports({
 
 //--------------------------------------------------------------------------
 //konduktiva-superdirt-revised.js
-
-// change this path to the path on your computer
-let superDirtSamplesPath = "/home/steve/.local/share/SuperCollider/downloaded-quarks/"
-
-// let osc= require("osc");
 
 var udpPort = new osc.UDPPort({
     // This is the port we're listening on.
@@ -2522,18 +2479,6 @@ function barsToBeats(beatsPerBar, inputBars) {
     return inputBars.map(e => e *= beatsPerBar)
 }
 
-// function melodyFromChordProgression (noteValues, iois){
-//     let notesToPlay = iois[1] - iois[0]
-//     notesToPlay += notesToPlay / 2
-//     return {notes: noteValues.map(x => {
-//         let chosenNotes = []
-//         for (let i = 0; i < x.length; i++) {
-//             chosenNotes.push(A.pick(x))
-//         }
-//         return chosenNotes
-//     }).flat(), iois: A.buildArray(iois.length, x => x * notesToPlay)}
-// }
-
 function melodyFromChordProgression (noteValues, iois){
     let notesToPlay = iois[1] - iois[0]
     notesToPlay += notesToPlay / 2
@@ -2544,7 +2489,7 @@ function melodyFromChordProgression (noteValues, iois){
 }
 
 addToModuleExports({
- barsToBeats, melodyFromChordProgression, notes
+ barsToBeats, melodyFromChordProgression
 })
 
 // --------------------------------------------------------------------------
@@ -2958,8 +2903,6 @@ async function generateLsystemByAssigningNumberToLetter (mode, octaves,length) {
     })
 }
 
-// hi = generateLsystemByAssigningNumberToLetter([0,2,4,7,9,11], [4 ,5, 6], 10)
-
 addToModuleExports({
   convertLsystemStringToNumbersViaAssignedLetters,
   generateCondition,
@@ -3188,16 +3131,6 @@ function createRootMap (noteValueData, name, e){
 //     return Note.get(modifiedNote + octave)
 // }
 
-//Generates that chord progression that are placed in the chordProgressions variable in the musical environment:
-function generateChordProgressionExamples (){
-    let twelveBarsProgression = generateRandomMelody('C', 'blues', 18, 6, 10)
-//     return {
-//          twelveBars: new QuantizedMap(18, A.buildArray(12, x => {return 4}), twelveBarsProgression.map(x => {x.velocity = 100; return {data: [x], bool: true}})),
-//          lsystem: generateRandomLsystemChordProgression(),
-//          scarboroughFair: new QuantizedMap(48, A.buildArray(12, x => {return 4}), generateScarboroughFairValues())
-//     }
-}
-
 //Generate the note related part of the configuration object to change chord progressions:
 function noteRelatedNecessaryConfigurations (chosenProgression, configurationObj){
     configurationObj.rootNote = retreiveDataFromChosenProgressionValuesData('note', chosenProgression)
@@ -3419,7 +3352,6 @@ addToModuleExports({
   createNoteSpans,
   createOctaveMaps,
   createRootMap,
-  generateChordProgressionExamples,
   generateChords,
   generateChordsV2,
   inputOtherNecessaryConfigurationVariables,
@@ -3433,42 +3365,6 @@ addToModuleExports({
   setChordsKey,
   sortIntoConfigurationObj,
      modeMapAndModeFilterFromChordProgression,
-})
-
-// --------------------------------------------------------------------------
-//example-chord-progression-scarborough-fair.js:
-
-//Generated the values in the scarbrofair QuantizedMap:
-function generateScarboroughFairValues (){
-    let chordProgressionScarboroughFair = [
-      [{ note: 2, octave: 2 }, { note: 5, octave: 2 }, { note: 9, octave: 2 }],  // Dm
-      [{ note: 2, octave: 2 }, { note: 5, octave: 2 }, { note: 9, octave: 2 }],  // Dm
-      [{ note: 0, octave: 2 }, { note: 4, octave: 2 }, { note: 7, octave: 2 }],  // C
-      [{ note: 0, octave: 2 }, { note: 4, octave: 2 }, { note: 7, octave: 2 }],  // C
-      [{ note: 2, octave: 2 }, { note: 5, octave: 2 }, { note: 9, octave: 2 }],  // Dm
-      [{ note: 2, octave: 2 }, { note: 5, octave: 2 }, { note: 9, octave: 2 }],  // Dm
-      [{ note: 0, octave: 2 }, { note: 4, octave: 2 }, { note: 7, octave: 2 }],  // C
-      [{ note: 0, octave: 2 }, { note: 4, octave: 2 }, { note: 7, octave: 2 }],  // C
-      [{ note: 2, octave: 2 }, { note: 5, octave: 2 }, { note: 9, octave: 2 }],  // Dm
-      [{ note: 2, octave: 2 }, { note: 5, octave: 2 }, { note: 9, octave: 2 }],  // Dm
-      [{ note: 10, octave: 2 }, { note: 2, octave: 2 }, { note: 5, octave: 2 }],  // Am
-      [{ note: 10, octave: 2 }, { note: 2, octave: 2 }, { note: 5, octave: 2 }],  // Am
-      [{ note: 2, octave: 2 }, { note: 5, octave: 2 }, { note: 9, octave: 2 }],  // Dm
-      [{ note: 2, octave: 2 }, { note: 5, octave: 2 }, { note: 9, octave: 2 }],  // Dm
-      [{ note: 0, octave: 2 }, { note: 4, octave: 2 }, { note: 7, octave: 2 }],  // C
-      [{ note: 0, octave: 2 }, { note: 4, octave: 2 }, { note: 7, octave: 2 }]   // C
-    ];
-    return chordProgressionScarboroughFair.map(x => {
-        return {data: x.map(n => {
-            n.velocity = randomRange(10, 120)
-            return n
-        }), bool: true}
-    })
-}
-
-
-addToModuleExports({
-    generateScarboroughFairValues
 })
 
 // --------------------------------------------------------------------------
@@ -3580,13 +3476,6 @@ function messageSpecifiedClient (message, target){
     }
 }
 
-// function findTargetClientByName (name){
-//     for (let i = 0; i < clients.length; i++) {
-//         if (clients[i].name == name){
-//             return clients[i]
-//         }
-//     }
-// }
 function findTargetClientByName (name){
     let foundClient;
     clients.every(x => {
@@ -3648,37 +3537,6 @@ function wipeClientData (clientToRemove){
 
 //Differenciate client part of inspiration from my old and this stack overflow link: https://stackoverflow.com/questions/13364243/websocketserver-node-js-how-to-differentiate-clients
 
-//Send volume through websocket to clients in the browser to show changes in volume with the size of circle:
-function visualizeVolume (info){
-    let sortedInfo = {
-        info: {
-            shapesIndex: 0,
-            time: 0.5,
-            x: info.velocity * 2,
-            y: info.velocity * 2,
-        },
-        type: 'size',
-    }
-    messageAllClients({action:'animate', info: sortedInfo})
-    sortedInfo = {
-            info: {
-                shapesIndex: 0,
-                time: 0.5,
-                x: 10,
-                y: 10,
-            },
-            type: 'size',
-        }
-    setTimeout(() => {
-        messageAllClients({action:'animate', info: sortedInfo})
-    }, info.noteDuration * 1000)
-}
-
-function svgjsVolumeAction (playerName, b, e){
-    let player = e.players[playerName]
-    visualizeVolume({velocity: e.velocityMaps[player.velocityMap].wrapLookup(b), noteDuration: e.noteDurationMaps[player.noteDurationMap].wrapLookup(b)})
-}
-
 // //Find availablePorts for websocketServer
 // async function findAvailablePorts (min = 0, max){
 //     let testPortCode = `;
@@ -3723,92 +3581,13 @@ addToModuleExports({
   receiveCommands,
   removeClient,
   sendMessageToClients,
-  visualizeVolume,
   wipeClientData,
-  svgjsVolumeAction
-})
-
-// --------------------------------------------------------------------------
-//harmony.js:
-//Not in use any more. Unmaintained.
-
-//Array to record notes played on current beat, beat before and beat after:
-let dissonanceRecorder = []
-
-//function that checks for dissonance and changes them to 0:
-function handleDissonance (beat, info){
-//     add2Log('flagged dissonanceRecorder')
-    if (dissonanceRecorder.length > 5){
-        dissonanceRecorder.shift()
-    }
-    let indexOfBeat = dissonanceRecorder.indexOf(dissonanceRecorder.find(x => x.beat === beat))
-    if (indexOfBeat === -1){
-        dissonanceRecorder.push({beat: beat, notesPlayed: []})
-        indexOfBeat = dissonanceRecorder.length - 1
-    }
-    return info.noteValues.map(x => {
-       // if (dissonanceRecorder[indexOfBeat].notesPlayed.indexOf(x - 1) ===  - 1 && dissonanceRecorder[indexOfBeat].notesPlayed.indexOf(x + 1) ===  - 1 && checkBeatBeforeForDissonance(indexOfBeat, x) === false && checkBeatAfterForDissonance(indexOfBeat, x) === false){
-            if (dissonanceRecorder[indexOfBeat].notesPlayed.indexOf(x - 1) ===  - 1 && dissonanceRecorder[indexOfBeat].notesPlayed.indexOf(x + 1) ===  - 1){
-            checkIfAddToDissonanceRecorder(beat, x, indexOfBeat)
-            return x
-        }
-        else{
-            console.log('flagged disonacne', x - 1, dissonanceRecorder[indexOfBeat].notesPlayed.indexOf(x - 1) ===  - 1, 'next',  x + 1,  dissonanceRecorder[indexOfBeat].notesPlayed.indexOf(x + 1) ===  - 1)
-            checkIfAddToDissonanceRecorder(beat, x, indexOfBeat)
-            return 0
-        }
-    })
-}
-
-//Check beat before current beat for disonacne
-function checkBeatBeforeForDissonance (indexOfBeat, x){
-    if (indexOfBeat === 0){
-        return false
-    }
-    else if (dissonanceRecorder[indexOfBeat - 1].notesPlayed.indexOf(x - 1) !== -1) {
-        return true
-    }
-    else if (dissonanceRecorder[indexOfBeat - 1].notesPlayed.indexOf(x + 1) !== -1) {
-        return true
-    }
-    return false
-}
-
-//Check beat after current beat for disonacne
-function checkBeatAfterForDissonance (indexOfBeat, x){
-    if (indexOfBeat === dissonanceRecorder.length - 1){
-        return false
-    }
-    else if (dissonanceRecorder[indexOfBeat + 1].notesPlayed.indexOf(x - 1) !== -1) {
-        return true
-    }
-    else if (dissonanceRecorder[indexOfBeat + 1].notesPlayed.indexOf(x + 1) !== -1) {
-        return true
-    }
-    return false
-}
-
-//Checks if this not has been played in the current beat. If no, record it in dissonanceRecorder:
-function checkIfAddToDissonanceRecorder (beat, note, indexOfBeat){
-    if (dissonanceRecorder[indexOfBeat].notesPlayed.indexOf(note) === -1){
-        dissonanceRecorder[indexOfBeat].notesPlayed.push(note)
-    }
-}
-
-addToModuleExports({
-  checkBeatAfterForDissonance,
-  checkBeatBeforeForDissonance,
-  checkIfAddToDissonanceRecorder,
-  dissonanceRecorder,
-  handleDissonance
 })
 
 // --------------------------------------------------------------------------
 //configure-konduktiva.js
 
 //Fill in the variables inside the player:
-//HERE
-//Change function so if the thing is undefined do not use velocityMapName use defaultName pass defaultName as another argument.
 function assignPlayerForMusicSynthesizerMidiOutput (e, defaultName, playerName, playerData = {}){
     if (typeof playerName !== 'string'){
         logRedError('playerName needs to be a string in order to create or configure a player.')
@@ -3928,7 +3707,6 @@ function createControlChangePlayers (noteValueData, name, e, midiOutput, mapDefa
     }
 }
 
-//HERE name creation is wrong cannot be the same as the orignal player name it should be name + something
 function createMidiProgramPlayers (noteValueData, name, e, midiOutput, mapDefaultName){
     if (noteValueData.midiProgramPlayer !== undefined && noteValueData.midiProgramPlayerKeys !== undefined && noteValueData.midiProgramPlayerKeyspan !== undefined){
          createMidiProgramPlayer(e, name + 'MidiProgram', noteValueData.midiProgramPlayerKeyspan, noteValueData.midiProgramPlayerKeys, noteValueData.midiProgramPlayer, midiOutput, mapDefaultName)
@@ -3939,13 +3717,11 @@ function createMidiProgramPlayers (noteValueData, name, e, midiOutput, mapDefaul
 }
 
 function createModeFilters (noteValueData, name, e){
-//     console.log('trying to createModeMap')
     let modeArray = noteValueData.modeFilter
     if (modeArray === undefined || noteValueData.modeFilterKeys === undefined){
         return false
     }
     let keySpan = noteValueData.modeFilterKeyspan
-//     console.log('keySpan', keySpan)
     if (keySpan === undefined){
         keySpan = modeArray[modeArray.length - 1] + 2
     }
@@ -4039,12 +3815,6 @@ function recordConfigurationDataIntoMusicalEnvironment (noteValueData, name, e){
     return name
 }
 
-// function recordOtherConfigurationData (configO1jOther, name, e){
-//     createChannelMaps(configObjOther, name, e)
-//     createMaskMap(configObjOther, name, e)
-//     e.rhythmPatterns[name] = new RhythmPattern (name, configObjOther.total, configObjOther.keys, configObjOther.bools)
-// }
-
 function recordControlChangeConfigurationData (controlChangeConfigurationObject, name, e){
     createChannelMaps(controlChangeConfigurationObject, name, e)
     createControlChangePlayers(controlChangeConfigurationObject, name, e, controlChangeConfigurationObject.midiOutput, name)
@@ -4112,17 +3882,6 @@ function addToMusicalEnvironment (e){
      e.midiProgramMaps = {'default': new QuantizedMap(4, [0], [[2]])}
 //     e.controlChangeMaps = {}
 }
-
-// addToMusicalEnvironment(e)
-
-//e.players.exampleMidiPlayer3.pattern
-
-// let twelveBarsConfiguration = assignChordProgressionToPlayer('p3', 'lsystem')
-// recordConfigurationDataIntoMusicalEnvironment(twelveBarsConfiguration, 'p3')
-// assignPlayerForMusicSynthesizerMidiOutput(e, 3, exampleMusicalEnvironmentsExtraConfig, 'p3')
-// e.play('exampleMidiPlayer3')
-//
-// e.stop('exampleMidiPlayer3')
 
 function checkIfAllMessagesExist (messageList, e){
     messageList.forEach(x => {
@@ -4264,8 +4023,6 @@ function addChordProgressionFromRomanNumeral(musicalEnvironment, progressionName
     let chordObjs = Progression.fromRomanNumerals(key, progression).map(chord => Chord.get(chord));
     addChordProgression(musicalEnvironment, progressionName, progressionKeyspan, progressionKeys, chordObjs)
 }
-
-
 
 function isLowerCase(string) {
   return string.toLowerCase() === string;
@@ -4516,14 +4273,6 @@ function setupTaskPlayer (env, sequenceName, rhythmPatternName = 'default') {
     return sequenceName
 }
 
-//Action function:
-function musicSynthesizerCaller (p,b,e) {if ((mask(p, e.maskMaps[e.players[p].maskMap] ,(e.currentBeat()),1)) != true) {callMusicSynthesizerRhythm(e, b, p);}}
-// e.actions.midiSequencedRhythm = musicSynthesizerCaller
-
-//Action function:
-function sendPlaybackMessage (p,b, e) {if ((mask(p, e.maskMaps[e.players[p].maskMap] ,(e.currentBeat()),1)) != true) {callMusicSynthesizerRhythm(e, b, p);}}
-// e.actions.sendPlaybackMessage = sendPlaybackMessage
-
 // function sendMidiCCMessages (p,b) {if ((mask(p, e.maskMaps[e.players[p].maskMap] ,(e.currentBeat()),1)) != true) {sendingMidiCCMessages(e, b, p);}}
 
 function filterMode (note, e, b, player){
@@ -4712,34 +4461,6 @@ function createMapsFromMode (variableName, name, e, keyspan, keys, values){
     return finalName
 }
 
-//No longer maintained
-//Gather and sort information and prepare to send through midi:
-function callMusicSynthesizerRhythm (e, b, midiOutput){
-    let cb = e.currentBeat()
-    let player = e.players[midiOutput]
-    let info = getNoteInfoToSend(player, cb, midiOutput)
-    info = filterpolyphony(e, cb, player, info)
-    /*
-    console.log('first step look up', e.noteDurationMaps[player.noteDurationMap].wrapLookup(b))
-    console.log('b', b)
-    console.log('noteValues', info.noteValues)
-    console.log('music notes', midiToMusicNotes(info.noteValues))
-    */
-    //info.noteValues = handleDissonance(b, info)
-    info = convertRomanNumeralsToMidi(info, player)
-    info = convertLettersToMidi(info, player)
-    visualizeVolume(info)
-//     checkIfChangeChordProgression(e, b, player) //function unmaintained
-//     checkIfSendMidiControlChange(e, b, player)
-    info = convertNoteValuesToMidi(info, e, cb, player)
-    info = calculateFinalNoteValue(info, player, e)
-//     console.log('FINAL playing finaValues', info.finalValues)
-    info.finalValues.forEach((x, i) => {
-        sendMidiData(info, player, x, findChannel(player, cb, e), e, b)
-    })
-    return true
-}
-
 //NEW BELL MIDI FUNCS:
 
 function getAllInfoFromChordProgression (progression){
@@ -4764,15 +4485,6 @@ function getAllInfoFromChordProgression (progression){
         data.note.push(note)
     })
     return data
-}
-
-function checkIfMapExistsAndMapContents (e, variableName, mapName,keyspan, keys, values){
-    let currentMap = e[variableName][mapName]
-    if (currentMap === undefined){
-            currentMap = e.addMap(variableName, mapName, keyspan, keys, values)
-    }
-    else if (currentMap ){
-    }
 }
 
 function extractNumberFromString(str) {
@@ -4850,7 +4562,6 @@ function applyNewMapNamesToPlayer (e, player, newMapNames){
     player.veloctiyMap = newMapNames.velocityMap
 }
 
-//HERE
 //If it is time to change chordProgressions, will check if the chordProgression exitst in noteMaps. If no create a noteMap. Change player to use the correct noteMap.
 function checkChangeChordProgressionAndCreateNewMaps (e, b, player){
     if (player.songMap === undefined){
@@ -4910,7 +4621,6 @@ function sendChordMidiInfo (playerName, b, e){
         return filterMode(x, e, cb, player)
     });
     info = calculateFinalNoteValue(info, player, e);
-//     checkIfSendMidiControlChange(e, b, player)
     info.finalValues.forEach((x, i) => {
 //         addLog('beat: ' + b)
         sendMidiData(info, player, x, findChannel(player, cb, e), e, b)
@@ -4930,7 +4640,6 @@ function sendNotesMidiInfo (playerName, b, e){
         return filterMode(x, e, cb, player)
     })
     info = calculateFinalNoteValue(info, player, e)
-//     checkIfSendMidiControlChange(e, b, player)
     info.finalValues.forEach((x, i) => {
         let chann = findChannel(player, cb, e)
         sendMidiData(info, player, x, chann, e, b)
@@ -5006,10 +4715,7 @@ function completePendingTask (playerName, b, e){
 // END OF NEW BELL MIDI FUNCTIONS
 
 function getNoteInfoToSend(player, b, midiOutput, e) {
-//       beats.push(b)
-//     beats.push(b, b% keyspan, chord)
     checkIfUseVerboseLogging(player, player.name, ' using this noteMap: ', player.noteMap)
-//     checkIfUseVerboseLogging(player, 'CRAP: beat: ', b, 'should be 0: ' , b%e.rhythmMaps[player.rhythmMap].keyspan, 'chordName: ', e.chordMaps[player.chordMap].wrapLookup(b))
     return {
         noteDuration: e.noteDurationMaps[player.noteDurationMap].wrapLookup(b),
         velocity: convertVelocityToMidiValues(e.velocityMaps[player.velocityMap].wrapLookup(b)),
@@ -5024,9 +4730,6 @@ function getNoteInfoToSend(player, b, midiOutput, e) {
 //Update Midi outputs:
 function updateMidiOutputList (e){
     let easymidiOutputs = easymidi.getOutputs()
-//     if (process.platform === 'linux'){
-//         easymidiOutputs.shift()
-//     }
     if (e.midiOutputs !== undefined){
         e.midiOutputs.forEach(x => {
             x.close()
@@ -5061,29 +4764,6 @@ function midiToMusicNotes (array){
     return array.map(x =>{
         return Midi.midiToNoteName(x)
     })
-}
-
-function checkIfSendMidiControlChange (e, b, player){
-//     console.log(e.controlChangeMaps, player.controlChangeMaps)
-    if (e.controlChangeMaps[player.controlChangeMap] === undefined){
-        checkIfUseVerboseLogging(player, 'CC unknown')
-        return true
-    }
-    let correctCC = e.controlChangeMaps[player.controlChangeMap].wrapLookup(b)
-    let currentChannel = findChannel(player, b, e)
-    checkIfUseVerboseLogging(player, 'correctCC' + correctCC)
-    if (player.currentControlChange !== correctCC){
-        player.currentControlChange = correctCC
-//         e.midiOutputs[player.midiOutput - 1].send('cc', correctCC)
-        correctCC.forEach(x => {
-            e.midiOutputs[player.midiOutput - 1].send('cc', {
-                controller: x.controller,
-                value: x.value,
-                channel: currentChannel
-            })
-        })
-        checkIfUseVerboseLogging(player, 'CC data sent')
-    }
 }
 
 function updateMidiInputList (e){
@@ -5250,11 +4930,7 @@ function addInputMessageToRecordedMessages (inputIndex, recordedMessagesName, e)
 }
 
 // --------------------------------------------------------------------------
-//New stuff not in es directory:
-
 // //Action function:
-// function sendPlaybackMessage (p,b) {if ((mask(p, e.maskMaps[e.players[p].maskMap] ,(e.currentBeat()),1)) != true) {sendPlaybackMessage(e, b, p);}}
-// e.actions.sendPlaybackMessage = sendPlaybackMessage
 
 function convertQuantizedMapToRelativeForm (map){
     let amountToRemove = map.keys[0] - 0
@@ -5372,8 +5048,6 @@ function createMidiProgramPlayer (e, name, keyspan, keys, midiPrograms, midiOutp
 addToModuleExports({
   addInputMessageToRecordedMessages,
   calculateFinalNoteValue,
-  callMusicSynthesizerRhythm,
-  checkIfSendMidiControlChange,
   checkIfStringIncluesNumber,
   convertLettersToMidi,
   convertNoteValuesToMidi,
@@ -5388,10 +5062,8 @@ addToModuleExports({
   ignoreMessagesFromInput,
   isNumeric,
   midiToMusicNotes,
-  musicSynthesizerCaller,
   receiveMessagesFromInput,
   sendMidiData,
-  sendPlaybackMessage,
   setupMidiRhythm,
   setupPlaybackPlayer,
   updateMidiInputList,
@@ -5402,7 +5074,6 @@ addToModuleExports({
     createPlaybackPlayer,
     checkIfUseVerboseLogging,
     getAllInfoFromChordProgression,
-    checkIfMapExistsAndMapContents,
     extractNumberFromString,
     removeNumberFromString,
     generateUniqueString,
@@ -6432,33 +6103,6 @@ addToModuleExports({writeWorkerFileSetupToFile, giveWorkerWork, workerTemplate, 
 // --------------------------------------------------------------------------
 //Other setup functions:
 
-// function setUpDefaultMusicalEnvironment (){
-//     let e = new MusicalEnvironment()
-//     setUpDefaultRhythmMapsToMusicalEnvironment(e)
-//     setUpDefaultActionToMusicalEnvironment(e)
-//     setUpDefaultMaskMapsForMusicalEnvironment(e)
-//     setUpDefaultIOIsForMusicalEnvironment(e)
-//     setUpDefaultCurrentDensityGraphsForMusicalEnvironment(e)
-//     setUpDefaultDensityGraphsForMusicalEnvironment(e)
-//     setUpDefaultPlayersForMusicalEnvironments(e)
-//     addToMusicalEnvironment(e)
-//     addMapToMusicalEnvironment(e, 'rhythmMaps', 'chalk', 10, [0, 1, 2, 3], [4, 5, 6, 7])
-//     updateMidiOutputList(e)
-//     setupScheduler(e)
-//     e.startScheduler()
-//     e.actions.midiSequencedRlethythm = musicSynthesizerCaller
-//     e.actions.sendPlaybackMessage = sendPlaybackMessage
-//     recordConfigurationDataIntoMusicalEnvironment(lsystemData, 'p1', e)
-//     recordConfigurationDataIntoMusicalEnvironment(circleOfFifthChords, 'p4', e)
-//     recordConfigurationDataIntoMusicalEnvironment(circleOfFifthMelody, 'p3', e)
-//      assignPlayerForMusicSynthesizerMidiOutput(e, 1, 'p1', {rhythmMapName: 'straight', chordMapName: 'twelveBars-lsystem-scarbrofair'})
-//      assignPlayerForMusicSynthesizerMidiOutput(e, 3, 'p3', exampleMusicalEnvironmentsExtraConfig)
-//      assignPlayerForMusicSynthesizerMidiOutput(e, 4, 'p4')
-//     recordConfigurationDataIntoMusicalEnvironment(melodyData, 'p2', e)
-//      assignPlayerForMusicSynthesizerMidiOutput(e, 2, 'p3')
-//     return e
-// }
-
 let exampleMusicalEnvironmentsExtraConfig = {
     rhythmMapName: 'straight',
     velocityMapName: 'default', 
@@ -6495,7 +6139,6 @@ function setUpMusicalEnvironmentExamples (){
 //     updateMidiOutputList(e)
     setupScheduler(e)
     e.startScheduler()
-    e.actions.midiSequencedRhythm = musicSynthesizerCaller
     e.actions.sendChordMidiInfo = sendChordMidiInfo
     e.actions.sendNotesMidiInfo = sendNotesMidiInfo
     e.actions.sendPlaybackMessage = sendPlaybackMessage
@@ -6688,20 +6331,6 @@ function createPlayerBasedOnInfo (e, name, configObj, extraConfig){
     return true
 }
 
-
-function addDuplicatePlayersWithConfigObjArray (e, playerNames, configObjs, extraConfigs){
-    if (playerNames.length !== configObjs.length){
-        throw new Error('playerNames length should be same as configObjs length')
-        return false
-    }
-    return playerNames.map((x, i) => {
-        recordConfigurationDataIntoMusicalEnvironment(configObjs[i], x, e)
-        assignPlayerForMusicSynthesizerMidiOutput(e, x, x, extraConfigs[i])
-        e.replaceUndefinedPlayerPropertiesWith(currentPlayerName)
-        return x
-    })
-}
-
 function setUpKonduktiva (){
     global.udpPort = new osc.UDPPort({
         // This is the port we're listening on.
@@ -6718,57 +6347,6 @@ function setUpKonduktiva (){
 }
 
 // export let e = setUpDefaultMusicalEnvironment()
-
-function checkNumInputMusicalEnv (param, extraInfo){
-    if (param === 0){
-        return setUpVerySimpleMusicalEnvironment()
-    }
-    else if (param === 1){
-        return setUpDefaultMusicalEnvironmentOnePlayer()
-    }
-    else if (param === 2){
-        return setUpTwoPlayerMusicalEnvironment()
-    }
-    else if (param === 3){
-        return setUpSimpleMusicalEnvironment()
-    }
-    else if (param === 4){
-        return setUpDefaultMusicalEnvironmentFourPlayers()
-    }
-    else if (param === 5){
-        return setUpLongMusicalEnvironment()
-    }
-    else if (param === 6){
-        return setUpTestMusicalEnvironment(extraInfo)
-    }
-    return false
-}
-
-function checkStringInputMusicalEnv (param, extraInfo){
-    param = param.toLowerCase()
-    if ((param.includes('very') && param.includes('simple')) || param.includes('vsimple') || param.includes('0')){
-        return setUpVerySimpleMusicalEnvironment()
-    }
-    else if (param.includes('one') || param.includes('1')){
-        return setUpDefaultMusicalEnvironmentOnePlayer()
-    }
-    else if (param.includes('two') || param.includes('2')){
-        return setUpTwoPlayerMusicalEnvironment()
-    }
-    else if (param.includes('simple') || param.includes('3')){
-        return setUpSimpleMusicalEnvironment()
-    }
-    else if (param.includes('four') || param.includes('4')){
-        return setUpDefaultMusicalEnvironmentFourPlayers()
-    }
-    else if (param.includes('long') || param.includes('5')){
-        return setUpLongMusicalEnvironment()
-    }
-    else if (param.includes('test') || param.includes('6')){
-        return setUpTestMusicalEnvironment(extraInfo)
-    }
-    return false
-}
 
 // function setUpMusicalEnvironment (param, extraInfo){
 //     if (typeof param === 'number'){
@@ -6924,17 +6502,11 @@ addToModuleExports({
     configObjCreation,
     simpleMelodyDataTemplate,
     addDuplicatePlayersWithConfigObj,
-    addDuplicatePlayersWithConfigObjArray,
     defaultConfigurationObject,
     emptyOtherConfigObj,
     emptyControlChangeConfigurationObject,
     emptyMidiProgramConfigurationObject,
-    svgjsVolumeAction,
 })
 
 //let K = require('./combined.js')
 //let e = setUpDefaultMusicalEnvironment()
-
-//REPLACE the whole midi.js for await import version for verbose to work. Also replace musicSynthesizerMidiOutput with exampleMidiPlayer.
-//Remove related addMapToMusicalEnvironment function and replace musicalEnvironment class.
-
