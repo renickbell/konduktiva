@@ -696,33 +696,7 @@ function getIOI (env, player, beat) {
     return onset
 }
 
-// write a generalized version of this that can accept any IOIFunc
-
-function getNextOnsets (densityMap, density, beat, limitBeat, output) {
-    if (beat > limitBeat) {
-        return output
-    }
-    else {
-        // replace getNextOnset with generalized IOIFunc here?
-        let nextOnset = getNextOnset(densityMap, density, beat);
-        output = output.concat(nextOnset)
-        return getNextOnsets (densityMap, density, beat+nextOnset, limitBeat, output)
-    }
-}
-
-function getNextOnsets2 (ioiFunc, beat, limitBeat, output) {
-    if (beat > limitBeat) {
-        return output
-    }
-    else {
-        // replace getNextOnset with generalized IOIFunc here?
-        let nextOnset = ioiFunc(beat);
-        output = output.concat(nextOnset)
-        return getNextOnsets2 (ioiFunc, beat+nextOnset, limitBeat, output)
-    }
-}
-
-function getNextOnsets3 (ioiFunc, player, beat, limitBeat, output, e) {
+function getNextOnsets (ioiFunc, player, beat, limitBeat, output, e) {
     if (beat > limitBeat) {
         return output
     }
@@ -730,7 +704,7 @@ function getNextOnsets3 (ioiFunc, player, beat, limitBeat, output, e) {
         // replace getNextOnset with generalized IOIFunc here?
         let nextOnset = ioiFunc(player, beat, e);
         output = output.concat(nextOnset)
-        return getNextOnsets3 (ioiFunc, player, beat+nextOnset, limitBeat, output, e)
+        return getNextOnsets (ioiFunc, player, beat+nextOnset, limitBeat, output, e)
     }
 }
 
@@ -1035,7 +1009,7 @@ class MusicalEnvironment {
         let e = this
 //         console.log("scheduling " + player);
         let ioiFunc = this.getIOIFunc (player);
-        let onsets = getNextOnsets3(ioiFunc,player, this.currentBeat(), this.currentBeat() + timeToBeats(this.currentTempo,this.lookahead),[], e);
+        let onsets = getNextOnsets(ioiFunc,player, this.currentBeat(), this.currentBeat() + timeToBeats(this.currentTempo,this.lookahead),[], e);
         let onsetsAfterLastScheduled = onsets.filter(x => x > this.players[player].lastScheduledTime);
 //         console.log('onsetsAfterLastScheduled', onsetsAfterLastScheduled)
         if (player.verbose == true) {
@@ -1099,7 +1073,7 @@ class MusicalEnvironment {
     */
     stop (player) {
         if (this.players[player].status == "stopped")
-            {console.log("Player " + this.players[player].name + " is not playing!")}
+            {    console.log("Player " + this.players[player].name + " is not playing!")}
         else {
 //             this.scheduledPlayers = A.removeItem(this.scheduledPlayers,player)
             this.scheduledPlayers = A.removeAllInstance(this.scheduledPlayers,player)
@@ -1391,7 +1365,7 @@ class MusicalEnvironment {
             this.midiProgramMaps[mapName] = new QuantizedMap(keyspan, keys, values)
         }
     }
-    addMap (objectName, mapName, keyspan, keys, values){
+    addMap (objectName, mapName, keyspan, keys, values, verbose){
         this.checkingAddMapToMusicalEnvironmentArguments(objectName, mapName, keyspan, keys, values)
         switch (objectName){
             case'rhythmMaps':
@@ -1441,7 +1415,9 @@ class MusicalEnvironment {
              default:
                 throw new Error(objectName + 'not supported by addMap method. Supported variables include most if not all the variables that end with "Maps". Exceptions include, rhythmPatterns, chordProgressions, modeFilters.');
         }
-        console.log('Successfully created ', objectName, ' named ', mapName)
+        if (verbose !== false){
+            console.log('Successfully created ', objectName, ' named ', mapName)
+        }
         return true
     }
     checkMap (objectName, mapName, keyspan, keys, values){
@@ -1930,8 +1906,6 @@ addToModuleExports({
   getNextOnset,
   getNextOnsetFromRhythmMap,
   getNextOnsets,
-  getNextOnsets2,
-  getNextOnsets3,
   getRemainingDelta,
   increaseDensity,
   lerpValues,
@@ -2455,20 +2429,6 @@ addToModuleExports({
 // --------------------------------------------------------------------------
 //utilities-music.js:
 
-let notes = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
-
-// const {
-//     Chord,
-//     Interval,
-//     Note,
-//     Scale,
-//     Key,
-//     Progression,
-//     Midi,
-//     RomanNumeral,
-//     Mode
-// } = require("tonal")
-
 /**
   * Converts bars(music) to beats(music)
   * @param {numbers} beatsPerBar - Sets the beats per bar which the conversion uses.
@@ -2934,27 +2894,6 @@ function addNoteMapFromChordMap(e, rootMapName, chordMapName, noteMapName) {
     e.noteMaps[noteMapName] = new QuantizedMap(keyspan, keys, chordsIntervals);
 }
 
-function addNoteMapFromChordMapKeyVersion(e, rootMapName, chordMapName, noteMapName, key) {
-    let keyNote = key.slice(0, 2).replace(/\s/g, '');
-    let newRootMap = new QuantizedMap(1, [0], [keyNote]);
-    let keyspan = e.rootMaps[rootMapName].keyspan;
-    let keys = e.rootMaps[rootMapName].keys;
-    let rootArray = e.rootMaps[rootMapName].values;
-    let newNoteArray = [];
-    let chordMapIndex = 0;
-    console.log(rootArray)
-    rootArray.forEach(root => {
-        console.log(chordMapIndex)
-        console.log(e.chordMaps[chordMapName].values[chordMapIndex])
-        newNoteArray.push(Chord.get(root + e.chordMaps[chordMapName].values[chordMapIndex]).notes.map(n => noteToScaleDegree(n.includes("#") ? Note.enharmonic(n) : n, Scale.get(keyNote + " chromatic").notes.map(chromaticScaleNote => chromaticScaleNote.includes("#") ? Note.enharmonic(chromaticScaleNote) : chromaticScaleNote)) - 1).sort(function(a, b) {
-            return a - b;
-        }));
-        chordMapIndex += 1;
-    });
-    e.noteMaps[noteMapName + "KeyVersion"] = new QuantizedMap(keyspan, keys, newNoteArray);
-    e.rootMaps[rootMapName + "KeyVersion"] = newRootMap;
-}
-
 function getChordComponents (values){
     let roots = [];
     let chords = [];
@@ -2971,60 +2910,9 @@ function getChordComponents (values){
     }
 }
 
-// function modeMapAndModeFilterFromChordProgression (chordProgression, keyspan, keys, mapName, e){
-//     e.modeMaps[mapName] = new QuantizedMap(keyspan, keys, [])
-//     chordProgression.forEach((x, i) => {
-//         e.modeFilters[mapName + i] = new QuantizedMap(12, x, x)
-//         e.modeMaps[mapName].values.push(mapName + i)
-//     })
-//     return true
-// }
-
-function modeMapAndModeFilterFromChordProgression (mapsName, e){
-    addNoteMapFromChordMap(e, mapsName, mapsName, mapsName)
-    e.modeMaps[mapName] = new QuantizedMap(e.chordMaps[mapsName].keyspan, e.chordMaps[mapsName].keys, [])
-    chordProgression.forEach((x, i) => {
-        e.modeFilters[mapsName + i] = new QuantizedMap(12, x, x)
-        e.modeMaps[mapName].values.push(mapName + i)
-    })
-    return true
-}
-
-//Yiler Function:
-function setChordsKey(root, octave, template) {
-    const notes = ["C", "D", "E", "F", "G", "A", "B"];
-    root = notes.indexOf(root.toUpperCase())
-    if (template === undefined){
-        template = Object.keys(ChordTemplates)[randomRange(0, Object.keys(ChordTemplates).length - 1)]
-    }
-    let outputChord = [];
-//     for (let i = 0; i < 12; i++) {
-    Array.from({length: 12}).forEach((x, i) =>{
-        if (i == 4 || i == 5) {
-            outputChord.push(new Chord({
-                root: root + 5,
-                octave: octave,
-                template: ChordTemplates[template]
-            }))
-        }else if (i == 8 || i == 9){
-            outputChord.push(new Chord({
-                root: root + 7,
-                octave: octave,
-                template: ChordTemplates[template]
-            }))
-        }else {
-            outputChord.push(new Chord({
-                root: root,
-                octave: octave,
-                template: ChordTemplates[template]
-            }))
-        }
-    })
-    return outputChord
-}
-
 //Yiler Function
 function generateChords(root, octave, voicing, majorOrMinor) {
+    let notes = Scale.get("C chromatic").notes 
     let keyScale = Scale.get(notes[root] + " " + majorOrMinor)
     let letterChords = [];
 //     for (let i = 0; i < 12; i++) {
@@ -3105,22 +2993,6 @@ function createRootMap (noteValueData, name, e){
         e.rootMaps[name] = new QuantizedMap(noteValueData.rootMapKeyspan, noteValueData.rootMapKeys, noteValueData.rootMap)
     }
 }
-
-// function scaleWithNote (noteLetter, octave, keyArray){
-//     const notes = ["C", "D", "E", "F", "G", "A", "B"];
-//     let note = notes.indexOf(noteLetter)
-//     if (note === -1){
-//         return 'Invalid note letter'
-//     }
-//     note += (octave * 12)
-//     let vals = []
-//     for (let i = 0; i < keyArray.length; i++) {
-//         vals.push(note + (12 * i))
-//     }
-//     return new QuantizedMap(Math.max(...keyArray) + 1, keyArray, vals)
-// }
-
-//scaleWithNote('C', randomRange(1, 8), aeolianMode)
 
 // function makeNote (note, octave, add){
 //     const notes = ["C", "D", "E", "F", "G", "A", "B"];
@@ -3263,19 +3135,6 @@ function inputOtherNecessaryConfigurationVariables (chosenProgression){
 //     }
 // }
 
-//Yiler function or Yiler may be able to explain this better:
-function scaleWithNote (noteLetter, octave, mode){
-    let note = Mode.notes(mode, noteLetter)
-    note.forEach((x, i) =>{
-        note[i] = x + octave
-    })
-    let midiValues = note.map ( x =>{
-        return Midi.toMidi(x)
-    })
-    let rootNoteValues = getRootMidiValues(Mode.notes(mode, noteLetter))
-    return new QuantizedMap(Math.max(...rootNoteValues) + 1, rootNoteValues, midiValues)
-}
-
 function separateOctaveAndRoot(midiNotes) {
   let octaveNotes = [];
   let rootNotes = [];
@@ -3311,36 +3170,6 @@ function convertMusicalLettersToMidi (letterArray){
     })
 }
 
-function makeChordProgression (name, total, iois, notes, octaves, e){
-    if (iois === undefined){
-        let splitNotes = separateOctaveAndRoot(iois.map(x => {
-            return x[1]
-        }))
-        notes = splitNotes.rootNotes
-        octaves = splitNotes.octaveNotes
-        iois = iois.map(x => {
-            return x[0]
-        })
-    }
-    if (iois.length > notes.length){
-        notes = A.resizeArray(iois.length, notes)
-    }
-    else if (iois.length < notes.length){
-        iois = A.resizeArray(notes.length, iois)
-    }
-    if (octaves.length !== notes.length){
-        octaves = A.resizeArray(notes.length, octaves)
-    }
-    if (typeof notes[0] === 'object'){
-    e.chordMaps[name] = new QuantizedMap(total, reformatIoisToRelative(iois), notes.map((x, i) => { return x.map((d, n) => {return {note: d, octave: octaves[i][n]}})}))
-    }
-    else {
-    e.chordMaps[name] = new QuantizedMap(total, reformatIoisToRelative(iois), notes.map((x, i) => { return {note: x, octave: octaves[i]}}))
-    }
-}
-
-// makeChordProgression('yo', 10, [4, 8, 12, 16, 20], [10, 10, 10, 10, 20], [5, 5, 5])
-
 addToModuleExports({
     addNoteMapFromChordMap,
   assignChordProgressionToPlayer,
@@ -3355,16 +3184,12 @@ addToModuleExports({
   generateChords,
   generateChordsV2,
   inputOtherNecessaryConfigurationVariables,
-  makeChordProgression,
   necessaryConfigurations,
   noteRelatedNecessaryConfigurations,
   reformatIoisToRelative,
   retreiveDataFromChosenProgressionValuesData,
-  scaleWithNote,
   separateOctaveAndRoot,
-  setChordsKey,
   sortIntoConfigurationObj,
-     modeMapAndModeFilterFromChordProgression,
 })
 
 // --------------------------------------------------------------------------
@@ -3593,7 +3418,6 @@ function assignPlayerForMusicSynthesizerMidiOutput (e, defaultName, playerName, 
         logRedError('playerName needs to be a string in order to create or configure a player.')
         return new Error('playerName needs to be a string')
     }
-     console.log(playerData)
 //     else if (defaultName !== undefined && playerData.velocityMapName === undefined){
 //         playerData.velocityMapName = defaultName
 //     }
@@ -3779,10 +3603,10 @@ function createLegatoMap (noteValueData, name, e){
         return false
     }
     else if (noteValueData.legatoMapKeys !== undefined && noteValueData.legatoMapKeyspan !== undefined){
-        e.addMap('legatoMaps', name, noteValueData.legatoMapKeyspan, noteValueData.legatoMapKeys, noteValueData.legatoMap)
+        e.addMap('legatoMaps', name, noteValueData.legatoMapKeyspan, noteValueData.legatoMapKeys, noteValueData.legatoMap, false)
     }
     else {
-        e.addMap('legatoMaps', name, noteValueData.legatoMap.length, noteValueData.legatoMap.map((x, i) => {return i}), noteValueData.legatoMap)
+        e.addMap('legatoMaps', name, noteValueData.legatoMap.length, noteValueData.legatoMap.map((x, i) => {return i}), noteValueData.legatoMap, false)
     }
 }
 
@@ -3809,7 +3633,6 @@ function recordConfigurationDataIntoMusicalEnvironment (noteValueData, name, e){
 //     createRhythmMap(noteValueData, name)
 //     createMaskMap(noteValueData, name)
     let rhythmMapData = configureRhythmMapVariables(noteValueData)
-    console.log(rhythmMapData)
     e.rhythmPatterns[name] = new RhythmPattern (name, rhythmMapData.keyspan, rhythmMapData.IOIs, rhythmMapData.bools)
     createChannelMaps(noteValueData, name, e)
     return name
@@ -4818,105 +4641,6 @@ function sortArrays(arrayA, arrayB) {
     };
 }
 
-function yilerNoteOnFilter (inputNote, e){
-        try {
-        let chordCorrespondingScale;
-        let chordRelativeSemitone = e.noteMaps.p4.wrapLookup((e.currentBeat()+ 1)/4)
-        console.log(chordRelativeSemitone)
-        let chordBeingPlayed = Chord.detect(chordRelativeSemitone.map(e => Note.fromMidi(e)))
-        if (chordBeingPlayed[0].includes("b")) {
-            chromaticScale = Scale.get(chordBeingPlayed[0].slice(0, 2) + " chromatic")
-        } else {
-            chromaticScale = Scale.get(chordBeingPlayed[0].charAt(0) + " chromatic")
-        }
-        console.log(chromaticScale)
-        if (chordBeingPlayed[0].includes("m") && chordBeingPlayed.length < 4) {
-            if (chordBeingPlayed[0].includes("b")) {
-                scaleDegreeToNote = Scale.degrees(`${chordBeingPlayed[0].slice(0,2)} minor`)
-                chordCorrespondingScale = Scale.get((`${chordBeingPlayed[0].slice(0,2)} mfs.appendFile('./data.csv',inor`)).notes
-            } else {
-                scaleDegreeToNote = Scale.degrees(`${chordBeingPlayed[0].charAt(0)} minor`)
-                chordCorrespondingScale = Scale.get((`${chordBeingPlayed[0].charAt(0)} minor`)).notes
-            }
-        } else {
-            if (chordBeingPlayed[0].includes("b")) {
-                scaleDegreeToNote = Scale.degrees(`${chordBeingPlayed[0].slice(0,2)} major`)
-                chordCorrespondingScale = Scale.get((`${chordBeingPlayed[0].slice(0,2)} major`)).notes
-            } else {
-                scaleDegreeToNote = Scale.degrees(`${chordBeingPlayed[0].charAt(0)} major`)
-                chordCorrespondingScale = Scale.get((`${chordBeingPlayed[0].charAt(0)} major`)).notes
-            }
-        }
-        filterQM.keys = chordRelativeSemitone;
-        console.log(chordCorrespondingScale)
-        console.log(Chord.get(chordBeingPlayed[0]).notes)
-        filterQM.values = Chord.get(chordBeingPlayed[0]).notes.map(n => noteToScaleDegree(n, chordCorrespondingScale))
-        console.log(noteToScaleDegree(Chord.get(chordBeingPlayed[0]).notes[0], chordCorrespondingScale))
-        let octave = Note.fromMidi(inputNote).charAt(Note.fromMidi(inputNote).length - 1)
-        let noteBeingPlayed = Note.fromMidi(inputNote).slice(0, -1)
-//         console.log("noteBeingPlayed: " + noteBeingPlayed)
-//         console.log("fQM: " + filterQM.values)
-        let filteredNote = scaleDegreeToNote(filterQM.wrapLookup(chromaticScale.notes.indexOf(noteBeingPlayed))) + octave
-        playedNotes.push({originalNote: Note.fromMidi(inputNote) ,filtered:filteredNote})
-//         console.log(playedNotes)
-        console.log('before', inputNote, "filteredNote" + filteredNote)
-            return Note.midi(filteredNote)
-    } catch (err) {
-//         console.log(err)
-    }
-}
-
-function yilerNoteOffFilter (inputNote, e){
-        try {
-        let octave = Note.fromMidi(inputNote).charAt(Note.fromMidi(inputNote).length - 1)
-        let noteBeingPlayed = Note.fromMidi(inputNote).slice(0, -1)
-        let filteredNote = scaleDegreeToNote(filterQM.wrapLookup(chromaticScale.notes.indexOf(noteBeingPlayed))) + octave
-        let noteOffObj = playedNotes.filter(note => note.originalNote == Note.fromMidi(inputNote))[0]
-//         console.log(filteredNote)
-        console.log('yo', noteOffObj)
-        let output = Note.midi(noteOffObj.filtered)
-        //playedNotes = A.removeFirstInstance(playedNotes, filteredNote)
-        playedNotes = A.removeFirstInstance(playedNotes, noteOffObj)
-        return output
-    } catch (err) {
-//         console.log(err)
-    }
-}
-//Yiler function ends here
-
-function receiveMessagesFromInput (e, inputIndex, outputIndex, recordMessages){
-    let currentInput = e.midiInputs[inputIndex]
-    if (currentInput.recordedMessages === undefined){
-        currentInput.recordedMessages = new QuantizedMap(0, [], [])
-    }
-    if (recordMessages !== undefined){
-        currentInput.recordMessages = recordMessages
-    }
-    currentInput.outputIndex = outputIndex
-    currentInput.inputFunc = (deltaTime, message) => {
-        let currentInput = e.midiInputs[inputIndex]
-        if (deltaTime._type === 'noteon'){
-            console.log('erge', deltaTime)
-            deltaTime.note = yilerNoteOnFilter(deltaTime.note, e)
-        }
-        else if (deltaTime._type === 'noteoff'){
-            deltaTime.note = yilerNoteOffFilter(deltaTime.note, e)
-        }
-        if (currentInput.outputIndex !== undefined){
-            e.midiOutputs[currentInput.outputIndex].send(deltaTime._type, deltaTime)
-        }
-        if (currentInput.recordMessages === true){
-//             currentInput.recordedMessages.keys.push(e.currentBeat())
-            currentInput.recordedMessages.keys.push(Math.floor(new Date().getTime() / 1000))
-            //Time from: https://stackoverflow.com/a/25250596
-            currentInput.recordedMessages.values.push(deltaTime)
-            currentInput.recordedMessages.keyspan = e.currentBeat() + 2
-        }
-    }
-    currentInput.outputPort = new easymidi.Input(currentInput.inputName)
-    currentInput.outputPort.on('message', currentInput.inputFunc)
-}
-
 function addInputMessageToRecordedMessages (inputIndex, recordedMessagesName, e){
     e.recordedMessages[recordedMessagesName] = e.midiInputs[inputIndex].recordedMessages
     let messages = e.recordedMessages[recordedMessages]
@@ -5062,7 +4786,6 @@ addToModuleExports({
   ignoreMessagesFromInput,
   isNumeric,
   midiToMusicNotes,
-  receiveMessagesFromInput,
   sendMidiData,
   setupMidiRhythm,
   setupPlaybackPlayer,
