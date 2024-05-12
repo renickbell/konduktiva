@@ -852,6 +852,153 @@ export function convertStringToFunction (string){
 //         return (1, eval)('return (' + string + ')')()
 }
 
+export function checkDefaultRhythmMap(keyspan, keys, values){
+    if (checkAllItemsType(values, 'number')){
+        return true
+    }
+    else {
+        throw new Error('Expected values to be an array of numbers')
+        return false
+    }
+}
+
+export function checkNoteMap (keyspan, keys, values){
+    if (checkAllItemsType(values, 'array') === false){
+        throw new Error('Expected values array to be filled with arrays which contain numbers')
+        return false
+    }
+    else if (values.map((x, i) => {return checkAllItemsType(x, 'number')}).includes(false)){
+        throw new Error('Expected items in arrays in values to be filled with numbers. ex. [[number], [number]]')
+        return false
+    }
+    else {
+        return true
+    }
+}
+
+export function checkRhythmPatternMap (keyspan, keys, values){
+    if (checkAllItemsType(values, 'boolean')){
+        return true
+    }
+    else {
+        throw new Error('Expected an values array to be filled with booleans true or false')
+        return false
+    }
+}
+
+export function checkMaskMap (keyspan, keys, values){
+    if (checkAllItemsType(values, 'boolean')){
+        return true
+    }
+    else {
+        throw new Error('Expected an values array to be filled with booleans true or false')
+        return false
+    }
+}
+
+export function checkSongMap (keyspan, keys, values, e){
+    if (checkAllItemsType(values, 'string') === false){
+        throw new Error ('Invalid items in values array. Expected an array filled with strings.')
+        return false
+    }
+    else if (values.every((x, i) => {if (e.chordMaps[x] === undefined){
+        throw new Error (x + ' is not a property name of musicalEnvironment.chordProgressions. Fix index ' + i)
+        return false
+        }
+        return true
+    }) === false){
+        throw new Error ('Invalid items in values array. Expected name of a property in musicalEnvironment.chordProgressions')
+        return false
+    }
+    else {
+        return true
+    }
+}
+
+export function checkChordMap (keyspan, keys, values){
+    if (checkAllItemsType(values, 'string') === false){
+        throw new Error ('Invalid items in values array. Expected an array filled with chords in form of strings.')
+    }
+    else if (values.map((x, i) => {
+        if (Chord.getChord(x).empty === true){
+            console.log('Item ' + i + ' of the value array is not a chord')
+            return false
+        }
+        return true
+    }).includes(false)){
+        throw new Error('Items in the value array include variables which are not chords.')
+        return false
+    }
+}
+
+export function checkControlChangeMap (keyspan, keys, values){
+        if (checkAllItemsType(values, 'object') === false){
+            throw new Error ('Invalid items in values array. Expected an array filled with objects. The objects should be filled with two variables controller and value. Both should be numbers.')
+            return false
+        }
+        else if (values.map((x, i) => {
+            let incorrectTypes = false
+            if (typeof x.controller !== 'number' || x.controller < 0 || x.controller > 127){
+                console.log('The controller value of ' + i + ' should a a number 0-127.')
+                incorrectTypes = true
+            }
+            if (typeof x.value !== 'number' || x.value < 0 || x.value > 127){
+                console.log('The value of the variable value ' + i + 'should a a number 0-127.')
+                incorrectTypes = true
+            }
+            if (incorrectTypes === true){
+                return true
+            }
+        }).includes(true)){
+            throw new Error ('Invalid items in values array. Expected objects with two variables controller and value. Both numbers 0-127.')
+            return false
+        }
+    else {
+        return true
+    }
+}
+
+export function checkModeMap (keyspan, keys, values){
+    if (checkAllItemsType(values, 'string') === false){
+        throw new Error ('Invalid items in values array. Expected an array filled with names of modeFilters in form of strings.')
+        return false
+    }
+    else if (values.map((x, i) => {
+        if (this.modeFilters[x] === undefined){
+            console.log('Item ' + i + ' of the value array is not a variable name in modeFilters.')
+            return false
+        }
+        return true
+    }).includes(false)){
+        throw new Error ('Items in the value array include names that are not in modeFilters.')
+        return false
+    }
+    else {
+        return true
+    }
+}
+
+export function checkRootMap (keyspan, keys, values){
+    if (checkAllItemsType(values, 'string') === false){
+        throw new Error ('Invalid items in values array. Expected an array filled with english letters that represent musical letter notation in form of strings.')
+        return false
+    }
+    else if (values.map((x, i) => {
+        let foundNote = Note.get(x)
+        if (foundNote.empty === true){
+            console.log('Item ' + i + ' of the value array is not an english letter that represents musical letter notation')
+            return false
+        }
+        return true
+    }).includes(false)){
+        throw new Error('There are items in the value array that are not english letters that represent the musical letter notation.')
+        return false
+    }
+    else{
+        return true
+    }
+}
+
 /** Class representing MusicalEnvironments */
 export class MusicalEnvironment {
     /**
@@ -1172,13 +1319,12 @@ export class MusicalEnvironment {
         //differentiating between object and array from: https://stackoverflow.com/a/7803271/19515980
     //     console.info('Preliminary checks have passeed.')
     }
-    createDefaultRhythmMap (objectName, mapName, keyspan, keys, values){
-        if (checkAllItemsType(values, 'number')) {
+        createDefaultRhythmMap (objectName, mapName, keyspan, keys, values){
+        if (checkDefaultRhythmMap(keyspan, key, values)){
             this.rhythmMaps[mapName] = new QuantizedMap(1, [1], new QuantizedMap(keyspan, keys, values))
             return true
         }
         else {
-            throw new Error('Expected values to be an array of numbers')
             return false
         }
     }
@@ -1193,53 +1339,40 @@ export class MusicalEnvironment {
         }
     }
     createNoteMaps (objectName, mapName, keyspan, keys, values){
-        if (checkAllItemsType(values, 'array') === false){
-            throw new Error('Expected values array to be filled with arrays which contain numbers')
+        if (checkNoteMap(keyspan, keys, values)){
+            this[objectName][mapName] = new QuantizedMap(keyspan, keys, values)
+            return true
+        }
+        else {
             return false
         }
-        else if (values.map((x, i) => {return checkAllItemsType(x, 'number')}).includes(false)){
-            throw new Error('Expected items in arrays in values to be filled with numbers. ex. [[number], [number]]')
-            return false
-        }
-        this[objectName][mapName] = new QuantizedMap(keyspan, keys, values)
-        return true
     }
     createRhythmPatternMap (objectName, mapName, keyspan, keys, values){
-        if (checkAllItemsType(values, 'boolean')){
+        if (checkRhythmPatternMap(keyspan, keys, values)){
             this.rhythmPatterns[mapName] = new QuantizedMap(keyspan, keys, values)
             return true
         }
         else {
-            throw new Error('Expected an values array to be filled with booleans true or false')
             return false
         }
     }
     createDefaultMaskMap (objectName, mapName, keyspan, keys, values){
-        if (checkAllItemsType(values, 'boolean')){
+        if (checkMaskMap(keyspan, keys, values)){
             this.maskMaps[mapName] = new QuantizedMap(keyspan, keys, A.flipBooleans(values))
             return true
         }
         else {
-            throw new Error('Expected an values array to be filled with booleans true or false')
             return false
         }
     }
     createSongMap (objectName, mapName, keyspan, keys, values){
-        if (checkAllItemsType(values, 'string') === false){
-            throw new Error ('Invalid items in values array. Expected an array filled with strings.')
-        }
-        else if (values.every((x, i) => {if (this.chordMaps[x] === undefined){
-            throw new Error (x + ' is not a property name of musicalEnvironment.chordProgressions. Fix index ' + i)
-            return false
-            }
-            return true
-        }) === false){
-            throw new Error ('Invalid items in values array. Expected name of a property in musicalEnvironment.chordProgressions')
-                }
-        else {
+        if (checkSongMap(keyspan, keys, values, this)){
             this.songMaps[mapName] = new QuantizedMap(keyspan, keys, values)
+            return true
         }
-        return true
+        else {
+            return false
+        }
     }
     createDefaultMap (objectName, mapName, keyspan, keys, values){
             this[objectName][mapName] = new QuantizedMap(keyspan, keys, values)
@@ -1253,76 +1386,42 @@ export class MusicalEnvironment {
         this[variableName][mapName] !== undefined
     }
     createControlChangeMap (objectName, mapName, keyspan, keys, values){
-        if (checkAllItemsType(values, 'object') === false){
-            throw new Error ('Invalid items in values array. Expected an array filled with objects. The objects should be filled with two variables controller and value. Both should be numbers.')
+        if (checkControlChangeMap(keyspan, keys, values)){
+            this.controlChangeMaps[mapName] = new QuantizedMap(keyspan, keys, values)
+            return true
         }
-        else if (values.map((x, i) => {
-            let incorrectTypes = false
-            if (typeof x.controller !== 'number' || x.controller < 0 || x.controller > 127){
-                console.log('The controller value of ' + i + ' should a a number 0-127.')
-                incorrectTypes = true
-            }
-            if (typeof x.value !== 'number' || x.value < 0 || x.value > 127){
-                console.log('The value of the variable value ' + i + 'should a a number 0-127.')
-                incorrectTypes = true
-            }
-            if (incorrectTypes === true){
-                return true
-            }
-        }).includes(true)){
-            throw new Error ('Invalid items in values array. Expected objects with two variables controller and value. Both numbers 0-127.')
+        else {
+            return false
         }
-        this.controlChangeMaps[mapName] = new QuantizedMap(keyspan, keys, values)
     }
     createChordMap (objectName, mapName, keyspan, keys, values){
-        if (checkAllItemsType(values, 'string') === false){
-            throw new Error ('Invalid items in values array. Expected an array filled with chords in form of strings.')
+        if (checkChordMap(keyspan, keys, values)){
+            this.chordMaps[mapName] = new QuantizedMap(keyspan, keys, values)
         }
-        else if (values.map((x, i) => {
-            if (Chord.getChord(x).empty === true){
-                console.log('Item ' + i + ' of the value array is not a chord')
-                return false
-            }
-            return true
-        }).includes(false)){
-            throw new Error('Items in the value array include variables which are not chords.')
+        else {
             return false
         }
-        this.chordMaps[mapName] = new QuantizedMap(keyspan, keys, values)
     }
     createModeMap (objectName, mapName, keyspan, keys, values){
-        if (checkAllItemsType(values, 'string') === false){
-            throw new Error ('Invalid items in values array. Expected an array filled with names of modeFilters in form of strings.')
-        }
-        else if (values.map((x, i) => {
-            if (this.modeFilters[x] === undefined){
-                console.log('Item ' + i + ' of the value array is not a variable name in modeFilters.')
-                return false
-            }
-            return true
-        }).includes(false)){
-            throw new Error ('Items in the value array include names that are not in modeFilters.')
-        }
-        this.modeMaps[mapName] = new QuantizedMap(keyspan, keys, values)
-    }
-    createRootMap (objectName, mapName, keyspan, keys, values){
-        let reformattedValues = []
-        if (checkAllItemsType(values, 'string') === false){
-            throw new Error ('Invalid items in values array. Expected an array filled with english letters that represent musical letter notation in form of strings.')
-        }
-        else if (values.map((x, i) => {
-            let foundNote = Note.get(x)
-            if (foundNote.empty === true){
-                console.log('Item ' + i + ' of the value array is not an english letter that represents musical letter notation')
-                return false
-            }
-            reformattedValues.push(foundNote.name)
-            return true
-        }).includes(false)){
-            throw new Error('There are items in the value array that are not english letters that represent the musical letter notation.')
+        if (checkModeMap(keyspan, keys, values)){
+            this.modeMaps[mapName] = new QuantizedMap(keyspan, keys, values)
             return false
         }
-        this.rootMaps[mapName] = new QuantizedMap(keyspan, keys, reformattedValues)
+        else {
+            return false
+}
+    }
+    createRootMap (objectName, mapName, keyspan, keys, values){
+        if (checkRootMap(keyspan, keys, values)){
+            let reformattedValues = values.map((x, i) => {
+                return Note.get(x).name
+            })
+            this.rootMaps[mapName] = new QuantizedMap(keyspan, keys, reformattedValues)
+            return true
+        }
+        else {
+            return false
+        }
     }
     checkSubArrayType(subArray, type){
         return subArray.every(x => {
@@ -1331,14 +1430,6 @@ export class MusicalEnvironment {
             }
             return checkAllItemsType(x, type)
         })
-    }
-    createMidiProgramMap(objectName, mapName, keyspan, keys, values){
-        if (checkAllItemsType(value, 'Number') === false && checkSubArrayType(x, 'Number') === false){
-            throw new Error('Expected value array to contain arrays with numbers in it. [[Number], [Number]]')
-        }
-        else{
-            this.midiProgramMaps[mapName] = new QuantizedMap(keyspan, keys, values)
-        }
     }
     addMap (objectName, mapName, keyspan, keys, values, verbose){
         this.checkingAddMapToMusicalEnvironmentArguments(objectName, mapName, keyspan, keys, values)
