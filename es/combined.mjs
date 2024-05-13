@@ -932,24 +932,25 @@ export function checkChordMap (keyspan, keys, values){
 }
 
 export function checkControlChangeMap (keyspan, keys, values){
-        if (checkAllItemsType(values, 'object') === false){
-            throw new Error ('Invalid items in values array. Expected an array filled with objects. The objects should be filled with two variables controller and value. Both should be numbers.')
+        if (checkAllItemsType(values, 'Array') === false){
+            throw new Error ('Invalid items in values array. Expected an array filled with arrays which are filled with objects. The objects should be filled with two variables controller and value. Both should be numbers.')
             return false
         }
         else if (values.map((x, i) => {
+            return x.map((o, c) => {
             let incorrectTypes = false
-            if (typeof x.controller !== 'number' || x.controller < 0 || x.controller > 127){
-                console.log('The controller value of ' + i + ' should a a number 0-127.')
+            if (typeof o.controller !== 'number' || o.controller < 0 || o.controller > 127){
+                console.log('The controller value of ' + c + ' should a a number 0-127.')
                 incorrectTypes = true
             }
-            if (typeof x.value !== 'number' || x.value < 0 || x.value > 127){
-                console.log('The value of the variable value ' + i + 'should a a number 0-127.')
+            if (typeof o.value !== 'number' || o.value < 0 || o.value > 127){
+                console.log('The value of the variable value ' + c + 'should a a number 0-127.')
                 incorrectTypes = true
             }
             if (incorrectTypes === true){
                 return true
             }
-        }).includes(true)){
+        })}).flat().includes(true)){
             throw new Error ('Invalid items in values array. Expected objects with two variables controller and value. Both numbers 0-127.')
             return false
         }
@@ -958,13 +959,33 @@ export function checkControlChangeMap (keyspan, keys, values){
     }
 }
 
-export function checkModeMap (keyspan, keys, values){
+export function checkMidiProgramMap (keyspan, keys, values){
+    if (checkAllItemsType(values, 'Array') === false){
+        throw new Error('Expected value array to contain arrays with numbers in it. [[Number], [Number]]')
+        return false
+    }
+    else if (values.map((x, i) => { return x.map((n, c) => {
+        if (findItemType(n) !== 'number'){
+            console.log('Values[' + i + '][' + c + '] is not a number')
+            return false
+        }
+        return true
+    })}).flat().includes(false)){
+        throw new Error('Expected value array to contain arrays with numbers in it. [[Number], [Number]]')
+        return false
+}
+    else {
+        return true
+    }
+}
+
+export function checkModeMap (keyspan, keys, values, e){
     if (checkAllItemsType(values, 'string') === false){
         throw new Error ('Invalid items in values array. Expected an array filled with names of modeFilters in form of strings.')
         return false
     }
     else if (values.map((x, i) => {
-        if (this.modeFilters[x] === undefined){
+        if (e.modeFilters[x] === undefined){
             console.log('Item ' + i + ' of the value array is not a variable name in modeFilters.')
             return false
         }
@@ -995,6 +1016,25 @@ export function checkRootMap (keyspan, keys, values){
         return false
     }
     else{
+        return true
+    }
+}
+
+export function checkModeFilter (keyspan, keys, values){
+    if (checkAllItemsType(values, 'number') === false){
+        throw new Error ('All items in values in values array should be numbers between and including 0-11')
+        return false
+    }
+    else if (values.map((x, i) => {
+        if (x > 11 || x < 0){
+            console.log('Item', i , 'in value array not between and including 0-11')
+            return false
+        }
+    }).includes(false)){
+        throw new Error ('All items in values in values array should be numbers between and including 0-11')
+        return false
+    }
+    else {
         return true
     }
 }
@@ -1320,7 +1360,7 @@ export class MusicalEnvironment {
     //     console.info('Preliminary checks have passeed.')
     }
         createDefaultRhythmMap (objectName, mapName, keyspan, keys, values){
-        if (checkDefaultRhythmMap(keyspan, key, values)){
+        if (checkDefaultRhythmMap(keyspan, keys, values)){
             this.rhythmMaps[mapName] = new QuantizedMap(1, [1], new QuantizedMap(keyspan, keys, values))
             return true
         }
@@ -1378,8 +1418,12 @@ export class MusicalEnvironment {
             this[objectName][mapName] = new QuantizedMap(keyspan, keys, values)
     }
     createModeFilters (objectName, mapName, keyspan, keys, values){
-        if(checkAllItemsType(values, 'QuantizedMap')){
+        if(checkModeFilter(keyspan, keys, values)){
             this[objectName][mapName] = new QuantizedMap(keyspan, keys, values)
+            return true
+        }
+        else {
+            return false
         }
     }
     checkVariableFor (variableName, mapName){
@@ -1403,7 +1447,7 @@ export class MusicalEnvironment {
         }
     }
     createModeMap (objectName, mapName, keyspan, keys, values){
-        if (checkModeMap(keyspan, keys, values)){
+        if (checkModeMap(keyspan, keys, values, e)){
             this.modeMaps[mapName] = new QuantizedMap(keyspan, keys, values)
             return false
         }
@@ -1423,13 +1467,14 @@ export class MusicalEnvironment {
             return false
         }
     }
-    checkSubArrayType(subArray, type){
-        return subArray.every(x => {
-            if (x instanceof Array === false){
-                return false
-            }
-            return checkAllItemsType(x, type)
-        })
+    createMidiProgramMap(objectName, mapName, keyspan, keys, values){
+        if (checkMidiProgramMap(keyspan, keys, values)){
+            this.midiProgramMaps[mapName] = new QuantizedMap(keyspan, keys, values)
+            return true
+        }
+        else {
+            return false
+        }
     }
     addMap (objectName, mapName, keyspan, keys, values, verbose){
         this.checkingAddMapToMusicalEnvironmentArguments(objectName, mapName, keyspan, keys, values)
@@ -1454,14 +1499,17 @@ export class MusicalEnvironment {
             case 'controlChangeMaps':
                 this.createControlChangeMap(objectName, mapName, keyspan, keys, values)
                 break;
+            case 'midiProgramMaps':
+                this.createMidiProgramMap(objectName, mapName, keyspan, keys, values)
+                break;
             case 'modeMaps':
                 this.createModeMap(objectName, mapName, keyspan, keys, values)
                 break;
             case 'rootMaps':
                 this.createRootMap(objectName, mapName, keyspan, keys, values)
                 break;
-//             case 'modeFilters':
-//                 this.createModeFilters(objectName, mapName, keyspan, keys, values)
+            case 'modeFilters':
+                this.createModeFilters(objectName, mapName, keyspan, keys, values)
                 break;
              case 'midiInputs':
                 throw new Error('Use the updateMidiInputList function while passing the MusicalEnvironment as an argument without it assigning to anything. Like this: updateMidiInputList(nameOfMusicalEnvironment)')
@@ -1783,6 +1831,21 @@ export class MusicalEnvironment {
         let player = this.players[playerName]
         this.checkUndefinedPlayerProperties(playerName).forEach(x => {player[x] = replaceWith})
     }
+}
+
+export function addMapsTests (e, verbose = true){ 
+    e.addMap("rhythmMaps", 'hi', 4, [0, 1, 2, 3], [1, 1, 1, 1], verbose)
+    e.addMap("noteMaps", 'hi', 4, [0, 1, 2, 3], [[1], [1], [1], [1]], verbose)
+    e.addMap("rhythmPatterns", 'hi', 4, [0, 1, 2, 3], [true, false, true, true], verbose)
+    e.addMap("maskMaps", 'hi', 4, [0, 1, 2, 3], [true, false, true, true], verbose)
+    e.addMap("songMaps", 'hi', 4, [0, 1, 2, 3], ['default', 'default', 'exampleChords', 'default'], verbose)
+    e.addMap("chordMaps", 'hi', 4, [0, 1, 2, 3], ['M', 'M', 'M', 'M'], verbose)
+    e.addMap("controlChangeMaps", 'hi', 4, [0, 1, 2, 3], [[ { channel: 0, controller: 25, value: 123 } ],[ { channel: 0, controller: 25, value: 123 } ],[ { channel: 0, controller: 25, value: 123 } ],[ { channel: 0, controller: 25, value: 123 } ]], verbose)
+    e.addMap("midiProgramMaps", 'hi', 4, [0, 1, 2, 3], [[2], [4], [6], [8]], verbose)
+    e.addMap("modeMaps", 'hi', 4, [0, 1, 2, 3], ['chromatic', 'aeolian', 'dorian', 'blues'], verbose)
+    e.addMap("rootMaps", 'hi', 4, [0, 1, 2, 3], ['A', 'B', 'C', 'D'], verbose)
+    e.addMap("modeFilters", 'hi', 4, [0, 1, 2, 3], [1, 0, 5, 9], verbose)
+    e.addMap("legatoMaps", 'hi', 4, [0, 1, 2, 3], [1, 1, 1, 1], verbose)
 }
 
 /**
