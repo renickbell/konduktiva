@@ -293,14 +293,28 @@ export function rulesGenerator (inputPool, maxRuleLength) {
     return (ruleLengths.map(x => A.pickN(x, inputPool) ) )
 }
 
-export function variousLsystems(baseName,n,patternLength,rules,generations,replacementValues,inputString) {
-    let replacements = A.buildArray(n, x => randomMap(getAllAlphabets(), replacementValues));
-    let thisL = lsystem (inputString, rules, generations);
-    let lsystems = replacements.map(x => A.loopTo(patternLength,rewriteString(thisL,x)))
-    let names = A.buildArray(n, i => baseName+i);
-    let outputMap = {};
-    names.forEach((x,i) => outputMap[x] = lsystems[i]);
-    return outputMap
+export function workerLsystem (inputString, rules, generations) {
+    let workerCode = parseItem.toString() + ';' + parseString.toString() + ';' + lsystem.toString() + ';returnToParent(lsystem(' + JSON.stringify(inputString) + ', ' + JSON.stringify(rules) + ', JSON.parse(' +  generations + ')))'
+    return giveWorkerWork(workerCode)
+}
+
+export function variousLsystems(baseName,n,patternLength,rules,generations,replacementValues,inputString, allChars = getAllAlphabets()) {
+    return new Promise((resolve, reject) => {
+        let thisL = workerLsystem(inputString, rules, generations)
+        let replacements = A.buildArray(n, x => randomMap(allChars, A.resizeArray(allChars.length, replacementValues)));
+        let names = A.buildArray(n, i => baseName+i);
+        let outputMap = {};
+        thisL.then((lsystemRes) => {
+            workerCode = 'const A = require(`array-toolkit`);' + rewriteString.toString() + ';let replacements = ' + JSON.stringify(replacements) + ';let res  = ' + JSON.stringify(lsystemRes) + '; let patternLength = ' + JSON.parse(patternLength) + '; returnToParent(replacements.map(x => A.loopTo(patternLength,rewriteString(res,x))))'
+//             let lsystems = replacements.map(x => A.loopTo(patternLength,rewriteString(res,x)))
+            let sortedLsystem = giveWorkerWork(workerCode)
+            sortedLsystem.then((sortedRes) => {
+                console.log('sortedRes', typeof sortedRes[0], sortedRes)
+                names.forEach((x,i) => outputMap[x] = sortedRes[i]);
+                resolve(outputMap)
+            })
+        })
+    })
 }
 
 //--------------------------------------------------------------------------
@@ -1020,7 +1034,7 @@ export function checkRootMap (keyspan, keys, values){
     }
 }
 
-export function checkModeFilter (keyspan, keys, values){
+function checkModeFilter (keyspan, keys, values){
     if (checkAllItemsType(values, 'number') === false){
         throw new Error ('All items in values in values array should be numbers between and including 0-11')
         return false
@@ -1359,9 +1373,9 @@ export class MusicalEnvironment {
         //differentiating between object and array from: https://stackoverflow.com/a/7803271/19515980
     //     console.info('Preliminary checks have passeed.')
     }
-        createDefaultRhythmMap (objectName, mapName, keyspan, keys, values){
+    createDefaultRhythmMap (objectName, mapName, keyspan, keys, values){
         if (checkDefaultRhythmMap(keyspan, keys, values)){
-            this.rhythmMaps[mapName] = new QuantizedMap(1, [1], new QuantizedMap(keyspan, keys, values))
+            this.rhythmMaps[mapName] = new QuantizedMap(1, [1], [new QuantizedMap(keyspan, keys, values)])
             return true
         }
         else {
@@ -5583,28 +5597,31 @@ export function findExistingFilesIncludingStringAmount (nameToIdentify){
 
 //code in workerCode has to be stringified.
 export function giveWorkerWork(workerCode){
-    let tempFilePath = process.cwd() + '/' + 'Konduktiva-worker-temp-file-date' + Date.now() + '-random-string-to-prevent-accidental-writes-' + generateLsystemAlphabets(80).join('')
-    let existingFiles = findExistingFilesIncludingStringAmount(tempFilePath)
-    console.log(tempFilePath)
-    if (existingFiles > 0){
-        tempFilePath += '-' + existingFiles
-    }
-    tempFilePath += '.js'
-    let copiedWorkerTemplate = R.clone(workerTemplate)
-    fs.writeFileSync(tempFilePath, copiedWorkerTemplate + '\n' + workerCode)
     return new Promise((resolve, reject) => {
-        let worker = new Worker(tempFilePath, {workerData: workerCode})
-        worker.on('message', result => {
-              console.log('worker done', result)
+        let tempFilePath = process.cwd() + '/' + 'Konduktiva-worker-temp-file-date' + Date.now() + '-random-string-to-prevent-accidental-writes-' + generateLsystemAlphabets(80).join('')
+        let existingFiles = findExistingFilesIncludingStringAmount(tempFilePath)
+//         console.log(tempFilePath)
+        if (existingFiles > 0){
+            tempFilePath += '-' + existingFiles 
+        }
+        tempFilePath += '.js'
+        let copiedWorkerTemplate = R.clone(workerTemplate)
+        fs.writeFileSync(tempFilePath, copiedWorkerTemplate + '\n' + workerCode)
+            if (isMainThread){
+                let worker = new Worker(tempFilePath, {workerData: workerCode})
+                worker.on('message', result => {
+//                       console.log('worker done', result)
+                       fs.unlinkSync(tempFilePath)
+                        worker.terminate()
+                      resolve(result)
+                })
+            worker.on('error', err => {
+                console.log('worker crashed', err)
                fs.unlinkSync(tempFilePath)
-              resolve(result)
-        })
-        worker.on('error', err => {
-            console.log('worker crashed', err)
-            // Reject the Promise with the error if something goes wrong
-            reject(err);
-            worker.terminate()
-        });
+                worker.terminate()
+                reject(err);
+            });
+        }
     })
 }
 

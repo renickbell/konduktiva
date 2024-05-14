@@ -332,16 +332,40 @@ function rulesGenerator (inputPool, maxRuleLength) {
     return (ruleLengths.map(x => A.pickN(x, inputPool) ) )
 }
 
-function variousLsystems(baseName,n,patternLength,rules,generations,replacementValues,inputString) {
-    let replacements = A.buildArray(n, x => randomMap(getAllAlphabets(), replacementValues));
+function OvariousLsystems(baseName,n,patternLength,rules,generations,replacementValues,inputString, allChars = getAllAlphabets()) {
+    let replacements = A.buildArray(n, x => randomMap(allChars, A.resizeArray(allChars.length, replacementValues)));
     let thisL = lsystem (inputString, rules, generations);
     let lsystems = replacements.map(x => A.loopTo(patternLength,rewriteString(thisL,x)))
+    console.log('er', lsystems)
     let names = A.buildArray(n, i => baseName+i);
     let outputMap = {};
     names.forEach((x,i) => outputMap[x] = lsystems[i]);
     return outputMap
 }
 
+function workerLsystem (inputString, rules, generations) {
+    let workerCode = parseItem.toString() + ';' + parseString.toString() + ';' + lsystem.toString() + ';returnToParent(lsystem(' + JSON.stringify(inputString) + ', ' + JSON.stringify(rules) + ', JSON.parse(' +  generations + ')))'
+    return giveWorkerWork(workerCode)
+}
+
+function variousLsystems(baseName,n,patternLength,rules,generations,replacementValues,inputString, allChars = getAllAlphabets()) {
+    return new Promise((resolve, reject) => {
+        let thisL = workerLsystem(inputString, rules, generations)
+        let replacements = A.buildArray(n, x => randomMap(allChars, A.resizeArray(allChars.length, replacementValues)));
+        let names = A.buildArray(n, i => baseName+i);
+        let outputMap = {};
+        thisL.then((lsystemRes) => {
+            workerCode = 'const A = require(`array-toolkit`);' + rewriteString.toString() + ';let replacements = ' + JSON.stringify(replacements) + ';let res  = ' + JSON.stringify(lsystemRes) + '; let patternLength = ' + JSON.parse(patternLength) + '; returnToParent(replacements.map(x => A.loopTo(patternLength,rewriteString(res,x))))'
+//             let lsystems = replacements.map(x => A.loopTo(patternLength,rewriteString(res,x)))
+            let sortedLsystem = giveWorkerWork(workerCode)
+            sortedLsystem.then((sortedRes) => {
+                console.log('sortedRes', typeof sortedRes[0], sortedRes)
+                names.forEach((x,i) => outputMap[x] = sortedRes[i]);
+                resolve(outputMap)
+            })
+        })
+    })
+}
 //--------------------------------------------------------------------------
 //midi actions
 
@@ -1074,7 +1098,7 @@ class MusicalEnvironment {
         this.actions = {"default": function (midiOutput, b, e){
                 console.log('Hi this is the default action function being triggered')
                 console.log('This is the midiOutput: ', midiOutput)
-                console.log('This is the beat: ', this.currentBeat())
+                console.log('This is the beat: ', e.currentBeat())
             }
         };
         this.IOIs = {};
@@ -1386,7 +1410,7 @@ class MusicalEnvironment {
     }
     createDefaultRhythmMap (objectName, mapName, keyspan, keys, values){
         if (checkDefaultRhythmMap(keyspan, keys, values)){
-            this.rhythmMaps[mapName] = new QuantizedMap(1, [1], new QuantizedMap(keyspan, keys, values))
+            this.rhythmMaps[mapName] = new QuantizedMap(1, [1], [new QuantizedMap(keyspan, keys, values)])
             return true
         }
         else {
@@ -2112,6 +2136,7 @@ addToModuleExports({
     checkMidiProgramMap,
     checkModeFilter,
     addMapsTests,
+    workerLsystem,
 })
 
 // --------------------------------------------------------------------------
@@ -5960,32 +5985,50 @@ function findExistingFilesIncludingStringAmount (nameToIdentify){
 
 //code in workerCode has to be stringified.
 function giveWorkerWork(workerCode){
-    let tempFilePath = process.cwd() + '/' + 'Konduktiva-worker-temp-file-date' + Date.now() + '-random-string-to-prevent-accidental-writes-' + generateLsystemAlphabets(80).join('')
-    let existingFiles = findExistingFilesIncludingStringAmount(tempFilePath)
-    console.log(tempFilePath)
-    if (existingFiles > 0){
-        tempFilePath += '-' + existingFiles 
-    }
-    tempFilePath += '.js'
-    let copiedWorkerTemplate = R.clone(workerTemplate)
-    fs.writeFileSync(tempFilePath, copiedWorkerTemplate + '\n' + workerCode)
     return new Promise((resolve, reject) => {
-        worker = new Worker(tempFilePath, {workerData: workerCode})
-        worker.on('message', result => {
-              console.log('worker done', result)
+        let tempFilePath = process.cwd() + '/' + 'Konduktiva-worker-temp-file-date' + Date.now() + '-random-string-to-prevent-accidental-writes-' + generateLsystemAlphabets(80).join('')
+        let existingFiles = findExistingFilesIncludingStringAmount(tempFilePath)
+//         console.log(tempFilePath)
+        if (existingFiles > 0){
+            tempFilePath += '-' + existingFiles 
+        }
+        tempFilePath += '.js'
+        let copiedWorkerTemplate = R.clone(workerTemplate)
+        fs.writeFileSync(tempFilePath, copiedWorkerTemplate + '\n' + workerCode)
+            if (isMainThread){
+                let worker = new Worker(tempFilePath, {workerData: workerCode})
+                worker.on('message', result => {
+//                       console.log('worker done', result)
+                       fs.unlinkSync(tempFilePath)
+                        worker.terminate()
+                      resolve(result)
+                })
+            worker.on('error', err => {
+                console.log('worker crashed', err)
                fs.unlinkSync(tempFilePath)
                 worker.terminate()
-              resolve(result)
-        })
-        worker.on('error', err => {
-            console.log('worker crashed', err)
-            // Reject the Promise with the error if something goes wrong
-           fs.unlinkSync(tempFilePath)
-            worker.terminate()
-            reject(err);
-        });
+                reject(err);
+            });
+        }
     })
 }
+
+// //code in workerCode has to be stringified. Eval version.
+// function giveWorkerWork (workerCode){
+//     return new Promise((resolve, reject) => {
+//         worker = new Worker(workerCodeForArguments, {eval: true, workerData: R.clone(workerTemplate) + ';' + workerCode})
+//         worker.on('message', result => {
+//               console.log('worker done', result)
+//               resolve(result)
+//         })
+//         worker.on('error', err => {
+//             console.log('worker crashed', err)
+//             // Reject the Promise with the error if something goes wrong
+//             reject(err);
+//             worker.terminate()
+//         });
+//     })
+// }
 
 addToModuleExports({writeWorkerFileSetupToFile, giveWorkerWork, workerTemplate, findExistingFilesIncludingStringAmount})
 // --------------------------------------------------------------------------
