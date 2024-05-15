@@ -32,6 +32,21 @@ export const lodash = require('lodash');
 // --------------------------------------------------------------------------
 //konduktiva-revised-2.mjs:
 
+export let tempFiles = {}
+
+export function updateTempFilesVariable (KonduktivaPackage){
+    KonduktivaPackage.tempFiles = tempFiles
+}
+
+process.on('exit', () => {
+    let keys = Object.keys(tempFiles)
+    if (keys.length > 0){
+        keys.forEach(x => {
+            fs.unlinkSync(x)
+        })
+    }
+})
+
 /**
   * Returns the current year, month, and day (yyMMdd)
   * @example console.log(ymd()) //'230821'
@@ -5602,22 +5617,25 @@ export function giveWorkerWork(workerCode){
         let existingFiles = findExistingFilesIncludingStringAmount(tempFilePath)
 //         console.log(tempFilePath)
         if (existingFiles > 0){
-            tempFilePath += '-' + existingFiles 
+            tempFilePath += '-' + existingFiles
         }
         tempFilePath += '.js'
         let copiedWorkerTemplate = R.clone(workerTemplate)
         fs.writeFileSync(tempFilePath, copiedWorkerTemplate + '\n' + workerCode)
+        tempFiles[tempFilePath] = true
             if (isMainThread){
                 let worker = new Worker(tempFilePath, {workerData: workerCode})
                 worker.on('message', result => {
 //                       console.log('worker done', result)
-                       fs.unlinkSync(tempFilePath)
-                        worker.terminate()
-                      resolve(result)
+                    fs.unlinkSync(tempFilePath)
+                    delete tempFiles[tempFilePath]
+                    worker.terminate()
+                    resolve(result)
                 })
             worker.on('error', err => {
                 console.log('worker crashed', err)
-               fs.unlinkSync(tempFilePath)
+                fs.unlinkSync(tempFilePath)
+                delete tempFiles[tempFilePath]
                 worker.terminate()
                 reject(err);
             });
