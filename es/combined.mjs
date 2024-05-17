@@ -324,12 +324,173 @@ export function variousLsystems(baseName,n,patternLength,rules,generations,repla
 //             let lsystems = replacements.map(x => A.loopTo(patternLength,rewriteString(res,x)))
             let sortedLsystem = giveWorkerWork(workerCode)
             sortedLsystem.then((sortedRes) => {
-                console.log('sortedRes', typeof sortedRes[0], sortedRes)
+//                 console.log('sortedRes', typeof sortedRes[0], sortedRes)
                 names.forEach((x,i) => outputMap[x] = sortedRes[i]);
                 resolve(outputMap)
             })
         })
     })
+}
+
+export function sortRhythmMapIntoKeysAndKeyspan (rhythmMap, e){
+    if (typeof rhythmMap === 'string' && e === undefined){
+        throw new Error ('Location of rhythmMap provided but MusicalEnvironment not provided. Please provide the MusicalEnvironment in the second argument.')
+    }
+    else if (typeof rhythmMap === 'string'){
+        return e.rhythmMaps[rhythmMap].values[0]
+    }
+    else if (findItemType(rhythmMap) !== 'QuantizedMap'){
+        throw new Error('Unexpected argument. Provide the location of a rhythmMap or a QuantizedMap representing a rhythmMap as first argument. If location of rhythmMap provided pass a MusicalEnvironment as the second argument')
+    }
+    else if (K.checkAllItemsType(rhythmMap.values, 'number')){
+        return rhythmMap
+    }
+    else {
+        return rhythmMap.values[0]
+    }
+}
+
+export function convertVariousLsystemObjectToArray (obj){
+    return Object.values(obj).map(x => {return x}).flat()
+}
+
+export function lsystemDefaultMapTemplate (rhythmMap,e, value){
+    let correctRhythmMap = sortRhythmMapIntoKeysAndKeyspan(rhythmMap, e)
+    return new QuantizedMap(correctRhythmMap.keyspan, correctRhythmMap.keys, value)
+}
+
+export function lsystemNoteMap (baseName,n,patternLength,rules,generations,replacementValues,inputString, allChars = getAllAlphabets(), rhythmMap, e){
+    return new Promise((resolve, reject) => {
+        let lsystemResult = variousLsystems.apply(null, arguments)
+        lsystemResult.then((res) => {
+            resolve(lsystemDefaultMapTemplate(rhythmMap, e, convertVariousLsystemObjectToArray(res)))
+        })
+    })
+}
+
+export function lsystemRhythmMap (baseName,n,patternLength,rules,generations,replacementValues,inputString, allChars = getAllAlphabets()){
+    return new Promise((resolve, reject) => {
+        let lsystemResult = variousLsystems.apply(null, arguments)
+        lsystemResult.then((res) => {
+            resolve(new QuantizedMap(1, [1], [Object.values(res).map(x => {
+                let absolutes = deltaToAbsolute(x)
+                return new QuantizedMap(absolutes[0], absolutes[1], x)
+            })]))
+        })
+    })
+}
+
+export function lsystemRootMap (baseName,n,patternLength,rules,generations,replacementValues,inputString, allChars = getAllAlphabets(), rhythmMap, e){
+    return new Promise((resolve, reject) => {
+        let lsystemResult = variousLsystems.apply(null, arguments)
+        lsystemResult.then((res) => {
+            resolve(lsystemDefaultMapTemplate(rhythmMap, e, Object.keys(res).map(x => {
+                return res[x].map(n => {
+                    let note = Note.fromMidi(n)
+                    return note.slice(0, note.indexOf('-'))
+                })}).flat()
+            ))
+        })
+    })
+}
+
+function lsystemChordMap (baseName,n,patternLength,rules,generations,replacementValues,inputString, allChars = getAllAlphabets(), rhythmMap, e){
+    return new Promise((resolve, reject) => {
+        let lsystemResult = variousLsystems.apply(null, arguments)
+        lsystemResult.then((res) => {
+            let diatonicChords = ['maj7',' m7',' m7',' maj7',' 7',' m7',' m7b5']
+            resolve(lsystemDefaultMapTemplate(rhythmMap, e, Object.values(res).map(x => {
+                return x.map(n => {
+                    return diatonicChords[n % diatonicChords.length]
+                })
+            }).flat()))
+        })
+    })
+}
+
+export function lsystemGeneralMap (baseName,n,patternLength,rules,generations,replacementValues,inputString, allChars = getAllAlphabets(), rhythmMap, e){
+    return new Promise((resolve, reject) => {
+        let lsystemResult = variousLsystems.apply(null, arguments)
+        lsystemResult.then((res) => {
+            resolve(lsystemDefaultMapTemplate(rhythmMap, e,Object.keys(res).map(x => { return res[x] }).flat()))
+        })
+    })
+}
+
+export function lsystemLegatoMap (baseName,n,patternLength,rules,generations,replacementValues,inputString, allChars = getAllAlphabets(), rhythmMap, e) {
+    return lsystemGeneralMap.apply(null, arguments)
+}
+
+export function lsystemNoteDurationMap (baseName,n,patternLength,rules,generations,replacementValues,inputString, allChars = getAllAlphabets(), rhythmMap, e) {
+    return lsystemGeneralMap.apply(null, arguments)
+}
+
+export function lsystemOctaveMap (baseName,n,patternLength,rules,generations,replacementValues,inputString, allChars = getAllAlphabets(), rhythmMap, e) {
+    return lsystemGeneralMap.apply(null, arguments)
+}
+
+export function lsystemVelocityMap (baseName,n,patternLength,rules,generations,replacementValues,inputString, allChars = getAllAlphabets(), rhythmMap, e) {
+    return lsystemGeneralMap.apply(null, arguments)
+}
+
+export function lsystemPolyphonyMap (baseName,n,patternLength,rules,generations,replacementValues,inputString, allChars = getAllAlphabets(), rhythmMap, e) {
+    return lsystemGeneralMap.apply(null, arguments)
+}
+
+export function lsystemMaskMap (baseName,n,patternLength,rules,generations,replacementValues,inputString, allChars = getAllAlphabets(), rhythmMap, e){
+    return new Promise((resolve, reject) => {
+        let lsystemResult = variousLsystems.apply(null, arguments)
+        lsystemResult.then((res) => {
+            resolve(lsystemDefaultMapTemplate(rhythmMap, e, Object.keys(res).map(x => {return res[x] }).flat().map(x => { return x % 2 === 0})))
+        })
+    })
+}
+
+export function lsystemModeMap (baseName,n,patternLength,rules,generations,replacementValues,inputString, allChars = getAllAlphabets(), rhythmMap, e){
+    return new Promise((resolve, reject) => {
+        let lsystemResult = variousLsystems.apply(null, arguments)
+        lsystemResult.then((res) => {
+            let modeMapKeys = Object.keys(e.modeMaps)
+            resolve(lsystemDefaultMapTemplate(rhythmMap, e, Object.keys(res).map(x => {return res[x] }).flat().map(x => { return modeMapKeys[x % modeMapKeys.length]})))
+        })
+    })
+}
+
+// export function lsystemModeMap (baseName,n,patternLength,rules,generations,replacementValues,inputString, allChars = getAllAlphabets(), keys){
+//     return new Promise((resolve, reject) => {
+//         let lsystemResult = variousLsystems.apply(null, arguments)
+//         lsystemResult.then((res) => {
+//             let modeMapKeys = Object.keys(e.modeMaps)
+//             resolve(new QuantizedMap(patternLength, keys, Object.keys(res).map(x => {return x }).flat().map(x => { return modeMapKeys[x % modeMapKeys.length]})))
+//         })
+//     })
+// }
+
+export function lsystemModeFilter (baseName,n,patternLength,rules,generations,replacementValues,inputString, allChars = getAllAlphabets(), rhythmMap, e){
+    return new Promise((resolve, reject) => {
+        let lsystemResult = variousLsystems.apply(null, arguments)
+        lsystemResult.then((res) => {
+            resolve(lsystemDefaultMapTemplate(rhythmMap, e, Object.keys(res).map(x =>{ return res[x]}).flat()))
+        })
+    })
+}
+
+export async function lsystemWrapperTests (K, e, allChars = ['a', 'b', 'c'], rules = {'a': 'ab', 'b': 'cc', 'c': 'abc'}, startingLetter = 'a', rhythmMap){
+    let complexLsystem = await variousLsystems('comp',1 , 30, rules, 10, e.modeFilters.aeolian.values, startingLetter,allChars)
+    let yo = await lsystemNoteMap('comp',2 , 30, rules, 10, e.modeFilters.aeolian.values, startingLetter,allChars, rhythmMap)
+    yo = await lsystemRhythmMap('comp',1 , 30, rules, 10, e.modeFilters.aeolian.values, startingLetter,allChars, [0, 1, 2, 3])
+    yo = await lsystemRootMap('comp',2 , 30, rules, 10, e.modeFilters.aeolian.values, startingLetter,allChars, rhythmMap)
+    yo = await lsystemChordMap('comp',2 , 30, rules, 10, e.modeFilters.aeolian.values, startingLetter,allChars, rhythmMap)
+    yo = await lsystemGeneralMap('comp',2 , 30, rules, 10, e.modeFilters.aeolian.values, startingLetter,allChars, rhythmMap)
+    yo = await lsystemLegatoMap('comp',2 , 30, rules, 10, e.modeFilters.aeolian.values, startingLetter,allChars, rhythmMap)
+    yo = await lsystemNoteDurationMap('comp',2 , 30, rules, 10, e.modeFilters.aeolian.values, startingLetter,allChars, rhythmMap)
+    yo = await lsystemOctaveMap('comp',2 , 30, rules, 10, e.modeFilters.aeolian.values, startingLetter,allChars, rhythmMap)
+    yo = await lsystemVelocityMap('comp',2 , 30, rules, 10, e.modeFilters.aeolian.values, startingLetter,allChars, rhythmMap)
+    yo = await lsystemPolyphonyMap('comp',2 , 30, rules, 10, e.modeFilters.aeolian.values, startingLetter,allChars, rhythmMap)
+    yo = await lsystemMaskMap('comp',2 , 30, rules, 10, e.modeFilters.aeolian.values, startingLetter,allChars, rhythmMap)
+    yo = await lsystemModeMap('comp',2 , 30, rules, 10, e.modeFilters.aeolian.values, startingLetter,allChars, rhythmMap, e)
+    yo = await lsystemModeFilter('comp',2 , 30, rules, 10, e.modeFilters.aeolian.values, startingLetter,allChars, rhythmMap)
+    console.log('test ran successfully')
 }
 
 //--------------------------------------------------------------------------
