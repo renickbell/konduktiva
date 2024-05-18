@@ -332,6 +332,7 @@ export function variousLsystems(baseName,n,patternLength,rules,generations,repla
     })
 }
 
+
 export function sortRhythmMapIntoKeysAndKeyspan (rhythmMap, e){
     if (typeof rhythmMap === 'string' && e === undefined){
         throw new Error ('Location of rhythmMap provided but MusicalEnvironment not provided. Please provide the MusicalEnvironment in the second argument.')
@@ -363,7 +364,7 @@ export function lsystemNoteMap (baseName,n,patternLength,rules,generations,repla
     return new Promise((resolve, reject) => {
         let lsystemResult = variousLsystems.apply(null, arguments)
         lsystemResult.then((res) => {
-            resolve(lsystemDefaultMapTemplate(rhythmMap, e, convertVariousLsystemObjectToArray(res)))
+            resolve(lsystemDefaultMapTemplate(rhythmMap, e, convertVariousLsystemObjectToArray(res).map(x => {return [x]})))
         })
     })
 }
@@ -372,10 +373,10 @@ export function lsystemRhythmMap (baseName,n,patternLength,rules,generations,rep
     return new Promise((resolve, reject) => {
         let lsystemResult = variousLsystems.apply(null, arguments)
         lsystemResult.then((res) => {
-            resolve(new QuantizedMap(1, [1], [Object.values(res).map(x => {
+            resolve(new QuantizedMap(1, [1], Object.values(res).map(x => {
                 let absolutes = deltaToAbsolute(x)
                 return new QuantizedMap(absolutes[0], absolutes[1], x)
-            })]))
+            })))
         })
     })
 }
@@ -394,7 +395,7 @@ export function lsystemRootMap (baseName,n,patternLength,rules,generations,repla
     })
 }
 
-function lsystemChordMap (baseName,n,patternLength,rules,generations,replacementValues,inputString, allChars = getAllAlphabets(), rhythmMap, e){
+export function lsystemChordMap (baseName,n,patternLength,rules,generations,replacementValues,inputString, allChars = getAllAlphabets(), rhythmMap, e){
     return new Promise((resolve, reject) => {
         let lsystemResult = variousLsystems.apply(null, arguments)
         lsystemResult.then((res) => {

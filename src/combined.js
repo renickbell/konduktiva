@@ -415,7 +415,7 @@ function lsystemNoteMap (baseName,n,patternLength,rules,generations,replacementV
     return new Promise((resolve, reject) => {
         let lsystemResult = variousLsystems.apply(null, arguments)
         lsystemResult.then((res) => {
-            resolve(lsystemDefaultMapTemplate(rhythmMap, e, convertVariousLsystemObjectToArray(res)))
+            resolve(lsystemDefaultMapTemplate(rhythmMap, e, convertVariousLsystemObjectToArray(res).map(x => {return [x]})))
         })
     })
 }
@@ -424,10 +424,10 @@ function lsystemRhythmMap (baseName,n,patternLength,rules,generations,replacemen
     return new Promise((resolve, reject) => {
         let lsystemResult = variousLsystems.apply(null, arguments)
         lsystemResult.then((res) => {
-            resolve(new QuantizedMap(1, [1], [Object.values(res).map(x => {
+            resolve(new QuantizedMap(1, [1], Object.values(res).map(x => {
                 let absolutes = deltaToAbsolute(x)
                 return new QuantizedMap(absolutes[0], absolutes[1], x)
-            })]))
+            })))
         })
     })
 }
