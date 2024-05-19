@@ -4053,14 +4053,15 @@ export function romanToChordSymbols (key,progression) {
 //generate-melody.mjs:
 
 //Generated a random melody and outputs an array with objects that contains notes and octaves:
-export function generateRandomMelody (rootNote, mode, melodyLength, octaveMin = 1, octaveMax = 12, melodyMin = 1, melodyMax = 12, chords){
+export function generateRandomMelody (rootNote, mode, melodyLength, octaveMin = 4, octaveMax = 7, melodyMin = 0, melodyMax = 11, chords){
     let chosenMode = Scale.get(mode.toLowerCase()).intervals.map(x => { return Interval.semitones(x)})
-    let modeMap = new QuantizedMap(12, chosenMode, chosenMode)
+    let modeMap = new QuantizedMap(11, chosenMode, chosenMode)
     let randomMelody  = A.buildArray (melodyLength, x => randomRangeInt (melodyMin, melodyMax))
     return randomMelody.map((x, i) => {
-        return {note: modeMap.nearestLookup(x % 12), octave: randomRangeInt (octaveMin, octaveMax), rootNote: rootNote}
+        return {note: modeMap.nearestLookup(x % 11), octave: randomRangeInt (octaveMin, octaveMax), rootNote: rootNote}
     })
 }
+
 
 //Filters melody through a musical mode:
 export function quantizeMelody (melody, mode){
