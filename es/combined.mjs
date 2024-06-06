@@ -1248,7 +1248,7 @@ export class MusicalEnvironment {
         this.densityGraphs = {};
         this.rhythmMaps = {};
         this.maskMaps = {};
-        this.superDirtPath = this.findSuperDirtSamples();
+//         this.superDirtPath = this.findSuperDirtSamples();
         this.samples = undefined;
         this.sampleKits = {};
         this.samplePatterns = {'default': new QuantizedMap(4, [0], [{ name: '808bd', index: 4}])},

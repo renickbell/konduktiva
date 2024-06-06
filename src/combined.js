@@ -1301,7 +1301,7 @@ class MusicalEnvironment {
         this.densityGraphs = {};
         this.rhythmMaps = {};
         this.maskMaps = {};
-        this.superDirtPath = this.findSuperDirtSamples();
+//         this.superDirtPath = this.findSuperDirtSamples();
         this.samples = undefined;
         this.sampleKits = {};
         this.samplePatterns = {'default': new QuantizedMap(4, [0], [{ name: '808bd', index: 4}])},
@@ -4299,12 +4299,12 @@ addToModuleExports({
 
 
 //Generated a random melody and outputs an array with objects that contains notes and octaves:
-function generateRandomMelody (rootNote, mode, melodyLength, octaveMin = 1, octaveMax = 12, melodyMin = 1, melodyMax = 12, chords){
+function generateRandomMelody (rootNote, mode, melodyLength, octaveMin = 4, octaveMax = 7, melodyMin = 0, melodyMax = 11, chords){
     let chosenMode = Scale.get(mode.toLowerCase()).intervals.map(x => { return Interval.semitones(x)})
-    let modeMap = new QuantizedMap(12, chosenMode, chosenMode)
+    let modeMap = new QuantizedMap(11, chosenMode, chosenMode)
     let randomMelody  = A.buildArray (melodyLength, x => randomRangeInt (melodyMin, melodyMax))
     return randomMelody.map((x, i) => {
-        return {note: modeMap.nearestLookup(x % 12), octave: randomRangeInt (octaveMin, octaveMax), rootNote: rootNote}
+        return {note: modeMap.nearestLookup(x % 11), octave: randomRangeInt (octaveMin, octaveMax), rootNote: rootNote}
     })
 }
 
