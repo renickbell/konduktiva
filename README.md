@@ -70,3 +70,7 @@ This will give you all the outputs easymidi detects and you can edit the functio
 MIDI configuration. Configure your system so that easymidi can detect midi outputs.
 
 This is OS specific.
+
+### Explaining weird version numbers on NPM
+
+If one looked at the version history of Konduktiva on NPM, one may notice weird version numbers. Version 1 was 1.0.0 and version 2 went up to 3.5.0 then it went back to 1.0.1 . Version 3.5.0 was a mistake. However, that was ignored and the version numbers went up somewhat normally until 2.6.9. This was when something about NPM changed which required the latest version number to be biggest. So, the version number became 3.5.1.
